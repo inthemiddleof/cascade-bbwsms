@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme {
+	--color-darkblue: #0d278d;
+	--color-brandyellow: #feb700;
+}
+
+/* Custom CSS untuk memastikan dropdown responsif */
+.dropdown-menu {
+	visibility: hidden;
+	opacity: 0;
+	transform: translateY(10px);
+	transition: all 0.3s ease;
+}
+.group:hover .dropdown-menu {
+	visibility: visible;
+	opacity: 1;
+	transform: translateY(0);
+}
