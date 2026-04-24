@@ -51,8 +51,8 @@
                     </button>
                     <div class="dropdown-menu absolute top-full left-0 w-48 bg-white text-slate-800 shadow-xl rounded-lg overflow-hidden border border-slate-100">
                         <a href="<?= base_url('welcome/curah_hujan') ?>" class="block px-4 py-3 hover:bg-slate-50 hover:text-darkblue transition border-b border-slate-50">Curah Hujan</a>
-                        <a href="#" class="block px-4 py-3 hover:bg-slate-50 hover:text-darkblue transition border-b border-slate-50">Tinggi Muka Air</a>
-                        <a href="#" class="block px-4 py-3 hover:bg-slate-50 hover:text-darkblue transition">Kualitas Air</a>
+                        <a href="<?= base_url('welcome/tma') ?>" class="block px-4 py-3 hover:bg-slate-50 hover:text-darkblue transition border-b border-slate-50">Tinggi Muka Air</a>
+                        <a href="<?= base_url('welcome/kualitas_air') ?>" class="block px-4 py-3 hover:bg-slate-50 hover:text-darkblue transition">Kualitas Air</a>
                     </div>
                 </div>
 

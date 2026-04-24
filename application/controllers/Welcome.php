@@ -112,4 +112,86 @@ class Welcome extends CI_Controller {
         $this->load->view('pages/v_curah_hujan', $data);
         $this->load->view('layout/v_footer', $data);
     }
+
+    public function tma() {
+        $tanggal = $this->input->get('tanggal');
+        if (!$tanggal) {
+            $tanggal = date('Y-m-d');
+        }
+
+        $data['app_name']      = "CASCADE";
+        $data['title']         = "Tinggi Muka Air";
+        $data['tanggal_pilih'] = $tanggal;
+        $data['last_update']   = date('d M Y, H:i') . " WIB";
+
+        $data['summary'] = [
+            'pos_aktif'     => 12,
+            'total_pos'     => 12,
+            'tma_tertinggi' => 10.40,
+            'status_siaga'  => 1
+        ];
+
+        // Data simulasi dengan struktur jam lengkap sesuai gambar
+        $data['pencatatan_tma'] = [
+                [
+                    'no' => 1,
+                    'pos' => 'BENDUNGAN MARGATIGA',
+                    'telemetri' => ['06' => 10.20, '12' => 10.45, '18' => 10.40, 'last' => 10.42],
+                    'manual'    => ['06' => 10.15, '12' => 10.40, '18' => 10.40],
+                    'siaga'     => ['hijau' => 11.50, 'kuning' => 12.50, 'merah' => 13.50]
+                ],
+            ];
+
+        $this->load->view('layout/v_header', $data);
+        $this->load->view('pages/v_tma', $data);
+        $this->load->view('layout/v_footer', $data);
+    }
+
+    public function kualitas_air() {
+        $tanggal = $this->input->get('tanggal');
+        if (!$tanggal) { $tanggal = date('Y-m-d'); }
+
+        $data['app_name']      = "CASCADE";
+        $data['title']         = "Kualitas Air";
+        $data['tanggal_pilih'] = $tanggal;
+        $data['last_update']   = date('d M Y, H:i') . " WIB";
+
+        $data['summary'] = [
+            'pos_aktif'    => 8,
+            'total_pos'    => 10,
+            'status_aman'  => 6,
+            'status_waspada' => 2
+        ];
+
+        // Simulasi data parameter kualitas air
+        $data['pencatatan_kualitas'] = [
+            [
+                'no' => 1,
+                'pos' => 'STASIUN WAY SEKAMPUNG - HULU',
+                'waktu' => '14:20',
+                'ph' => 7.2,
+                'temp' => 28.5,
+                'do' => 6.4,
+                'turbidity' => 12.5,
+                'tds' => 150,
+                'status' => 'BAIK'
+            ],
+            [
+                'no' => 2,
+                'pos' => 'STASIUN BATU TEGI',
+                'waktu' => '14:15',
+                'ph' => 6.1, // pH agak rendah
+                'temp' => 27.2,
+                'do' => 5.2,
+                'turbidity' => 45.0, // Agak keruh
+                'tds' => 320,
+                'status' => 'CEMAR RINGAN'
+            ],
+        ];
+
+        $this->load->view('layout/v_header', $data);
+        $this->load->view('pages/v_kualitas_air', $data);
+        $this->load->view('layout/v_footer', $data);
+    }
+
 }
