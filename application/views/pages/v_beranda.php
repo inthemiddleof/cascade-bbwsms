@@ -141,36 +141,40 @@
     </section>
 
     <section id="galeri" class="py-24 bg-white">
-        <div class="max-w-7xl mx-auto px-6 lg:px-12">
-            
-            <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
-                <div>
-                    <h2 class="text-3xl font-black text-darkblue uppercase tracking-tight">Dokumentasi Lapangan</h2>
-                    <p class="text-slate-500 mt-2 font-light">Kegiatan pemantauan unit hidrologi terkini.</p>
-                </div>
-                <a href="#" class="text-darkblue font-semibold hover:text-brandyellow transition flex items-center gap-2 text-sm">
-                    Lihat Selengkapnya <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-                </a>
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+        
+        <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
+            <div>
+                <h2 class="text-3xl font-black text-darkblue uppercase tracking-tight">Dokumentasi Lapangan</h2>
+                <p class="text-slate-500 mt-2 font-light">Kegiatan pemantauan unit hidrologi terkini.</p>
             </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <?php for($i=1; $i<=8; $i++): ?>
-                <div class="group relative aspect-square overflow-hidden rounded-xl bg-slate-100 cursor-pointer">
-                    <img src="https://images.unsplash.com/photo-1542337482-1d7e2e30cc81?q=80&w=600&auto=format&fit=crop&sig=<?= $i ?>" alt="Galeri <?= $i ?>" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
-                    
-                    <div class="absolute inset-0 bg-darkblue/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
-                        <p class="text-brandyellow text-xs font-bold tracking-widest uppercase mb-1">Inspeksi</p>
-                        <p class="text-white font-medium">Pemeliharaan Stasiun <?= $i ?></p>
-                    </div>
-                </div>
-                <?php endfor; ?>
-            </div>
-
-            <div class="mt-10 text-center md:hidden">
-                <a href="#" class="inline-flex items-center justify-center px-6 py-3 border-2 border-darkblue text-darkblue font-bold rounded-lg w-full">
-                    Lihat Semua Galeri
-                </a>
-            </div>
-
+            <a href="#" class="text-darkblue font-semibold hover:text-brandyellow transition flex items-center gap-2 text-sm">
+                Lihat Selengkapnya <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+            </a>
         </div>
-    </section>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <?php foreach($galeri as $item): ?>
+            <div class="group relative aspect-square overflow-hidden rounded-xl bg-slate-100 cursor-pointer">
+                <img src="<?= base_url('assets/img/galeri/' . $item['foto']) ?>" 
+                     alt="<?= $item['judul'] ?>" 
+                     class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+                
+                <div class="absolute inset-0 bg-darkblue/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+                    <p class="text-brandyellow text-xs font-bold tracking-widest uppercase mb-1">
+                        <?= isset($item['kategori']) ? $item['kategori'] : 'Kegiatan' ?>
+                    </p>
+                    <p class="text-white font-medium"><?= $item['judul'] ?></p>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+
+        <div class="mt-10 text-center md:hidden">
+            <a href="#" class="inline-flex items-center justify-center px-6 py-3 border-2 border-darkblue text-darkblue font-bold rounded-lg w-full">
+                Lihat Semua Galeri
+            </a>
+        </div>
+
+    </div>
+</section>
