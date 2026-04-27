@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $app_name ?> - <?= $title ?></title>
+    <title><?= (isset($app_name) ? $app_name : 'CASCADE') ?> - <?= (isset($title) ? $title : 'BBWS MS') ?></title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -26,18 +26,29 @@
         body { font-family: 'Inter', sans-serif; }
         .dropdown-menu { display: none; }
         .group:hover .dropdown-menu { display: block; }
-        
-        /* Smooth transition untuk efek scroll */
         nav { transition: all 0.3s ease-in-out; }
+    </style>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        .dropdown-menu { z-index: 9999 !important; }
+        #map { z-index: 1 !important; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased selection:bg-brandyellow selection:text-darkblue">
 
-    <?php 
-        // Logika untuk mendeteksi halaman aktif
-        $current_page = $this->uri->segment(2); // mengambil 'curah_hujan' atau 'tma' dari URL
-        $is_data_active = in_array($current_page, ['curah_hujan', 'tma', 'kualitas_air']);
-    ?>
+<?php 
+    // Inisialisasi variabel agar tidak error jika lupa dikirim dari Controller
+    $app_name = isset($app_name) ? $app_name : 'CASCADE';
+    
+    if (!isset($current_page)) {
+        $current_page = $this->uri->segment(2); 
+    }
+
+    $is_data_active = in_array($current_page, ['curah_hujan', 'tma', 'kualitas_air']);
+?>
 
     <nav id="main-nav" class="bg-darkblue text-white sticky top-0 z-50 shadow-md">
         <div class="max-w-7xl mx-auto px-6 lg:px-12 flex justify-between items-center h-20">
@@ -53,12 +64,12 @@
             
             <div class="hidden md:flex items-center gap-8 text-sm font-semibold tracking-wide h-full">
                 <a href="<?= base_url() ?>" 
-                   class="h-full flex items-center transition-colors <?= (!$current_page) ? 'text-brandyellow border-b-4 border-brandyellow' : 'hover:text-brandyellow' ?>">
-                   Beranda
+                   class="h-full flex items-center border-b-4 transition-all duration-300 <?= (!$current_page) ? 'text-brandyellow border-brandyellow' : 'text-white border-transparent hover:text-brandyellow' ?>">
+                    Beranda
                 </a>
                 
                 <div class="relative group h-full">
-                    <button class="h-full flex items-center gap-1 transition-colors <?= ($is_data_active) ? 'text-brandyellow border-b-4 border-brandyellow' : 'hover:text-brandyellow' ?>">
+                    <button class="h-full flex items-center gap-1 border-b-4 transition-all duration-300 <?= ($is_data_active) ? 'text-brandyellow border-brandyellow' : 'text-white border-transparent hover:text-brandyellow' ?>">
                         Data <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </button>
                     <div class="dropdown-menu absolute top-full left-0 w-48 bg-white text-slate-800 shadow-xl rounded-b-lg overflow-hidden border border-slate-100">
@@ -69,16 +80,23 @@
                 </div>
 
                 <div class="relative group h-full">
-                    <button class="h-full flex items-center gap-1 hover:text-brandyellow transition-colors">
-                        Peta <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    <button class="h-full flex items-center gap-1 border-b-4 transition-all duration-300 <?= ($current_page == 'peta') ? 'text-brandyellow border-brandyellow' : 'text-white border-transparent hover:text-brandyellow' ?>">
+                        Peta <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </button>
-                    <div class="dropdown-menu absolute top-full left-0 w-48 bg-white text-slate-800 shadow-xl rounded-b-lg overflow-hidden border border-slate-100">
-                        <a href="#" class="block px-4 py-3 hover:bg-slate-50 hover:text-darkblue transition">Sebaran Stasiun</a>
-                        <a href="#" class="block px-4 py-3 hover:bg-slate-50 hover:text-darkblue transition">Peta Rawan Banjir</a>
+                    <div class="dropdown-menu absolute top-full left-0 w-56 bg-white text-slate-800 shadow-2xl rounded-b-xl border border-slate-100 overflow-hidden">
+                        <div class="p-2 flex flex-col gap-1">
+                            <a href="<?= base_url('welcome/peta') ?>" 
+                               class="block px-4 py-3 rounded-lg hover:bg-slate-100 hover:text-darkblue transition <?= ($current_page == 'peta') ? 'bg-slate-50 text-darkblue font-bold' : '' ?>">
+                               Sebaran Stasiun
+                            </a>
+                            <a href="#" class="block px-4 py-3 rounded-lg hover:bg-slate-100 hover:text-darkblue transition">
+                               Peta Rawan Banjir
+                            </a>
+                        </div>
                     </div>
                 </div>
 
-                <a href="#" class="h-full flex items-center hover:text-brandyellow transition-colors">Laporan</a>
+                <a href="#" class="h-full flex items-center border-b-4 border-transparent hover:text-brandyellow transition-colors">Laporan</a>
             </div>
 
             <button class="md:hidden text-white hover:text-brandyellow">
@@ -90,18 +108,15 @@
     <script>
         window.onscroll = function() {
             const nav = document.getElementById('main-nav');
+            const container = nav.querySelector('.max-w-7xl');
             if (window.pageYOffset > 50) {
-                // Saat scroll ke bawah: Transparan (backdrop-blur) dan mengecilkan bayangan
                 nav.classList.remove('bg-darkblue');
-                nav.classList.add('bg-darkblue/80', 'backdrop-blur-md', 'h-16');
-                nav.querySelector('.max-w-7xl').classList.remove('h-20');
-                nav.querySelector('.max-w-7xl').classList.add('h-16');
+                nav.classList.add('bg-darkblue/80', 'backdrop-blur-md');
+                container.classList.replace('h-20', 'h-16');
             } else {
-                // Saat kembali ke atas: Solid kembali
                 nav.classList.add('bg-darkblue');
-                nav.classList.remove('bg-darkblue/80', 'backdrop-blur-md', 'h-16');
-                nav.querySelector('.max-w-7xl').classList.add('h-20');
-                nav.querySelector('.max-w-7xl').classList.remove('h-16');
+                nav.classList.remove('bg-darkblue/80', 'backdrop-blur-md');
+                container.classList.replace('h-16', 'h-20');
             }
         };
     </script>
