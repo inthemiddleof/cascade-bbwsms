@@ -1,16 +1,16 @@
 <main class="bg-slate-50 min-h-screen pb-24 text-slate-800">
     <div class="max-w-7xl mx-auto px-6 lg:px-12 pt-12">
         
-        <div class="mb-10 border-l-4 border-brandyellow pl-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div class="mb-8 border-l-4 border-brandyellow pl-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div>
                 <h1 class="text-3xl font-black text-darkblue uppercase tracking-tighter italic">Monitoring <span class="text-blue-600">Tinggi Muka Air</span></h1>
-                <p class="text-slate-500 text-[10px] mt-1 uppercase tracking-[0.2em] font-bold">Data Real-time Sistem Cascade</p>
+                <p class="text-slate-500 text-[10px] mt-1 uppercase tracking-[0.2em] font-bold">Seluruh Pos Monitoring Terdaftar</p>
             </div>
             
             <div class="flex items-center gap-4 bg-white p-2 pr-4 rounded-xl shadow-sm border border-slate-200">
                 <form action="<?= base_url('index.php/welcome/tma') ?>" method="GET" class="flex items-center gap-3">
                     <input type="date" name="tanggal" value="<?= $tanggal_pilih ?>" 
-                           class="bg-slate-50 border border-slate-200 text-darkblue text-xs font-bold rounded-lg px-3 py-2 cursor-pointer"
+                           class="bg-slate-50 border border-slate-200 text-darkblue text-xs font-bold rounded-lg px-3 py-2 cursor-pointer outline-none focus:ring-2 focus:ring-blue-500"
                            onchange="this.form.submit()">
                 </form>
                 <div class="h-8 w-px bg-slate-200"></div>
@@ -21,69 +21,106 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-                <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Status Koneksi Pos</p>
-                <p class="text-2xl font-black text-emerald-600"><?= $summary['pos_aktif'] ?>/<?= $summary['total_pos'] ?> <span class="text-xs text-slate-400 font-medium">Online</span></p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+            
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-5 transition-all hover:shadow-md">
+                <div class="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Status Koneksi Pos</p>
+                    <p class="text-3xl font-black text-slate-800 leading-none">
+                        <?= $summary['pos_aktif'] ?> 
+                        <span class="text-sm text-slate-400 font-medium">/ <?= $summary['total_pos'] ?> Aktif</span>
+                    </p>
+                </div>
             </div>
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-                <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">TMA Tertinggi</p>
-                <p class="text-2xl font-black text-darkblue"><?= number_format($summary['tma_tertinggi'], 2) ?> <span class="text-xs text-slate-400 font-medium">m</span></p>
+
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-5 transition-all hover:shadow-md">
+                <div class="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">TMA Tertinggi</p>
+                    <p class="text-3xl font-black text-slate-800 leading-none">
+                        <?= number_format($summary['tma_tertinggi'], 2) ?> 
+                        <span class="text-sm text-slate-400 font-medium">m</span>
+                    </p>
+                </div>
             </div>
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-                <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Kondisi Kritis</p>
-                <p class="text-2xl font-black text-blue-500"><?= $summary['status_siaga'] ?> <span class="text-xs text-slate-400 font-medium">Pos</span></p>
+
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-5 transition-all hover:shadow-md">
+                <div class="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center text-red-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Pos Status Siaga</p>
+                    <p class="text-3xl font-black text-red-600 leading-none">
+                        <?= $summary['status_siaga'] ?> 
+                        <span class="text-sm text-slate-400 font-medium">Pos / <?= $summary['status_aman'] ?> Aman</span>
+                    </p>
+                </div>
             </div>
+
         </div>
 
-<div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="bg-darkblue px-6 py-3">
-                <h3 class="text-white text-[10px] font-bold tracking-widest uppercase flex items-center gap-2 text-center justify-center">
-                    Wilayah Hulu & Hilir - Pemantauan Tinggi Muka Air
-                </h3>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="bg-darkblue px-6 py-4 flex justify-between items-center">
+                <h3 class="text-white text-xs font-bold tracking-widest uppercase">Data Pengamatan Tinggi Muka Air</h3>
             </div>
 
-            <div class="overflow-x-auto">
-                <table class="w-full text-[10px] text-left border-collapse min-w-[1200px]">
-                    <thead class="bg-slate-50 text-darkblue font-bold uppercase border-b border-slate-200 text-center">
+            <div class="overflow-x-auto table-container">
+                <table class="w-full text-[11px] text-left border-collapse min-w-[950px]" id="tmaTable">
+                    <thead class="text-darkblue font-bold uppercase text-center bg-slate-50">
                         <tr>
-                            <th rowspan="3" class="sticky left-0 z-30 bg-slate-50 p-4 border-r border-slate-200 w-12 text-[11px]">No</th>
-                            <th rowspan="3" class="sticky left-12 z-30 bg-slate-50 p-4 border-r border-slate-200 min-w-[200px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] text-left text-[11px]">Pos Tinggi Muka Air</th>
-                            <th colspan="7" class="p-2 border-r border-slate-200">Waktu (WIB)</th>
-                            <th colspan="3" class="p-2 border-r border-slate-200 bg-slate-100">Level Siaga (TTG)</th>
+                            <th rowspan="2" class="p-4 border-b border-r border-slate-200 w-12">No</th>
+                            <th rowspan="2" class="p-4 border-b border-r border-slate-200 min-w-[280px] text-left">Nama Pos / Stasiun</th>
+                            <th colspan="3" class="p-3 border-b border-r border-slate-200 bg-blue-50/50">Telemetri (m)</th>
+                            <th rowspan="2" class="p-4 border-b border-r border-slate-200 w-24 bg-blue-50">Last (m)</th>
+                            <th colspan="3" class="p-3 border-b border-r border-slate-200 bg-slate-100">Manual (m)</th>
+                            <th colspan="3" class="p-3 border-b border-slate-200 bg-orange-50/30">Siaga (m)</th>
                         </tr>
-                        <tr>
-                            <th colspan="4" class="p-2 border-r border-slate-200 bg-blue-50/50">Telemetri</th>
-                            <th colspan="3" class="p-2 border-r border-slate-200 bg-emerald-50/50">Manual</th>
-                            <th rowspan="2" class="p-2 border-r border-slate-200 text-emerald-600 bg-emerald-50">Siaga Hijau</th>
-                            <th rowspan="2" class="p-2 border-r border-slate-200 text-amber-600 bg-amber-50">Siaga Kuning</th>
-                            <th rowspan="2" class="p-2 text-red-600 bg-red-50">Siaga Merah</th>
-                        </tr>
-                        <tr class="text-[9px]">
-                            <th class="p-2 border-r border-slate-200">06.00</th>
-                            <th class="p-2 border-r border-slate-200">12.00</th>
-                            <th class="p-2 border-r border-slate-200">18.00</th>
-                            <th class="p-2 border-r border-slate-200 bg-blue-100 italic">Last Data</th>
-                            
-                            <th class="p-2 border-r border-slate-200">06.00</th>
-                            <th class="p-2 border-r border-slate-200">12.00</th>
-                            <th class="p-2 border-r border-slate-200 text-center">18.00</th>
+                        <tr class="text-[10px]">
+                            <th class="p-2 border-b border-r border-slate-200 bg-blue-50/30">06.00</th>
+                            <th class="p-2 border-b border-r border-slate-200 bg-blue-50/30">12.00</th>
+                            <th class="p-2 border-b border-r border-slate-200 bg-blue-50/30">18.00</th>
+                            <th class="p-2 border-b border-r border-slate-200 bg-slate-50">06.00</th>
+                            <th class="p-2 border-b border-r border-slate-200 bg-slate-50">12.00</th>
+                            <th class="p-2 border-b border-r border-slate-200 bg-slate-50">18.00</th>
+                            <th class="p-2 border-b border-r border-slate-200 bg-emerald-50">Hijau</th>
+                            <th class="p-2 border-b border-r border-slate-200 bg-amber-50">Kuning</th>
+                            <th class="p-2 border-b border-slate-200 bg-red-50">Merah</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="text-slate-800 text-center">
                         <?php foreach($pencatatan_tma as $row): ?>
-                        <tr class="border-b border-slate-100 hover:bg-blue-50/50 transition-colors group text-center">
-                            <td class="sticky left-0 z-20 bg-white group-hover:bg-blue-50 p-3 border-r border-slate-100 font-medium text-slate-400"><?= $row['no'] ?></td>
-                            <td class="sticky left-12 z-20 bg-white group-hover:bg-blue-50 p-3 border-r border-slate-100 font-bold text-darkblue text-left shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] uppercase tracking-tighter"><?= $row['pos'] ?></td>
+                        <tr class="border-b border-slate-100 hover:bg-blue-50/50 transition-colors group cursor-crosshair">
                             
-                            <td class="p-3 border-r border-slate-100 text-slate-600"><?= number_format($row['telemetri']['06'], 2) ?></td>
-                            <td class="p-3 border-r border-slate-100 text-slate-600"><?= number_format($row['telemetri']['12'], 2) ?></td>
-                            <td class="p-3 border-r border-slate-100 text-slate-600"><?= number_format($row['telemetri']['18'], 2) ?></td>
-                            <td class="p-3 border-r border-slate-100 font-black text-blue-700 bg-blue-50/50"><?= number_format($row['telemetri']['last'], 2) ?></td>
+                            <td class="p-3 border-r border-slate-100 text-slate-400"><?= $row['no'] ?></td>
+                            <td class="p-3 border-r border-slate-100 text-left">
+                                <span class="font-bold text-darkblue uppercase tracking-tighter"><?= $row['pos'] ?></span>
+                                <?php if($row['waktu'] != '--:--'): ?>
+                                    <span class="block text-[9px] text-slate-400 font-medium italic mt-0.5">Update: <?= $row['waktu'] ?> WIB</span>
+                                <?php else: ?>
+                                    <span class="block text-[9px] text-red-400 font-medium italic mt-0.5">Tidak ada data</span>
+                                <?php endif; ?>
+                            </td>
                             
-                            <td class="p-3 border-r border-slate-100 text-slate-600"><?= number_format($row['manual']['06'], 2) ?></td>
-                            <td class="p-3 border-r border-slate-100 text-slate-600"><?= number_format($row['manual']['12'], 2) ?></td>
-                            <td class="p-3 border-r border-slate-100 text-slate-600"><?= number_format($row['manual']['18'], 2) ?></td>
+                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= number_format($row['telemetri']['06'], 2) ?></td>
+                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= number_format($row['telemetri']['12'], 2) ?></td>
+                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= number_format($row['telemetri']['18'], 2) ?></td>
+                            
+                            <td class="p-3 border-r border-slate-100 font-black text-blue-700 bg-blue-50/30"><?= number_format($row['last'], 2) ?></td>
+                            
+                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= number_format($row['manual']['06'], 2) ?></td>
+                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= number_format($row['manual']['12'], 2) ?></td>
+                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= number_format($row['manual']['18'], 2) ?></td>
 
                             <td class="p-3 border-r border-slate-100 font-bold text-emerald-600 bg-emerald-50/20"><?= number_format($row['siaga']['hijau'], 2) ?></td>
                             <td class="p-3 border-r border-slate-100 font-bold text-amber-600 bg-amber-50/20"><?= number_format($row['siaga']['kuning'], 2) ?></td>
@@ -98,9 +135,60 @@
 </main>
 
 <style>
-    /* Custom Scrollbar agar tidak menutupi data */
-    .overflow-x-auto::-webkit-scrollbar { height: 8px; }
-    .overflow-x-auto::-webkit-scrollbar-track { background: #f1f5f9; }
-    .overflow-x-auto::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; border: 2px solid #f1f5f9; }
-    .overflow-x-auto::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    /* Styling Scrollbar khusus untuk tabel */
+    .table-container::-webkit-scrollbar {
+        height: 8px;
+    }
+    .table-container::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 4px;
+    }
+    .table-container::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+    .table-container::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+
+    .col-highlight {
+        background-color: rgba(239, 246, 255, 0.7) !important;
+    }
 </style>
+
+<script>
+    // Fitur Highlight X & Y untuk kolom Data Telemetri dan Manual
+    document.addEventListener("DOMContentLoaded", function() {
+        const table = document.getElementById("tmaTable");
+        const cells = table.querySelectorAll("td, th");
+
+        cells.forEach(cell => {
+            cell.addEventListener("mouseenter", function() {
+                // Highlight diterapkan pada index 2-4 (Telemetri) dan 6-8 (Manual)
+                if ((this.cellIndex >= 2 && this.cellIndex <= 4) || (this.cellIndex >= 6 && this.cellIndex <= 8)) {
+                    const colIndex = this.cellIndex;
+                    const rows = table.querySelectorAll("tr");
+                    rows.forEach(row => {
+                        const cellInSameCol = row.children[colIndex];
+                        if (cellInSameCol && cellInSameCol.tagName === 'TD') {
+                            cellInSameCol.classList.add("col-highlight");
+                        }
+                    });
+                }
+            });
+
+            cell.addEventListener("mouseleave", function() {
+                if ((this.cellIndex >= 2 && this.cellIndex <= 4) || (this.cellIndex >= 6 && this.cellIndex <= 8)) {
+                    const colIndex = this.cellIndex;
+                    const rows = table.querySelectorAll("tr");
+                    rows.forEach(row => {
+                        const cellInSameCol = row.children[colIndex];
+                        if (cellInSameCol && cellInSameCol.tagName === 'TD') {
+                            cellInSameCol.classList.remove("col-highlight");
+                        }
+                    });
+                }
+            });
+        });
+    });
+</script>
