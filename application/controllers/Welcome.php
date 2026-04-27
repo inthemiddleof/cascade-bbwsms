@@ -9,7 +9,7 @@ class Welcome extends CI_Controller {
         $this->load->database();
     }
 
-    public function sync_data($silent = false) {
+ public function sync_data($silent = false) {
         $url = "https://sdatelemetry.com/API_ap_telemetry/datatelemetry2.php?idbbws=12";
         $ctx = stream_context_create(['http' => ['timeout' => 5]]);
         $json_data = @file_get_contents($url, false, $ctx);
@@ -19,13 +19,11 @@ class Welcome extends CI_Controller {
             return;
         }
     
-        // 2. Dekode JSON ke Array
-        $json = json_decode($response, true);
+        $response = json_decode($json_data, true);
     
         if (isset($response['telemetryjakarta'])) {
             $data_api = $response['telemetryjakarta'];
             
-            // $this->db->empty_table('data_telemetri');
     
             foreach ($data_api as $row) {
                 $insert_data = [
@@ -50,9 +48,9 @@ class Welcome extends CI_Controller {
     
                 $this->db->insert('data_telemetri', $insert_data);
             }
-            echo "Sync Berhasil!";
+            if (!$silent) echo "Sync Berhasil!";
         } else {
-            echo "Gagal mengambil data: Variabel json tidak ditemukan atau format salah.";
+            if (!$silent) echo "Gagal mengambil data: Variabel json tidak ditemukan atau format salah.";
         }
     }
   
