@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $app_name ?> - <?= $title ?></title>
+    <title><?= (isset($app_name) ? $app_name : 'CASCADE') ?> - <?= (isset($title) ? $title : 'BBWS MS') ?></title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -24,6 +24,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style> 
         body { font-family: 'Inter', sans-serif; }
+    </style>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        .dropdown-menu { z-index: 9999 !important; }
+        #map { z-index: 1 !important; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased selection:bg-brandyellow selection:text-darkblue">

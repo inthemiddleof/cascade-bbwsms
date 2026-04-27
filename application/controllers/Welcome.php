@@ -19,7 +19,8 @@ class Welcome extends CI_Controller {
             return;
         }
     
-        $response = json_decode($json_data, true);
+        // 2. Dekode JSON ke Array
+        $json = json_decode($response, true);
     
         if (isset($response['telemetryjakarta'])) {
             $data_api = $response['telemetryjakarta'];
@@ -29,6 +30,7 @@ class Welcome extends CI_Controller {
             foreach ($data_api as $row) {
                 $insert_data = [
                     'nama_alat'      => $row['nama_alat'],
+                    'device_id'      => $row['id_merk'] . "-" . ($row['nama_lokasi'] ?? 'UNIT'),
                     'nama_lokasi'    => $row['nama_lokasi'],
                     'wilayah_sungai' => $row['sungai'],
                     'lat'            => !empty($row['Lat']) ? (float)$row['Lat'] : null,
@@ -45,17 +47,15 @@ class Welcome extends CI_Controller {
                     'siaga_merah'    => (float)$row['siaga2'],
                     'created_at'     => date('Y-m-d H:i:s')
                 ];
+    
                 $this->db->insert('data_telemetri', $insert_data);
             }
-    
-            if (!$silent) {
-                echo "Sukses: " . count($data_api) . " data berhasil disinkronisasi.";
-            }
+            echo "Sync Berhasil!";
         } else {
-            if (!$silent) echo "Gagal: Struktur data API tidak sesuai.";
+            echo "Gagal mengambil data: Variabel json tidak ditemukan atau format salah.";
         }
     }
-    
+  
     public function index() {
         $this->sync_data(true); 
     
