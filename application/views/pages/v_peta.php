@@ -100,60 +100,16 @@ date_default_timezone_set('Asia/Jakarta');
    // 1. Inisialisasi Map
    var map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-5.15, 105.266], 8);
     
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
+   var googleHybrid = L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+        maxZoom: 20,
+        subdomains:['mt0','mt1','mt2','mt3']
+    }).addTo(map);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
     var layerPDA = L.layerGroup().addTo(map);
     var layerPCH = L.layerGroup().addTo(map);
-    var layerBanjir = L.layerGroup().addTo(map); 
     var markersById = {};
 
-    // 2. Logika Warna Wilayah (GeoJSON)
-    function getStyle(feature) {
-        // Mendeteksi nama kabupaten (huruf besar/kecil sering jadi masalah, jadi kita toUpperCase)
-        const props = feature.properties;
-        const kab = (props.nmkab || props.name || props.KABUPATEN || "").toUpperCase();
-        
-        let warna = '#f1f5f9'; 
-        let opasitas = 0.2;
-
-        if (kab.includes("BANDAR LAMPUNG") || kab.includes("LAMPUNG SELATAN")) {
-            warna = '#ef4444'; // Merah
-            opasitas = 0.5;
-        } else if (kab.includes("LAMPUNG TIMUR") || kab.includes("PESAWARAN")) {
-            warna = '#f59e0b'; // Orange
-            opasitas = 0.5;
-        }
-
-        return {
-            fillColor: warna,
-            weight: 1,
-            opacity: 1,
-            color: 'white',
-            fillOpacity: opasitas
-        };
-    }
-
-    // 3. Memuat GeoJSON (Pastikan Path Benar)
-    fetch("<?= base_url('assets/geojson/Lampung.json') ?>")
-        .then(response => response.json())
-        .then(data => {
-            L.geoJSON(data, {
-                style: getStyle,
-                onEachFeature: function (feature, layer) {
-                    const name = feature.properties.nmkab || feature.properties.name || "Wilayah";
-                    layer.bindTooltip(name);
-                    
-                    layer.on('mouseover', function() {
-                        this.setStyle({ fillOpacity: 0.8, weight: 2 });
-                    });
-                    layer.on('mouseout', function() {
-                        this.setStyle(getStyle(feature));
-                    });
-                }
-            }).addTo(layerBanjir);
-        })
-        .catch(err => console.error("GeoJSON Error:", err));
  
     // Tambahkan fungsi ini di dalam tag <script> sebelum loop marker
 function getMarkerConfig(pos) {
@@ -187,88 +143,70 @@ function getMarkerConfig(pos) {
     return { icon, color, status, animation };
 }
 
-// Bagian loop PHP untuk Generate Markers
-// SEBELUMNYA (Penyebab Error):
-// L.marker([pos.lat, pos.lon])...
-// pos.nama_alat
-// pos.id_tipe
-
-// PERBAIKAN:
-<?php foreach($semua_pos as $pos): if(!empty($pos['latitude'])): ?>
+<?php foreach($semua_pos as $pos): if(!empty($pos['latitude']) && !empty($pos['longitude'])): ?>
 (function() {
-    const p = <?= json_encode($pos) ?>;
-    let val = (p.tipe_tampil === 'PDA') ? parseFloat(p.w_level || 0) : parseFloat(p.rain || 0);
-    
-    // 1. Tentukan Warna & Class Animasi
+    // Gunakan nilai default jika properti tidak ada
+    const p = {
+        id_tampil: '<?= $pos['id_tampil'] ?? "???" ?>',
+        nama_tampil: '<?= addslashes($pos['nama_tampil'] ?? "Tanpa Nama") ?>',
+        tipe_tampil: '<?= $pos['tipe_tampil'] ?? "PDA" ?>',
+        latitude: <?= (float)$pos['latitude'] ?>,
+        longitude: <?= (float)$pos['longitude'] ?>,
+        last_update: '<?= $pos['last_update'] ?? "" ?>',
+        w_level: <?= (float)($pos['w_level'] ?? 0) ?>,
+        rain: <?= (float)($pos['rain'] ?? 0) ?>,
+        siaga_merah: <?= (float)($pos['siaga_merah'] ?? 0) ?>,
+        siaga_kuning: <?= (float)($pos['siaga_kuning'] ?? 0) ?>
+    };
+
+    let val = (p.tipe_tampil === 'PDA') ? p.w_level : p.rain;
     let statusClass = 'bg-offline';
     let pulseClass = '';
-    let iconContent = '';
-    
-    if (p.last_update) {
-            if (p.tipe_tampil === 'PDA') {
-                const merah = parseFloat(p.siaga_merah || 3.0);
-                const kuning = parseFloat(p.siaga_kuning || 2.0);
+    let iconContent = (p.tipe_tampil === 'PDA') ? '💧' : '🌤️';
 
-                if (val >= merah) { statusClass = 'bg-danger'; pulseClass = 'pulse-danger'; iconContent = '⚠️'; }
-                else if (val >= kuning) { statusClass = 'bg-warning'; iconContent = '🌊'; }
-                else { statusClass = 'bg-normal'; iconContent = '💧'; }
-            } else {
-                if (val >= 50) { statusClass = 'bg-danger'; pulseClass = 'pulse-danger'; iconContent = '⛈️'; }
-                else if (val > 0) { statusClass = 'bg-normal'; iconContent = '🌧️'; }
-                else { statusClass = 'bg-normal'; iconContent = '🌤️'; }
+    if (p.last_update !== "") {
+        if (p.tipe_tampil === 'PDA') {
+            if (val >= p.siaga_merah && p.siaga_merah > 0) { 
+                statusClass = 'bg-danger'; pulseClass = 'pulse-danger'; iconContent = '⚠️'; 
+            } else if (val >= p.siaga_kuning && p.siaga_kuning > 0) { 
+                statusClass = 'bg-warning'; iconContent = '🌊'; 
+            } else { 
+                statusClass = 'bg-normal'; 
             }
-        } else { iconContent = '❓'; }
-
-    if (p.tipe_tampil === 'PCH') {
-        if (val <= 0) {
-            iconContent = '⛅'; // Cerah
-        } else if (val > 0 && val < 20) {
-            iconContent = '🌧️'; // Berawan/Gerimis
-        } else {
-            iconContent = '⛈️'; // Hujan Lebat
+        } else { // Untuk PCH
+            if (val >= 50) { statusClass = 'bg-danger'; iconContent = '⛈️'; }
+            else if (val > 0) { statusClass = 'bg-normal'; iconContent = '🌧️'; }
         }
     } else {
-        // Ikon Stasiun PDA (Muka Air)
-        iconContent = '💧'; 
+        iconContent = '❓';
     }
 
     const customIcon = L.divIcon({
-            className: 'custom-div-icon',
-            html: `<div class="marker-container ${statusClass} ${pulseClass}"><span>${iconContent}</span></div>`,
-            iconSize: [36, 36], iconAnchor: [18, 36]
-        });
-
-    // 3. Popup Content yang Informatif
-    const badgeStatus = p.last_update ? 
-        `<span style="background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:bold;">ONLINE</span>` : 
-        `<span style="background:#f1f5f9; color:#64748b; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:bold;">OFFLINE</span>`;
+        className: 'custom-div-icon',
+        html: `<div class="marker-container ${statusClass} ${pulseClass}"><span>${iconContent}</span></div>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 36]
+    });
 
     const marker = L.marker([p.latitude, p.longitude], { icon: customIcon })
         .bindPopup(`
             <div style="font-family: 'Inter', sans-serif; width:200px;">
-                <div class="custom-popup-title">
-                    <div style="font-size:14px; font-weight:800; line-height:1.2;">${p.nama_tampil}</div>
+                <div class="custom-popup-title" style="margin-bottom:8px;">
+                    <div style="font-size:14px; font-weight:800; color:#1e40af;">${p.nama_tampil}</div>
                     <div style="font-size:10px; color:#94a3b8;">ID: ${p.id_tampil} | ${p.tipe_tampil}</div>
                 </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin:10px 0;">
-                    ${badgeStatus}
-                    <div style="text-align:right;">
-                        <div style="font-size:9px; color:#94a3b8; text-transform:uppercase; font-weight:700;">Data Sekarang</div>
-                        <div style="font-size:18px; font-weight:900; color:#1e40af;">
-                            ${p.tipe_tampil === 'PDA' ? p.w_level + ' m' : p.rain + ' mm'}
-                        </div>
-                    </div>
+                <div style="font-size:18px; font-weight:900; color:#1e40af; margin-bottom:5px;">
+                    ${p.tipe_tampil === 'PDA' ? p.w_level + ' m' : p.rain + ' mm'}
                 </div>
-                <div style="background:#f8fafc; padding:6px; border-radius:8px; font-size:9px; color:#64748b; border:1px solid #f1f5f9;">
-                    <b>🕒 Update Terakhir:</b><br>
-                    ${p.last_update || 'Belum ada data masuk'}
+                <div style="font-size:9px; color:#64748b;">
+                    🕒 ${p.last_update || 'Tidak ada data'}
                 </div>
             </div>
         `);
 
-        markersById[p.id_tampil] = marker;
-        if (p.tipe_tampil === 'PDA') marker.addTo(layerPDA);
-        else marker.addTo(layerPCH);
+    markersById[p.id_tampil] = marker;
+    if (p.tipe_tampil === 'PDA') marker.addTo(layerPDA);
+    else marker.addTo(layerPCH);
 })();
 <?php endif; endforeach; ?>
 
@@ -289,10 +227,6 @@ function getMarkerConfig(pos) {
             item.style.display = item.getAttribute('data-nama').includes(input) ? "block" : "none";
         }
     }
-    function toggleBanjir() {
-    if(document.getElementById('filterBanjir').checked) map.addLayer(layerBanjir); 
-    else map.removeLayer(layerBanjir);
-}
 </script>
 
 <style>
