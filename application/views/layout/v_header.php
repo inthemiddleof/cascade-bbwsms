@@ -33,7 +33,7 @@
         .dropdown-menu { z-index: 9999 !important; }
         #map { z-index: 1 !important; }
         .nav-transition {
-            transition: background-color 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+            transition: background-color 0.4s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
         }
     </style>
 </head>
