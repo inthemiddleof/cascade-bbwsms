@@ -1,72 +1,134 @@
-    <header class="relative w-full min-h-[85vh] flex items-center bg-darkblue" style="background-image: url('<?= $hero_bg ?>'); background-size: cover; background-position: center;">
-        <div class="absolute inset-0 bg-darkblue/70 mix-blend-multiply"></div>
-        <div class="absolute inset-0 bg-gradient-to-t from-darkblue/90 via-transparent to-transparent"></div>
+   <header class="relative w-full min-h-[85vh] flex items-center bg-darkblue pt-20 lg:pt-24 overflow-hidden" style="background-image: url('<?= $hero_bg ?>'); background-size: cover; background-position: center;">
+    <div class="absolute inset-0 bg-darkblue/70 mix-blend-multiply"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-darkblue/90 via-transparent to-transparent"></div>
 
-        <div class="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-12 flex flex-col lg:flex-row items-center justify-between gap-12 py-16">
-            
-            <div class="w-full lg:w-1/2 text-white">
-                <div class="inline-block px-3 py-1 bg-brandyellow text-darkblue text-xs font-bold rounded-full mb-6 tracking-widest uppercase">
-                    Live Portal
-                </div>
-                <h1 class="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] mb-6">
-                    Sistem Informasi<br>
-                    <span class="text-brandyellow">Hidrologi & Air</span>
-                </h1>
-                <p class="text-lg text-slate-300 font-light max-w-lg mb-8 leading-relaxed">
-                    Menyajikan data riil dan prediksi akurat untuk pengelolaan sumber daya air di wilayah Sungai Mesuji Sekampung secara terpadu dan transparan.
-                </p>
-                <a href="#galeri" class="inline-flex items-center justify-center px-8 py-3.5 bg-brandyellow hover:bg-yellow-400 text-darkblue font-bold rounded-lg transition-all shadow-[0_0_20px_rgba(254,183,0,0.3)] hover:shadow-[0_0_25px_rgba(254,183,0,0.5)]">
-                    Jelajahi Data
-                </a>
+    <!-- Gelombang Air di Bagian Bawah -->
+    <div class="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] z-[5]">
+        <svg class="relative block w-full h-[60px] md:h-[80px] lg:h-[100px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path class="wave-top" d="M0,64L80,58.7C160,53,320,43,480,48C640,53,800,75,960,80C1120,85,1280,75,1360,69.3L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z" fill="#0a2a4a" fill-opacity="0.4"/>
+            <path class="wave-middle" d="M0,96L80,90.7C160,85,320,75,480,74.7C640,75,800,85,960,90.7C1120,96,1280,96,1360,96L1440,96L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z" fill="#0d3d66" fill-opacity="0.6"/>
+            <path class="wave-bottom" d="M0,106L80,101.3C160,96,320,85,480,85.3C640,85,800,96,960,101.3C1120,107,1280,107,1360,107L1440,107L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z" fill="#134a7a" fill-opacity="0.8"/>
+        </svg>
+    </div>
+
+    <!-- Opsi: Gelombang dengan animasi bergerak -->
+    <div class="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] z-[4] opacity-50">
+        <svg class="relative block w-full h-[40px] md:h-[60px] lg:h-[80px] animate-wave" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path d="M0,64L80,58.7C160,53,320,43,480,48C640,53,800,75,960,80C1120,85,1280,75,1360,69.3L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z" fill="#1a6bbf" fill-opacity="0.3"/>
+        </svg>
+    </div>
+
+    <div class="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-12 flex flex-col lg:flex-row items-center justify-between gap-12 py-16">
+        
+        <div class="w-full lg:w-1/2 text-white">
+            <div class="inline-block px-3 py-1 bg-brandyellow text-darkblue text-xs font-bold rounded-full mb-6 tracking-widest uppercase">
+                Live Portal
             </div>
-
-            <div class="w-full lg:w-1/2 flex flex-col gap-5 sm:flex-row lg:flex-col lg:items-end">
-                
-                <div class="w-full sm:w-80 bg-white/10 backdrop-blur-md border border-white/20 p-5 rounded-2xl shadow-2xl">
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-brandyellow animate-pulse"></span>
-                            <h3 class="text-white text-xs font-bold tracking-widest uppercase">Status Bendungan</h3>
-                        </div>
-                        <span class="bg-red-500/20 text-red-300 border border-red-500/50 text-[10px] font-bold px-2 py-0.5 rounded uppercase">
-                            <?= $dam_status['status'] ?>
-                        </span>
-                    </div>
-                    <div class="bg-darkblue/50 rounded-xl p-4 border border-white/10">
-                        <p class="text-slate-300 text-xs mb-1"><?= $dam_status['nama'] ?></p>
-                        <div class="flex items-end gap-2">
-                            <span class="text-4xl font-black text-white"><?= $dam_status['level'] ?></span>
-                            <span class="text-slate-400 text-sm mb-1">meter</span>
-                        </div>
-                        <p class="text-brandyellow text-xs mt-2 flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
-                            Tren Muka Air <?= ucfirst($dam_status['trend']) ?>
-                        </p>
-                    </div>
-                </div>
-
-                <div class="w-full sm:w-80 bg-white/10 backdrop-blur-md border border-white/20 p-5 rounded-2xl shadow-2xl">
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-brandyellow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
-                            <h3 class="text-white text-xs font-bold tracking-widest uppercase">Cuaca Area</h3>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between bg-darkblue/50 rounded-xl p-4 border border-white/10">
-                        <div>
-                            <p class="text-white font-bold text-lg"><?= $weather_data['kondisi'] ?></p>
-                            <p class="text-slate-400 text-xs mt-1"><?= $weather_data['prediksi'] ?></p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-3xl font-black text-brandyellow"><?= $weather_data['curah'] ?></p>
-                            <p class="text-slate-400 text-[10px] uppercase tracking-wider">mm / 24h</p>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] mb-6">
+                Sistem Informasi<br>
+                <span class="text-brandyellow">Hidrologi & Air</span>
+            </h1>
+            <p class="text-lg text-slate-300 font-light max-w-lg mb-8 leading-relaxed">
+                Menyajikan data riil dan prediksi akurat untuk pengelolaan sumber daya air di wilayah Sungai Mesuji Sekampung secara terpadu dan transparan.
+            </p>
+            <a href="#galeri" class="inline-flex items-center justify-center px-8 py-3.5 bg-brandyellow hover:bg-yellow-400 text-darkblue font-bold rounded-lg transition-all shadow-[0_0_20px_rgba(254,183,0,0.3)] hover:shadow-[0_0_25px_rgba(254,183,0,0.5)]">
+                Jelajahi Data
+            </a>
         </div>
-    </header>
+
+        <div class="w-full lg:w-1/2 flex flex-col gap-5 sm:flex-row lg:flex-col lg:items-end">
+            
+            <div class="w-full sm:w-80 bg-white/10 backdrop-blur-md border border-white/20 p-5 rounded-2xl shadow-2xl">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-brandyellow animate-pulse"></span>
+                        <h3 class="text-white text-xs font-bold tracking-widest uppercase">Status Bendungan</h3>
+                    </div>
+                    <span class="bg-red-500/20 text-red-300 border border-red-500/50 text-[10px] font-bold px-2 py-0.5 rounded uppercase">
+                        <?= $dam_status['status'] ?>
+                    </span>
+                </div>
+                <div class="bg-darkblue/50 rounded-xl p-4 border border-white/10">
+                    <p class="text-slate-300 text-xs mb-1"><?= $dam_status['nama'] ?></p>
+                    <div class="flex items-end gap-2">
+                        <span class="text-4xl font-black text-white"><?= $dam_status['level'] ?></span>
+                        <span class="text-slate-400 text-sm mb-1">meter</span>
+                    </div>
+                    <p class="text-brandyellow text-xs mt-2 flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+                        Tren Muka Air <?= ucfirst($dam_status['trend']) ?>
+                    </p>
+                </div>
+            </div>
+
+            <div class="w-full sm:w-80 bg-white/10 backdrop-blur-md border border-white/20 p-5 rounded-2xl shadow-2xl">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-brandyellow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
+                        <h3 class="text-white text-xs font-bold tracking-widest uppercase">Cuaca Area</h3>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between bg-darkblue/50 rounded-xl p-4 border border-white/10">
+                    <div>
+                        <p class="text-white font-bold text-lg"><?= $weather_data['kondisi'] ?></p>
+                        <p class="text-slate-400 text-xs mt-1"><?= $weather_data['prediksi'] ?></p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-3xl font-black text-brandyellow"><?= $weather_data['curah'] ?></p>
+                        <p class="text-slate-400 text-[10px] uppercase tracking-wider">mm / 24h</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</header>
+
+<style>
+/* Animasi gelombang bergerak */
+@keyframes waveAnimation {
+    0% {
+        transform: translateX(0) translateY(0);
+    }
+    25% {
+        transform: translateX(-25px) translateY(-5px);
+    }
+    50% {
+        transform: translateX(-50px) translateY(0);
+    }
+    75% {
+        transform: translateX(-25px) translateY(5px);
+    }
+    100% {
+        transform: translateX(0) translateY(0);
+    }
+}
+
+.animate-wave {
+    animation: waveAnimation 8s ease-in-out infinite;
+}
+
+/* Gelombang statis dengan gradasi */
+.wave-top, .wave-middle, .wave-bottom {
+    transition: all 0.3s ease;
+}
+
+/* Hover effect untuk gelombang */
+header:hover .wave-top {
+    transform: translateY(-3px);
+}
+
+header:hover .wave-middle {
+    transform: translateY(-2px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .animate-wave {
+        animation-duration: 6s;
+    }
+}
+</style>
 
     <section class="relative py-24 overflow-hidden bg-slate-50">
         <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full opacity-5 pointer-events-none">
