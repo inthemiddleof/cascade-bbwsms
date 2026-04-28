@@ -3,7 +3,7 @@
         
         <div class="mb-8 border-l-4 border-brandyellow pl-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div>
-                <h1 class="text-3xl font-black text-darkblue uppercase tracking-tighter italic">Monitoring <span class="text-blue-600">Tinggi Muka Air</span></h1>
+                <h1 class="text-3xl font-black text-blue uppercase tracking-tighter italic">Monitoring <span class="text-blue-600">Tinggi Muka Air</span></h1>
                 <p class="text-slate-500 text-[10px] mt-1 uppercase tracking-[0.2em] font-bold">Seluruh Pos Monitoring Terdaftar</p>
             </div>
             
