@@ -15,44 +15,39 @@ class Welcome extends CI_Controller {
     public function sync_data() {
         // 1. Ambil data dari API
         $url = "https://sdatelemetry.com/API_ap_telemetry/datatelemetry2.php?idbbws=12";
-        $response = file_get_contents($url);
+        
+        // Gunakan error suppression atau check manual
+        $response = @file_get_contents($url);
+    
+        if ($response === FALSE) {
+            echo "Gagal menghubungkan ke Server API.";
+            return;
+        }
     
         // 2. Dekode JSON ke Array
         $json = json_decode($response, true);
     
         // 3. Validasi apakah data berhasil diambil
-        if (isset($json['telemetryjakarta']) && is_array($json['telemetryjakarta'])) {
-            $data_api = $json['telemetryjakarta'];
-    
-            // Kosongkan tabel sebelum diisi data terbaru
+        if (isset($json['telemetryjakarta'])) {
             $this->db->empty_table('data_telemetri');
-    
-            foreach ($data_api as $row) {
+            foreach ($json['telemetryjakarta'] as $row) {
                 $insert_data = [
-                    'nama_alat'      => $row['nama_alat'],
-                    'device_id'      => $row['id_merk'] . "-" . ($row['nama_lokasi'] ?? 'UNIT'),
-                    'nama_lokasi'    => $row['nama_lokasi'],
-                    'wilayah_sungai' => $row['sungai'],
-                    'lat'            => !empty($row['Lat']) ? (float)$row['Lat'] : null,
-                    'lon'            => !empty($row['Lng']) ? (float)$row['Lng'] : null,
-                    'received_date'  => $row['ReceivedDate'],
-                    'received_time'  => $row['ReceivedTime'],
-                    'batt'           => $row['batt'],
-                    'rain'           => (float)$row['Rain'],
-                    'w_level'        => (float)$row['WLevel'],
-                    'id_tipe'        => $row['id_tipe'],
-                    'status'         => $row['status'],
-                    'siaga_hijau'    => (float)$row['siaga4'], 
-                    'siaga_kuning'   => (float)$row['siaga3'],
-                    'siaga_merah'    => (float)$row['siaga2'],
-                    'created_at'     => date('Y-m-d H:i:s')
+                    'nama_alat'   => $row['nama_alat'],
+                    'device_id'   => $row['id_merk'],
+                    'nama_lokasi' => $row['nama_lokasi'],
+                    'lat'         => (float)($row['Lat'] ?? 0),
+                    'lon'         => (float)($row['Lng'] ?? 0),
+                    'rain'        => (float)($row['Rain'] ?? 0),
+                    'w_level'     => (float)($row['WLevel'] ?? 0),
+                    'id_tipe'     => $row['id_tipe'], // PCH atau PDA
+                    'status'      => $row['status'] ?? 'Offline',
+                    'tgl'         => date('Y-m-d H:i:s', strtotime($row['ReceivedDate'] . ' ' . $row['ReceivedTime']))
                 ];
-    
                 $this->db->insert('data_telemetri', $insert_data);
             }
-            echo "Sync Berhasil!";
+            echo "Sync Berhasil! Silakan cek halaman Peta.";
         } else {
-            echo "Gagal mengambil data: Variabel json tidak ditemukan atau format salah.";
+            echo "Gagal mengambil data: Format JSON dari API tidak sesuai.";
         }
     }
   
@@ -290,36 +285,69 @@ class Welcome extends CI_Controller {
 
     public function peta()
 {
-    // 1. Ambil semua data dari tabel telemetri
-    $this->db->order_by('nama_alat', 'ASC');
-    $semua_pos = $this->db->get('data_telemetri')->result_array();
+    $sql = "
+        -- 1. Ambil semua dari Master Pos (Prioritas Master)
+        SELECT 
+            m.nomor_pos as id_tampil,
+            m.nama_pos as nama_tampil,
+            m.tipe_pos as tipe_tampil,
+            m.lat as latitude,
+            m.lon as longitude,
+            COALESCE(t.rain, 0) as rain,
+            COALESCE(t.w_level, 0) as w_level,
+            t.tgl as last_update,
+            'MASTER' as asal_data
+        FROM master_pos m
+        LEFT JOIN (
+            SELECT t1.* FROM data_telemetri t1
+            INNER JOIN (
+                SELECT device_id, MAX(tgl) as max_tgl 
+                FROM data_telemetri GROUP BY device_id
+            ) t2 ON t1.device_id = t2.device_id AND t1.tgl = t2.max_tgl
+        ) t ON m.device_id_telemetry = t.device_id
 
-    // 2. Hitung Ringkasan (Summary) untuk Sidebar Kanan
-    $total_pos = count($semua_pos);
-    $online    = 0;
-    $offline   = 0;
+        UNION
 
-    foreach ($semua_pos as $pos) {
-        if (strtolower($pos['status']) !== 'offline') $online++;
-    }
+        -- 2. Ambil dari Telemetri yang belum terdaftar di Master (Gunakan kordinat alat)
+        SELECT 
+            t.device_id as id_tampil,
+            t.nama_alat as nama_tampil,
+            t.id_tipe as tipe_tampil,
+            t.lat as latitude,
+            t.lon as longitude,
+            t.rain,
+            t.w_level,
+            t.tgl as last_update,
+            'TELEMETRY' as asal_data
+        FROM data_telemetri t
+        WHERE t.device_id NOT IN (SELECT COALESCE(device_id_telemetry, '') FROM master_pos)
+        AND t.lat IS NOT NULL AND t.lat != 0
+    ";
 
-    // 3. Siapkan data untuk dikirim ke View
+    $semua_pos = $this->db->query($sql)->result_array();
+
     $data = [
         'app_name'     => 'CASCADE',
         'title'        => 'Peta Sebaran Stasiun',
         'semua_pos'    => $semua_pos,
         'summary'      => [
-            'total'   => $total_pos,
-            'online'  => $online,
-            'offline' => $total_pos - $online
-        ], // Pastikan ada tanda koma di sini
-        'current_page' => 'peta' // Baris terakhir dalam array tidak wajib pakai koma, tapi disarankan
+            'total'   => count($semua_pos),
+            'online'  => count(array_filter($semua_pos, fn($p) => $p['last_update'] !== null)),
+            'offline' => count(array_filter($semua_pos, fn($p) => $p['last_update'] === null))
+        ]
+    ];
+    
+    $data['rawan_banjir'] = [
+        ['nama' => 'Bandar Lampung (Pesisir)', 'lat' => -5.449, 'lon' => 105.275, 'level' => 'tinggi'],
+        ['nama' => 'Hilir Way Sekampung', 'lat' => -5.350, 'lon' => 105.500, 'level' => 'sedang'],
+        ['nama' => 'Hilir Way Semaka', 'lat' => -5.550, 'lon' => 104.600, 'level' => 'tinggi'],
+        ['nama' => 'Punggur/Seputih', 'lat' => -4.950, 'lon' => 105.150, 'level' => 'cukup'],
+        ['nama' => 'Mesuji (Rawa)', 'lat' => -4.050, 'lon' => 105.400, 'level' => 'sedang'],
     ];
 
-    // 4. Load View
     $this->load->view('layout/v_header', $data);
     $this->load->view('pages/v_peta', $data);
-    //$this->load->view('layout/v_footer');
+    $this->load->view('layout/v_footer', $data);
 }
 
 }

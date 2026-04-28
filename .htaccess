@@ -1,4 +1,11 @@
 RewriteEngine On
+
+# Arahkan request assets ke folder public/assets
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^assets/(.*)$ public/assets/$1 [L]
+
+# CodeIgniter routing
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php/$1 [L]

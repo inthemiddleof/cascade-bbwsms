@@ -21,23 +21,34 @@ date_default_timezone_set('Asia/Jakarta');
         <div id="posList" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/50">
             <?php if(!empty($semua_pos)): foreach($semua_pos as $pos): ?>
             <div class="pos-item p-4 border border-slate-100 rounded-2xl hover:border-brandyellow hover:shadow-lg transition-all cursor-pointer bg-white" 
-                 data-nama="<?= strtolower($pos['nama_alat'] ?? '') ?>" 
-                 data-tipe="<?= $pos['id_tipe'] ?? '' ?>"
-                 onclick="focusMap(<?= $pos['lat'] ?>, <?= $pos['lon'] ?>, '<?= $pos['device_id'] ?>')">
+                 data-nama="<?= strtolower($pos['nama_tampil'] ?? '') ?>" 
+                 data-tipe="<?= $pos['tipe_tampil'] ?? '' ?>"
+                 onclick="focusMap(<?= $pos['latitude'] ?? 0 ?>, <?= $pos['longitude'] ?? 0 ?>, '<?= $pos['id_tampil'] ?? '' ?>')">
+                
                 <div class="flex justify-between items-start mb-2">
                     <div>
-                        <h4 class="font-bold text-darkblue text-sm mb-1"><?= $pos['nama_alat'] ?></h4>
-                        <span class="text-[10px] text-slate-400"><?= $pos['device_id'] ?></span>
+                        <h4 class="font-bold text-darkblue text-sm mb-1"><?= $pos['nama_tampil'] ?></h4>
+                        <span class="text-[10px] text-slate-400 italic"><?= $pos['id_tampil'] ?></span>
+                        <span class="block text-[8px] text-slate-300 font-bold"><?= $pos['asal_data'] ?></span>
                     </div>
-                    <?php $status_bg = (strtolower($pos['status'] ?? '') == 'normal' || strtolower($pos['status'] ?? '') == 'cerah') ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'; ?>
+                    
+                    <?php 
+                        $status_text = (!empty($pos['last_update'])) ? 'ONLINE' : 'OFFLINE';
+                        $status_bg = (!empty($pos['last_update'])) ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-400';
+                    ?>
                     <span class="text-[9px] px-2 py-1 rounded-full font-black <?= $status_bg ?>">
-                        <?= strtoupper($pos['status'] ?? 'NORMAL') ?>
+                        <?= $status_text ?>
                     </span>
                 </div>
+
                 <div class="grid grid-cols-2 gap-2 text-[11px]">
                     <div class="bg-blue-50 p-2 rounded-lg border border-blue-100 text-center">
-                        <span class="block text-blue-400 text-[8px] font-bold uppercase"><?= ($pos['id_tipe'] == 'PDA') ? 'TMA' : 'Hujan' ?></span>
-                        <span class="font-bold text-blue-700"><?= ($pos['id_tipe'] == 'PDA') ? ($pos['w_level'] ?? '0').' m' : ($pos['rain'] ?? '0').' mm' ?></span>
+                        <span class="block text-blue-400 text-[8px] font-bold uppercase">
+                            <?= ($pos['tipe_tampil'] == 'PDA') ? 'TMA' : 'Hujan' ?>
+                        </span>
+                        <span class="font-bold text-blue-700">
+                            <?= ($pos['tipe_tampil'] == 'PDA') ? ($pos['w_level'] ?? '0').' m' : ($pos['rain'] ?? '0').' mm' ?>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -51,7 +62,7 @@ date_default_timezone_set('Asia/Jakarta');
                 <span class="text-darkblue font-black text-sm"><?= date('d/m/Y') ?></span>
                 <div class="w-[1px] h-4 bg-slate-200 mx-1"></div>
                 <div class="flex flex-col">
-                    <span class="text-[8px] font-bold text-slate-400 uppercase leading-none mb-1 text-left">Update</span>
+                    <span class="text-[8px] font-bold text-slate-400 uppercase leading-none mb-1 text-left">Update Terakhir</span>
                     <span class="text-darkblue font-black text-sm leading-none"><?= date('H:i') ?> WIB</span>
                 </div>
             </div>
@@ -65,7 +76,7 @@ date_default_timezone_set('Asia/Jakarta');
             <span class="w-2 h-6 bg-brandyellow rounded-full"></span> RINGKASAN
         </h3>
         <div class="p-4 bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl text-white shadow-lg mb-6">
-            <span class="text-[10px] font-bold opacity-80 uppercase tracking-widest leading-none">Total Pos Terpasang</span>
+            <span class="text-[10px] font-bold opacity-80 uppercase tracking-widest leading-none">Total Pos Gabungan</span>
             <span class="block text-4xl font-black mt-2 leading-none"><?= $summary['total'] ?? '0' ?></span>
         </div>
 
@@ -86,95 +97,180 @@ date_default_timezone_set('Asia/Jakarta');
 </div>
 
 <script>
-    var map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-5.397, 105.266], 10);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+   // 1. Inisialisasi Map
+   var map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-5.15, 105.266], 8);
+    
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
     var layerPDA = L.layerGroup().addTo(map);
     var layerPCH = L.layerGroup().addTo(map);
+    var layerBanjir = L.layerGroup().addTo(map); 
     var markersById = {};
 
-    // 2. GENERATE MARKERS
-    <?php foreach($semua_pos as $pos): if(!empty($pos['lat'])): ?>
-        (function() {
-            var lat = <?= $pos['lat'] ?>;
-            var lon = <?= $pos['lon'] ?>;
-            var nama = "<?= $pos['nama_alat'] ?>";
-            var id_tipe = "<?= $pos['id_tipe'] ?>";
-            var device_id = "<?= $pos['device_id'] ?>";
-            var status = "<?= strtoupper($pos['status']) ?>";
-            
-            // Format Nilai & Satuan
-            var value = (id_tipe === 'PDA') ? "<?= $pos['w_level'] ?>" : "<?= $pos['rain'] ?>";
-            var unit = (id_tipe === 'PDA') ? "mdpl" : "mm";
-            
-            // Waktu Update (WIB)
-            var updateTime = "<?= isset($pos['tgl']) ? date('d F Y H:i', strtotime($pos['tgl'])) : date('d F Y H:i') ?> WIB";
-            
-            var color = (id_tipe === 'PDA') ? 'blue' : 'green';
-            var customIcon = new L.Icon({
-                iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
-            });
+    // 2. Logika Warna Wilayah (GeoJSON)
+    function getStyle(feature) {
+        // Mendeteksi nama kabupaten (huruf besar/kecil sering jadi masalah, jadi kita toUpperCase)
+        const props = feature.properties;
+        const kab = (props.nmkab || props.name || props.KABUPATEN || "").toUpperCase();
+        
+        let warna = '#f1f5f9'; 
+        let opasitas = 0.2;
 
-            // Template Popup Berdasarkan Gambar
-            var popupContent = `
-                <div class="p-2 min-w-[280px] font-sans">
-                    <div class="flex justify-between items-start mb-1">
-                        <h5 class="font-black text-blue-900 italic text-sm uppercase">${id_tipe} ${nama}</h5>
-                        <span class="text-[10px] font-bold text-green-500">online</span>
-                    </div>
-                    <p class="text-slate-400 text-[10px] font-bold mb-4">${device_id}</p>
+        if (kab.includes("BANDAR LAMPUNG") || kab.includes("LAMPUNG SELATAN")) {
+            warna = '#ef4444'; // Merah
+            opasitas = 0.5;
+        } else if (kab.includes("LAMPUNG TIMUR") || kab.includes("PESAWARAN")) {
+            warna = '#f59e0b'; // Orange
+            opasitas = 0.5;
+        }
+
+        return {
+            fillColor: warna,
+            weight: 1,
+            opacity: 1,
+            color: 'white',
+            fillOpacity: opasitas
+        };
+    }
+
+    // 3. Memuat GeoJSON (Pastikan Path Benar)
+    fetch("<?= base_url('assets/geojson/Lampung.json') ?>")
+        .then(response => response.json())
+        .then(data => {
+            L.geoJSON(data, {
+                style: getStyle,
+                onEachFeature: function (feature, layer) {
+                    const name = feature.properties.nmkab || feature.properties.name || "Wilayah";
+                    layer.bindTooltip(name);
                     
-                    <div class="space-y-1 text-[11px] mb-4">
-                        <div class="flex justify-between">
-                            <span class="text-slate-400 font-bold">Sungai</span>
-                            <span class="text-slate-700 font-bold">: -</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-slate-400 font-bold">Update</span>
-                            <span class="text-slate-700 font-bold">: ${updateTime}</span>
-                        </div>
-                    </div>
+                    layer.on('mouseover', function() {
+                        this.setStyle({ fillOpacity: 0.8, weight: 2 });
+                    });
+                    layer.on('mouseout', function() {
+                        this.setStyle(getStyle(feature));
+                    });
+                }
+            }).addTo(layerBanjir);
+        })
+        .catch(err => console.error("GeoJSON Error:", err));
+ 
+    // Tambahkan fungsi ini di dalam tag <script> sebelum loop marker
+function getMarkerConfig(pos) {
+    let icon = '❓';
+    let color = 'bg-slate-400'; // Default abu-abu jika tidak ada data
+    let status = 'TIDAK ADA DATA';
+    let animation = '';
 
-                    <div class="bg-slate-50/50 rounded-2xl p-4 border border-slate-100 text-center mb-4">
-                        <div class="flex items-end justify-center gap-1 mb-1">
-                            <span class="text-3xl font-black text-blue-900">${value}</span>
-                            <span class="text-sm font-bold text-slate-400 pb-1">${unit}</span>
-                        </div>
-                        <div class="w-full h-[1px] bg-slate-200 my-2"></div>
-                        <div class="text-[10px] font-black text-green-500 uppercase tracking-widest">
-                            ${status}
-                        </div>
-                    </div>
+    // Jika ada data telemetri
+    if (pos.last_update) {
+        if (pos.tipe_pos === 'PCH') {
+            const rain = parseFloat(pos.rain || 0);
+            if (rain <= 0) { icon = '☁️'; color = 'bg-sky-400'; status = 'CERAH'; }
+            else if (rain <= 20) { icon = '🌦️'; color = 'bg-blue-400'; status = 'RINGAN'; }
+            else if (rain <= 50) { icon = '🌧️'; color = 'bg-blue-600'; status = 'SEDANG'; }
+            else { icon = '⛈️'; color = 'bg-indigo-900'; status = 'LEBAT'; }
+        } 
+        else if (pos.tipe_pos === 'PDA') {
+            const tma = parseFloat(pos.w_level || 0);
+            const merah = parseFloat(pos.siaga_merah || 999);
+            const kuning = parseFloat(pos.siaga_kuning || 999);
+            const hijau = parseFloat(pos.siaga_hijau || 999);
 
-                    <div class="grid grid-cols-3 gap-2">
-                        <div class="py-2 rounded-xl text-[9px] font-black text-center italic ${id_tipe === 'PDA' ? 'bg-blue-600 text-white shadow-md' : 'bg-slate-100 text-slate-400'}">TMA</div>
-                        <div class="py-2 rounded-xl text-[9px] font-black text-center italic bg-slate-100 text-slate-400">DEBIT</div>
-                        <div class="py-2 rounded-xl text-[9px] font-black text-center italic ${id_tipe === 'PCH' ? 'bg-blue-600 text-white shadow-md' : 'bg-slate-100 text-slate-400'}">STATUS</div>
+            if (tma >= merah) { icon = '⚠️'; color = 'bg-red-600'; status = 'AWAS'; animation = 'animate-awas'; }
+            else if (tma >= kuning) { icon = '🌊'; color = 'bg-yellow-500'; status = 'WASPADA'; }
+            else if (tma >= hijau) { icon = '🌊'; color = 'bg-green-500'; status = 'SIAGA'; }
+            else { icon = '💧'; color = 'bg-blue-500'; status = 'NORMAL'; }
+        }
+    }
+
+    return { icon, color, status, animation };
+}
+
+// Bagian loop PHP untuk Generate Markers
+// SEBELUMNYA (Penyebab Error):
+// L.marker([pos.lat, pos.lon])...
+// pos.nama_alat
+// pos.id_tipe
+
+// PERBAIKAN:
+<?php foreach($semua_pos as $pos): if(!empty($pos['latitude'])): ?>
+(function() {
+    const p = <?= json_encode($pos) ?>;
+    let val = (p.tipe_tampil === 'PDA') ? parseFloat(p.w_level || 0) : parseFloat(p.rain || 0);
+    
+    // 1. Tentukan Warna & Class Animasi
+    let statusClass = 'bg-offline';
+    let pulseClass = '';
+    let iconContent = '';
+    
+    if (p.last_update) {
+            if (p.tipe_tampil === 'PDA') {
+                const merah = parseFloat(p.siaga_merah || 3.0);
+                const kuning = parseFloat(p.siaga_kuning || 2.0);
+
+                if (val >= merah) { statusClass = 'bg-danger'; pulseClass = 'pulse-danger'; iconContent = '⚠️'; }
+                else if (val >= kuning) { statusClass = 'bg-warning'; iconContent = '🌊'; }
+                else { statusClass = 'bg-normal'; iconContent = '💧'; }
+            } else {
+                if (val >= 50) { statusClass = 'bg-danger'; pulseClass = 'pulse-danger'; iconContent = '⛈️'; }
+                else if (val > 0) { statusClass = 'bg-normal'; iconContent = '🌧️'; }
+                else { statusClass = 'bg-normal'; iconContent = '🌤️'; }
+            }
+        } else { iconContent = '❓'; }
+
+    if (p.tipe_tampil === 'PCH') {
+        if (val <= 0) {
+            iconContent = '⛅'; // Cerah
+        } else if (val > 0 && val < 20) {
+            iconContent = '🌧️'; // Berawan/Gerimis
+        } else {
+            iconContent = '⛈️'; // Hujan Lebat
+        }
+    } else {
+        // Ikon Stasiun PDA (Muka Air)
+        iconContent = '💧'; 
+    }
+
+    const customIcon = L.divIcon({
+            className: 'custom-div-icon',
+            html: `<div class="marker-container ${statusClass} ${pulseClass}"><span>${iconContent}</span></div>`,
+            iconSize: [36, 36], iconAnchor: [18, 36]
+        });
+
+    // 3. Popup Content yang Informatif
+    const badgeStatus = p.last_update ? 
+        `<span style="background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:bold;">ONLINE</span>` : 
+        `<span style="background:#f1f5f9; color:#64748b; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:bold;">OFFLINE</span>`;
+
+    const marker = L.marker([p.latitude, p.longitude], { icon: customIcon })
+        .bindPopup(`
+            <div style="font-family: 'Inter', sans-serif; width:200px;">
+                <div class="custom-popup-title">
+                    <div style="font-size:14px; font-weight:800; line-height:1.2;">${p.nama_tampil}</div>
+                    <div style="font-size:10px; color:#94a3b8;">ID: ${p.id_tampil} | ${p.tipe_tampil}</div>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin:10px 0;">
+                    ${badgeStatus}
+                    <div style="text-align:right;">
+                        <div style="font-size:9px; color:#94a3b8; text-transform:uppercase; font-weight:700;">Data Sekarang</div>
+                        <div style="font-size:18px; font-weight:900; color:#1e40af;">
+                            ${p.tipe_tampil === 'PDA' ? p.w_level + ' m' : p.rain + ' mm'}
+                        </div>
                     </div>
                 </div>
-            `;
+                <div style="background:#f8fafc; padding:6px; border-radius:8px; font-size:9px; color:#64748b; border:1px solid #f1f5f9;">
+                    <b>🕒 Update Terakhir:</b><br>
+                    ${p.last_update || 'Belum ada data masuk'}
+                </div>
+            </div>
+        `);
 
-            var marker = L.marker([lat, lon], { icon: customIcon })
-                .bindPopup(popupContent, {
-                    maxWidth: 400,
-                    className: 'custom-popup'
-                });
-
-            if(id_tipe === 'PDA') {
-                marker.addTo(layerPDA);
-            } else {
-                marker.addTo(layerPCH);
-            }
-
-            markersById["<?= $pos['device_id'] ?>"] = marker;
-        })();
-    <?php endif; endforeach; ?>
+        markersById[p.id_tampil] = marker;
+        if (p.tipe_tampil === 'PDA') marker.addTo(layerPDA);
+        else marker.addTo(layerPCH);
+})();
+<?php endif; endforeach; ?>
 
     function focusMap(lat, lon, id) {
         map.flyTo([lat, lon], 15, { animate: true, duration: 1.5 });
@@ -193,9 +289,52 @@ date_default_timezone_set('Asia/Jakarta');
             item.style.display = item.getAttribute('data-nama').includes(input) ? "block" : "none";
         }
     }
+    function toggleBanjir() {
+    if(document.getElementById('filterBanjir').checked) map.addLayer(layerBanjir); 
+    else map.removeLayer(layerBanjir);
+}
 </script>
 
 <style>
-    .leaflet-popup-content-wrapper { border-radius: 1.5rem; padding: 4px; background: rgba(255,255,255,0.98); }
-    .leaflet-popup-tip-container { display: none; }
+    /* Container Utama Marker */
+    .marker-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50% 50% 50% 0;
+        transform: rotate(-45deg);
+        border: 2px solid white;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* Memutar balik isi agar tegak */
+    .marker-container span {
+        transform: rotate(45deg);
+        font-size: 18px;
+        display: block;
+    }
+
+    .marker-container:hover {
+        transform: rotate(-45deg) scale(1.2);
+        z-index: 1000 !important;
+    }
+
+    /* Warna Status Profesional */
+    .bg-normal { background: #10b981; }  /* Hijau */
+    .bg-warning { background: #f59e0b; } /* Kuning/Oranye */
+    .bg-danger { background: #ef4444; }  /* Merah */
+    .bg-offline { background: #94a3b8; } /* Abu-abu */
+
+    /* Efek Pulse untuk Kondisi Bahaya */
+    .pulse-danger {
+        animation: pulse-red 1.5s infinite;
+    }
+    @keyframes pulse-red {
+        0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+        70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
 </style>
