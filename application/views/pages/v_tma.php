@@ -1,5 +1,5 @@
-<main class="bg-slate-50 min-h-screen pb-24 text-slate-800">
-    <div class="max-w-7xl mx-auto px-6 lg:px-12 pt-12">
+<main class="bg-slate-50 min-h-screen pb-24 text-slate-800 lg:pt-36">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
         
         <div class="mb-8 border-l-4 border-brandyellow pl-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div>

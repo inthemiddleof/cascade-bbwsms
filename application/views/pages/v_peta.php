@@ -1,103 +1,128 @@
 <?php 
-// Set timezone ke Asia/Jakarta agar waktu sesuai dengan Bandar Lampung (WIB)
 date_default_timezone_set('Asia/Jakarta'); 
 ?>
-
-<div class="flex h-[calc(100vh-80px)] overflow-hidden bg-slate-100">
+<div class="flex h-[calc(100vh-64px)] lg:h-[calc(100vh-80px)] overflow-x-hidden overflow-y-visible lg:overflow-y-visible bg-slate-100 relative">
     
-    <aside class="w-96 bg-white shadow-xl z-20 flex flex-col border-r border-slate-200">
+    <aside id="sidebar-left" class="fixed inset-y-0 left-0 z-[1001] w-80 lg:w-96 bg-white shadow-2xl lg:shadow-none lg:relative lg:translate-x-0 -translate-x-full transition-transform duration-300 flex flex-col border-r border-slate-200">
         <div class="p-4 border-b bg-white">
-            <div class="flex bg-slate-100 p-1 rounded-lg mb-4 text-[10px] font-bold uppercase">
-                <button onclick="filterType('all')" class="flex-1 py-2 bg-white shadow rounded-md text-darkblue">Semua</button>
+            <div class="flex justify-between items-center lg:hidden mb-4">
+                <h3 class="font-black text-darkblue uppercase tracking-tight">Daftar Pos</h3>
+                <button onclick="toggleSidebar('left')" class="p-2 -mr-2 text-slate-400 hover:text-red-500 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="flex bg-slate-100 p-1 rounded-xl mb-4 text-[10px] font-bold uppercase">
+                <button onclick="filterType('all')" class="flex-1 py-2 bg-white shadow rounded-lg text-darkblue">Semua</button>
                 <button onclick="filterType('PDA')" class="flex-1 py-2 text-slate-500">PDA</button>
                 <button onclick="filterType('PCH')" class="flex-1 py-2 text-slate-500">PCH</button>
             </div>
-            <div class="relative">
-                <input type="text" id="searchInput" onkeyup="searchPos()" placeholder="Cari nama pos..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none transition-all">
-                <svg class="w-5 h-5 absolute left-3 top-2.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            
+            <div class="relative w-full">
+                <input type="text" id="searchInput" onkeyup="searchPos()" 
+                    placeholder="Cari nama pos..." 
+                    class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all">
+                <svg class="w-5 h-5 absolute left-3 top-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
             </div>
         </div>
-
         <div id="posList" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/50">
             <?php if(!empty($semua_pos)): foreach($semua_pos as $pos): ?>
             <div class="pos-item p-4 border border-slate-100 rounded-2xl hover:border-brandyellow hover:shadow-lg transition-all cursor-pointer bg-white" 
                  data-nama="<?= strtolower($pos['nama_tampil'] ?? '') ?>" 
                  data-tipe="<?= $pos['tipe_tampil'] ?? '' ?>"
-                 onclick="focusMap(<?= $pos['latitude'] ?? 0 ?>, <?= $pos['longitude'] ?? 0 ?>, '<?= $pos['id_tampil'] ?? '' ?>')">
+                 onclick="focusMap(<?= $pos['latitude'] ?? 0 ?>, <?= $pos['longitude'] ?? 0 ?>, '<?= $pos['id_tampil'] ?? '' ?>'); handleMobileClick()">
                 
                 <div class="flex justify-between items-start mb-2">
                     <div>
                         <h4 class="font-bold text-darkblue text-sm mb-1"><?= $pos['nama_tampil'] ?></h4>
                         <span class="text-[10px] text-slate-400 italic"><?= $pos['id_tampil'] ?></span>
-                        <span class="block text-[8px] text-slate-300 font-bold"><?= $pos['asal_data'] ?></span>
                     </div>
-                    
                     <?php 
-                        $status_text = (!empty($pos['last_update'])) ? 'ONLINE' : 'OFFLINE';
                         $status_bg = (!empty($pos['last_update'])) ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-400';
                     ?>
                     <span class="text-[9px] px-2 py-1 rounded-full font-black <?= $status_bg ?>">
-                        <?= $status_text ?>
+                        <?= (!empty($pos['last_update'])) ? 'ONLINE' : 'OFFLINE' ?>
                     </span>
                 </div>
 
-                <div class="grid grid-cols-2 gap-2 text-[11px]">
-                    <div class="bg-blue-50 p-2 rounded-lg border border-blue-100 text-center">
-                        <span class="block text-blue-400 text-[8px] font-bold uppercase">
-                            <?= ($pos['tipe_tampil'] == 'PDA') ? 'TMA' : 'Hujan' ?>
-                        </span>
-                        <span class="font-bold text-blue-700">
-                            <?= ($pos['tipe_tampil'] == 'PDA') ? ($pos['w_level'] ?? '0').' m' : ($pos['rain'] ?? '0').' mm' ?>
-                        </span>
-                    </div>
+                <div class="bg-blue-50 p-2 rounded-lg border border-blue-100 inline-block min-w-[80px] text-center">
+                    <span class="block text-blue-400 text-[8px] font-bold uppercase"><?= ($pos['tipe_tampil'] == 'PDA') ? 'TMA' : 'Hujan' ?></span>
+                    <span class="font-bold text-blue-700 text-xs">
+                        <?= ($pos['tipe_tampil'] == 'PDA') ? ($pos['w_level'] ?? '0').' m' : ($pos['rain'] ?? '0').' mm' ?>
+                    </span>
                 </div>
             </div>
             <?php endforeach; endif; ?>
         </div>
     </aside>
 
-    <main class="flex-1 relative z-10">
-        <div style="position: absolute; top: 24px; left: 24px; z-index: 1001;" class="flex bg-white/95 backdrop-blur-sm p-1 rounded-2xl shadow-xl border border-white/50">
-            <div class="flex items-center gap-3 px-4 py-2 bg-white rounded-xl border border-slate-100">
-                <span class="text-darkblue font-black text-sm"><?= date('d/m/Y') ?></span>
-                <div class="w-[1px] h-4 bg-slate-200 mx-1"></div>
-                <div class="flex flex-col">
-                    <span class="text-[8px] font-bold text-slate-400 uppercase leading-none mb-1 text-left">Update Terakhir</span>
-                    <span class="text-darkblue font-black text-sm leading-none"><?= date('H:i') ?> WIB</span>
-                </div>
-            </div>
+    <main class="flex-1 relative z-10 h-full">
+        <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-[1000] flex gap-2 lg:hidden">
+            <button onclick="toggleSidebar('left')" class="bg-darkblue text-white px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 text-sm font-bold border-2 border-white">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                Daftar Pos
+            </button>
+            <button onclick="toggleSidebar('right')" class="bg-white text-darkblue px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 text-sm font-bold border-2 border-brandyellow">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Info
+            </button>
         </div>
 
         <div id="map" class="w-full h-full"></div>
     </main>
 
-    <aside class="w-80 bg-white shadow-xl z-20 p-6 border-l border-slate-200 overflow-y-auto">
-        <h3 class="font-black text-darkblue text-lg mb-6 italic flex items-center gap-2">
-            <span class="w-2 h-6 bg-brandyellow rounded-full"></span> RINGKASAN
-        </h3>
+    <aside id="sidebar-right" class="fixed inset-y-0 right-0 z-[1001] w-80 bg-white shadow-2xl lg:shadow-none lg:relative lg:translate-x-0 translate-x-full transition-transform duration-300 p-6 border-l border-slate-200 overflow-y-auto">
+        <div class="flex justify-between items-center mb-6 lg:block">
+            <h3 class="font-black text-darkblue text-lg italic flex items-center gap-2">
+                <span class="w-2 h-6 bg-brandyellow rounded-full"></span> RINGKASAN
+            </h3>
+            <button onclick="toggleSidebar('right')" class="lg:hidden text-slate-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+
         <div class="p-4 bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl text-white shadow-lg mb-6">
             <span class="text-[10px] font-bold opacity-80 uppercase tracking-widest leading-none">Total Pos Gabungan</span>
             <span class="block text-4xl font-black mt-2 leading-none"><?= $summary['total'] ?? '0' ?></span>
         </div>
+        
+        <div class="mb-6 flex bg-slate-50 p-1 rounded-2xl border border-slate-100">
+            <div class="flex items-center justify-between w-full gap-3 px-4 py-3 bg-white rounded-xl border border-slate-50">
+                <div class="flex flex-col">
+                    <span class="text-[8px] font-bold text-slate-400 uppercase mb-1">Tanggal</span>
+                    <span class="text-darkblue font-black text-sm"><?= date('d/m/Y') ?></span>
+                </div>
+                <div class="w-[1px] h-8 bg-slate-100"></div>
+                <div class="flex flex-col text-right">
+                    <span class="text-[8px] font-bold text-slate-400 uppercase mb-1">Update</span>
+                    <span class="text-darkblue font-black text-sm"><?= date('H:i') ?> WIB</span>
+                </div>
+            </div>
+        </div>
 
-        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-xs font-bold text-darkblue mb-6">
-            <p class="mb-3 text-[10px] text-slate-400 uppercase tracking-widest border-b border-slate-200 pb-2 italic text-left">Filter Layer</p>
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-xs font-bold text-darkblue">
+            <p class="mb-3 text-[10px] text-slate-400 uppercase tracking-widest border-b pb-2 italic">Filter Layer</p>
             <div class="space-y-4">
-                <label class="flex items-center justify-between cursor-pointer group">
-                    <span class="text-slate-600">Pos Duga Air (PDA)</span>
+                <label class="flex items-center justify-between cursor-pointer">
+                    <span class="text-slate-600">Pos Duga Air</span>
                     <input type="checkbox" id="filterPDA" checked onchange="toggleLayers()" class="w-4 h-4 rounded text-blue-600">
                 </label>
-                <label class="flex items-center justify-between cursor-pointer group">
-                    <span class="text-slate-600">Curah Hujan (PCH)</span>
+                <label class="flex items-center justify-between cursor-pointer">
+                    <span class="text-slate-600">Curah Hujan</span>
                     <input type="checkbox" id="filterPCH" checked onchange="toggleLayers()" class="w-4 h-4 rounded text-green-600">
                 </label>
             </div>
         </div>
     </aside>
+
+    <div id="sidebar-overlay" onclick="closeAllSidebars()" class="fixed inset-0 bg-black/50 z-[1000] hidden backdrop-blur-sm"></div>
 </div>
 
 <script>
-   // 1. Inisialisasi Map
    var map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-5.15, 105.266], 8);
     
    var googleHybrid = L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
@@ -110,15 +135,12 @@ date_default_timezone_set('Asia/Jakarta');
     var layerPCH = L.layerGroup().addTo(map);
     var markersById = {};
 
- 
-    // Tambahkan fungsi ini di dalam tag <script> sebelum loop marker
 function getMarkerConfig(pos) {
     let icon = '❓';
-    let color = 'bg-slate-400'; // Default abu-abu jika tidak ada data
+    let color = 'bg-slate-400';
     let status = 'TIDAK ADA DATA';
     let animation = '';
 
-    // Jika ada data telemetri
     if (pos.last_update) {
         if (pos.tipe_pos === 'PCH') {
             const rain = parseFloat(pos.rain || 0);
@@ -145,7 +167,6 @@ function getMarkerConfig(pos) {
 
 <?php foreach($semua_pos as $pos): if(!empty($pos['latitude']) && !empty($pos['longitude'])): ?>
 (function() {
-    // Gunakan nilai default jika properti tidak ada
     const p = {
         id_tampil: '<?= $pos['id_tampil'] ?? "???" ?>',
         nama_tampil: '<?= addslashes($pos['nama_tampil'] ?? "Tanpa Nama") ?>',
@@ -173,7 +194,7 @@ function getMarkerConfig(pos) {
             } else { 
                 statusClass = 'bg-normal'; 
             }
-        } else { // Untuk PCH
+        } else {
             if (val >= 50) { statusClass = 'bg-danger'; iconContent = '⛈️'; }
             else if (val > 0) { statusClass = 'bg-normal'; iconContent = '🌧️'; }
         }
@@ -208,6 +229,7 @@ function getMarkerConfig(pos) {
     if (p.tipe_tampil === 'PDA') marker.addTo(layerPDA);
     else marker.addTo(layerPCH);
 })();
+
 <?php endif; endforeach; ?>
 
     function focusMap(lat, lon, id) {
@@ -227,10 +249,42 @@ function getMarkerConfig(pos) {
             item.style.display = item.getAttribute('data-nama').includes(input) ? "block" : "none";
         }
     }
+
+    function toggleSidebar(side) {
+        const sidebar = document.getElementById(`sidebar-${side}`);
+        const overlay = document.getElementById('sidebar-overlay');
+        
+        if (sidebar.classList.contains(side === 'left' ? '-translate-x-full' : 'translate-x-full')) {
+            sidebar.classList.remove(side === 'left' ? '-translate-x-full' : 'translate-x-full');
+            overlay.classList.remove('hidden');
+        } else {
+            sidebar.classList.add(side === 'left' ? '-translate-x-full' : 'translate-x-full');
+            checkOverlays();
+        }
+    }
+
+    function closeAllSidebars() {
+        document.getElementById('sidebar-left').classList.add('-translate-x-full');
+        document.getElementById('sidebar-right').classList.add('translate-x-full');
+        document.getElementById('sidebar-overlay').classList.add('hidden');
+    }
+
+    function checkOverlays() {
+        const leftHidden = document.getElementById('sidebar-left').classList.contains('-translate-x-full');
+        const rightHidden = document.getElementById('sidebar-right').classList.contains('translate-x-full');
+        if(leftHidden && rightHidden) {
+            document.getElementById('sidebar-overlay').classList.add('hidden');
+        }
+    }
+
+    function handleMobileClick() {
+        if (window.innerWidth < 1024) {
+            closeAllSidebars();
+        }
+    }
 </script>
 
 <style>
-    /* Container Utama Marker */
     .marker-container {
         display: flex;
         align-items: center;
@@ -244,7 +298,6 @@ function getMarkerConfig(pos) {
         transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    /* Memutar balik isi agar tegak */
     .marker-container span {
         transform: rotate(45deg);
         font-size: 18px;
@@ -256,13 +309,11 @@ function getMarkerConfig(pos) {
         z-index: 1000 !important;
     }
 
-    /* Warna Status Profesional */
-    .bg-normal { background: #10b981; }  /* Hijau */
-    .bg-warning { background: #f59e0b; } /* Kuning/Oranye */
-    .bg-danger { background: #ef4444; }  /* Merah */
-    .bg-offline { background: #94a3b8; } /* Abu-abu */
+    .bg-normal { background: #10b981; }  
+    .bg-warning { background: #f59e0b; } 
+    .bg-danger { background: #ef4444; }  
+    .bg-offline { background: #94a3b8; }
 
-    /* Efek Pulse untuk Kondisi Bahaya */
     .pulse-danger {
         animation: pulse-red 1.5s infinite;
     }

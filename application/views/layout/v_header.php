@@ -45,7 +45,6 @@
         $is_data_active = in_array($current_page, ['curah_hujan', 'tma', 'kualitas_air']);
     ?>
 
-    <!-- FLOATING NAVBAR -->
     <nav id="main-nav" class="fixed top-4 left-0 right-0 z-50 nav-transition">
         <div class="max-w-7xl mx-auto px-4 lg:px-8">
       <div id="nav-inner" class="bg-white rounded-2xl shadow-lg nav-transition" style="border: 1px solid #facc15; box-shadow: 0 0 12px rgba(250, 204, 21, 0.4), 0 4px 24px rgba(0,0,0,0.08);">
@@ -94,7 +93,6 @@
                         </div>
                     </div>
 
-                    <!-- MOBILE MENU BUTTON -->
                     <button id="mobile-menu-btn" class="md:hidden text-darkblue hover:text-brandyellow transition-colors focus:outline-none">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path id="icon-menu" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
@@ -103,7 +101,6 @@
                     </button>
                 </div>
 
-                <!-- MOBILE MENU -->
                 <div id="mobile-menu" class="hidden md:hidden border-t border-gray-100">
                     <div class="px-6 py-4 space-y-4">
                         <a href="<?= base_url() ?>" class="mobile-nav-link block font-semibold <?= $is_home ? 'text-brandyellow' : 'text-darkblue hover:text-brandyellow' ?>">Beranda</a>
@@ -128,25 +125,24 @@
         </div>
     </nav>
 
-    <script>
-       window.addEventListener('scroll', function() {
-    const navInner = document.getElementById('nav-inner');
-    const navContainer = document.getElementById('nav-container');
-    
-    if (window.scrollY > 20) {
-        navInner.classList.remove('rounded-2xl', 'bg-white', 'border-yellow-300');
-        navInner.classList.add('rounded-xl', 'shadow-md', 'bg-white/80', 'backdrop-blur-md');
-        navContainer.classList.remove('h-16', 'lg:h-20');
-        navContainer.classList.add('h-14', 'lg:h-16');
-    } else {
-        navInner.classList.add('rounded-2xl', 'bg-white');
-        navInner.classList.remove('rounded-xl', 'shadow-md', 'bg-white/80', 'backdrop-blur-md');
-        navContainer.classList.add('h-16', 'lg:h-20');
-        navContainer.classList.remove('h-14', 'lg:h-16');
-    }
-});
+<script>
+        window.addEventListener('scroll', function() {
+            const navInner = document.getElementById('nav-inner');
+            const navContainer = document.getElementById('nav-container');
+            
+            if (window.scrollY > 20) {
+                navInner.classList.remove('rounded-2xl', 'bg-white', 'border-yellow-300');
+                navInner.classList.add('rounded-xl', 'shadow-md', 'bg-white/80', 'backdrop-blur-md');
+                navContainer.classList.remove('h-16', 'lg:h-20');
+                navContainer.classList.add('h-14', 'lg:h-16');
+            } else {
+                navInner.classList.add('rounded-2xl', 'bg-white');
+                navInner.classList.remove('rounded-xl', 'shadow-md', 'bg-white/80', 'backdrop-blur-md');
+                navContainer.classList.add('h-16', 'lg:h-20');
+                navContainer.classList.remove('h-14', 'lg:h-16');
+            }
+        });
 
-        // --- 2. White Theme & Shadow saat scroll ---
         document.addEventListener('DOMContentLoaded', function() {
             const navInner = document.getElementById('nav-inner');
 
@@ -169,7 +165,6 @@
             });
         });
 
-        // --- 3. Hamburger Mobile Menu ---
         const btn = document.getElementById('mobile-menu-btn');
         const menu = document.getElementById('mobile-menu');
         const iconMenu = document.getElementById('icon-menu');
@@ -182,4 +177,4 @@
                 iconClose.classList.toggle('hidden');
             });
         }
-    </script>
+</script>

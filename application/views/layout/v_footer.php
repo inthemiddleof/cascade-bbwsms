@@ -1,5 +1,5 @@
  <footer class="bg-darkblue pt-20 pb-10 border-t-4 border-brandyellow">
-        <div class="max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-16">
+        <div class="max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-10">
             
             <div class="lg:col-span-5">
                 <div class="flex items-center gap-3 mb-6">

@@ -29,7 +29,7 @@ class Welcome extends CI_Controller {
                     'nama_alat'    => $row['nama_alat'],
                     'device_id'    => $row['id_merk'],
                     'nama_lokasi'  => $row['nama_lokasi'],
-                    'sungai'       => $row['sungai'], // Sekarang sudah sama: kunci API 'sungai' ke kolom DB 'sungai'
+                    'sungai'       => $row['sungai'],
                     'ReceivedDate' => $row['ReceivedDate'],
                     'ReceivedTime' => $row['ReceivedTime'],
                     'Rain'         => (float)$row['Rain'],
@@ -46,7 +46,6 @@ class Welcome extends CI_Controller {
                     'siaga4'       => (float)$row['siaga4']
                 ];
             
-                // Cek duplikasi tetap berdasarkan Nama, Tanggal, dan Jam
                 $this->db->where([
                     'nama_alat'    => $insert_data['nama_alat'],
                     'ReceivedDate' => $insert_data['ReceivedDate'],
@@ -112,7 +111,6 @@ class Welcome extends CI_Controller {
     }
 
     public function curah_hujan() {
-        // 1. Penanganan Tanggal (Format Hidrologi: 07:01 hari ini sampai 07:00 besok)
         $tanggal = $this->input->get('tanggal') ?: date('Y-m-d');
         $tanggal_besok = date('Y-m-d', strtotime($tanggal . ' +1 day'));
         
@@ -120,8 +118,6 @@ class Welcome extends CI_Controller {
         $data['title']         = "Data Curah Hujan";
         $data['tanggal_pilih'] = $tanggal;
     
-        // 2. Ambil Data Telemetri - Murni dari tabel telemetri (mengabaikan master_pos dulu)
-        // Filter hanya tipe PCH dalam rentang waktu 07:01 (hari ini) sampai 07:00 (besok)
         $sql = "
             SELECT 
                 nama_alat, 
@@ -158,17 +154,9 @@ class Welcome extends CI_Controller {
                 ];
             }
     
-            // Penentuan Last Update Global
             if ($time > $latest_time_found) {
                 $latest_time_found = $time;
             }
-    
-            // Logika Pembagian Waktu (Sesuai Standar Hidrologi)
-            // W1: 07:01 - 13:00
-            // W2: 13:01 - 19:00
-            // W3: 19:01 - 01:00 (Lewat Tengah Malam)
-            // W4: 01:01 - 07:00 (Pagi Hari Berikutnya)
-    
             if ($time >= '07:01:00' && $time <= '13:00:00' && $tr['ReceivedDate'] == $tanggal) {
                 if ($rain > $transaksi_map[$nama]['w1']) $transaksi_map[$nama]['w1'] = $rain;
             } 
@@ -193,9 +181,7 @@ class Welcome extends CI_Controller {
         $max_hujan = 0; 
         $no = 1;
     
-        // 3. Olah Hasil Akhir (Hanya mengambil pos yang aktif di telemetri)
         foreach ($transaksi_map as $nama => $val) {
-            // Rumus Akumulasi Harian: Nilai Tertinggi di periode tersebut
             $total_harian = max($val['w1'], $val['w2'], $val['w3'], $val['w4']);
     
             $item = [
@@ -215,14 +201,13 @@ class Welcome extends CI_Controller {
             $pencatatan[] = $item;
         }
     
-        // 4. Perbaikan Variabel untuk View (Hapus Error Undefined)
         $data['last_update'] = ($latest_time_found !== "00:00:00") 
             ? date('d M Y', strtotime($tanggal)) . ", " . substr($latest_time_found, 0, 5) . " WIB"
             : date('d M Y', strtotime($tanggal)) . ", Data Belum Tersedia";
     
         $data['summary'] = [
             'pos_aktif'   => count($transaksi_map),
-            'total_pos'   => count($transaksi_map), // Mengacu pada jumlah alat aktif di telemetri
+            'total_pos'   => count($transaksi_map),
             'max_hujan'   => $max_hujan,
             'avg_wilayah' => count($transaksi_map) > 0 ? round($total_hujan_wilayah / count($transaksi_map), 2) : 0
         ];
@@ -234,47 +219,7 @@ class Welcome extends CI_Controller {
         $this->load->view('layout/v_footer', $data);
     }
 
-    public function peta() {
-        // Kita gunakan GROUP BY nama_alat karena device_id isinya sama semua (APTECH)
-        // Ini akan menghasilkan daftar 40 pos yang berbeda berdasarkan lokasinya.
-        $sql = "
-            SELECT 
-                device_id as id_tampil,
-                nama_alat as nama_tampil,
-                id_tipe as tipe_tampil,
-                CAST(COALESCE(Lat, 0) AS DECIMAL(10,8)) as latitude,
-                CAST(COALESCE(Lng, 0) AS DECIMAL(11,8)) as longitude,
-                COALESCE(Rain, 0) as rain,
-                COALESCE(WLevel, 0) as w_level,
-                CONCAT(ReceivedDate, ' ', ReceivedTime) as last_update,
-                'TELEMETRY' as asal_data -- Kolom ini wajib ada agar error di v_peta.php hilang
-            FROM data_telemetri 
-            WHERE id IN (
-                SELECT MAX(id) 
-                FROM data_telemetri 
-                GROUP BY nama_alat -- Mengelompokkan berdasarkan nama lokasi agar unik
-            )
-            ORDER BY nama_alat ASC
-        ";
-    
-        $semua_pos = $this->db->query($sql)->result_array();
-    
-        $data = [
-            'app_name'     => 'CASCADE',
-            'title'        => 'Monitoring 40 Pos Telemetri',
-            'semua_pos'    => $semua_pos,
-            'summary'      => [
-                'total'   => count($semua_pos),
-                'online'  => count(array_filter($semua_pos, fn($p) => !empty($p['last_update'])))
-            ]
-        ];
-    
-        $this->load->view('layout/v_header', $data);
-        $this->load->view('pages/v_peta', $data);
-        //$this->load->view('layout/v_footer', $data);
-    }
     public function tma() {
-        // 1. Penanganan Tanggal (Format Hidrologi: 07:01 hari ini sampai 07:00 besok)
         $tanggal = $this->input->get('tanggal') ?: date('Y-m-d');
         $tanggal_besok = date('Y-m-d', strtotime($tanggal . ' +1 day'));
     
@@ -282,8 +227,6 @@ class Welcome extends CI_Controller {
         $data['title']         = "Tinggi Muka Air";
         $data['tanggal_pilih'] = $tanggal;
     
-        // 2. Ambil Data Telemetri - Fokus pada PDA (Tinggi Muka Air)
-        // Menggunakan rentang 07:01 s/d 07:00 sesuai standar pencatatan
         $sql = "
             SELECT 
                 nama_alat, 
@@ -327,8 +270,6 @@ class Welcome extends CI_Controller {
                 ];
             }
     
-            // Simpan data untuk titik jam tertentu (06:00, 12:00, 18:00)
-            // Karena rentang kita 07:01-07:00, maka jam 06:00 yang diambil adalah jam 6 pagi di hari besok
             $hour = (int)substr($time_full, 0, 2);
             $curr_date = $tr['ReceivedDate'];
     
@@ -340,7 +281,6 @@ class Welcome extends CI_Controller {
                 $transaksi_map[$nama]['jam_data'][18] = $wlevel;
             }
     
-            // Update nilai terbaru (karena ORDER BY ASC, iterasi terakhir adalah yang paling baru)
             $transaksi_map[$nama]['last_val'] = $wlevel;
             $transaksi_map[$nama]['last_time'] = $time_short;
     
@@ -362,7 +302,6 @@ class Welcome extends CI_Controller {
             if ($last_val > $max_w_level) $max_w_level = $last_val;
             $total_w_level += $last_val;
     
-            // Hitung status bahaya (Jika TMA melebihi Siaga 1/Merah)
             if ($siaga['s1'] > 0 && $last_val >= $siaga['s1']) {
                 $count_bahaya++;
             }
@@ -377,7 +316,7 @@ class Welcome extends CI_Controller {
                     '18' => $val['jam_data'][18] ?? 0,
                 ],
                 'last'      => $last_val,
-                'manual'    => ['06' => 0, '12' => 0, '18' => 0], // Sementara di-nol-kan sesuai fokus telemetri
+                'manual'    => ['06' => 0, '12' => 0, '18' => 0],
                 'siaga'     => [
                     's1'     => $siaga['s1'],
                     's2'     => $siaga['s2'],
@@ -390,7 +329,6 @@ class Welcome extends CI_Controller {
             ];
         }
     
-        // 3. Output Data & View
         $data['last_update'] = ($latest_update_time !== "00:00") 
             ? date('d M Y', strtotime($tanggal)) . ", " . $latest_update_time . " WIB"
             : date('d M Y', strtotime($tanggal)) . ", Data Belum Tersedia";
@@ -409,5 +347,42 @@ class Welcome extends CI_Controller {
         $this->load->view('layout/v_header', $data);
         $this->load->view('pages/v_tma', $data);
         $this->load->view('layout/v_footer', $data);
+    }
+
+        public function peta() {
+        $sql = "
+            SELECT 
+                device_id as id_tampil,
+                nama_alat as nama_tampil,
+                id_tipe as tipe_tampil,
+                CAST(COALESCE(Lat, 0) AS DECIMAL(10,8)) as latitude,
+                CAST(COALESCE(Lng, 0) AS DECIMAL(11,8)) as longitude,
+                COALESCE(Rain, 0) as rain,
+                COALESCE(WLevel, 0) as w_level,
+                CONCAT(ReceivedDate, ' ', ReceivedTime) as last_update,
+                'TELEMETRY' as asal_data -- Kolom ini wajib ada agar error di v_peta.php hilang
+            FROM data_telemetri 
+            WHERE id IN (
+                SELECT MAX(id) 
+                FROM data_telemetri 
+                GROUP BY nama_alat -- Mengelompokkan berdasarkan nama lokasi agar unik
+            )
+            ORDER BY nama_alat ASC
+        ";
+    
+        $semua_pos = $this->db->query($sql)->result_array();
+    
+        $data = [
+            'app_name'     => 'CASCADE',
+            'title'        => 'Monitoring 40 Pos Telemetri',
+            'semua_pos'    => $semua_pos,
+            'summary'      => [
+                'total'   => count($semua_pos),
+                'online'  => count(array_filter($semua_pos, fn($p) => !empty($p['last_update'])))
+            ]
+        ];
+    
+        $this->load->view('layout/v_header_peta', $data);
+        $this->load->view('pages/v_peta', $data);
     }
 }
