@@ -68,7 +68,7 @@
             </div>
         </div>
 
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-col xl:flex-row items-center gap-4">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-300 mb-6 flex flex-col xl:flex-row items-center gap-4">
             <span class="text-[10px] font-black text-darkblue uppercase tracking-widest min-w-max xl:border-r border-slate-200 xl:pr-4">Keterangan Intensitas Hujan</span>
             <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-[10px] font-bold text-slate-600">
                 <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded-sm bg-slate-100 border border-slate-300 block"></span> Nihil / 0</div>
@@ -99,7 +99,7 @@
 
             <div class="overflow-x-auto table-container">
                 <table class="w-full text-[11px] text-left border-collapse min-w-[950px]" id="rainTable">
-                    <thead class="text-darkblue font-bold uppercase text-center bg-slate-50">
+                    <thead class="text-darkblue font-bold uppercase text-center bg-slate-80">
                         <tr>
                             <th rowspan="2" class="p-4 border-b border-r border-slate-200 w-12">No</th>
                             <th rowspan="2" class="p-4 border-b border-r border-slate-200 min-w-[280px] text-left">Nama Pos / Stasiun</th>
@@ -108,10 +108,10 @@
                             <th rowspan="2" class="p-4 border-b border-slate-200 w-24">Manual (mm)</th>
                         </tr>
                         <tr class="text-[10px] bg-blue-50/30">
-                            <th class="p-2 border-b border-r border-slate-200">07.01-13.00</th>
-                            <th class="p-2 border-b border-r border-slate-200">13.01-19.00</th>
-                            <th class="p-2 border-b border-r border-slate-200">19.01-01.00</th>
-                            <th class="p-2 border-b border-r border-slate-200">01.01-07.00</th>
+                            <th class="p-2 border-b border-r border-slate-200">00.00 - 06.00</th>
+                            <th class="p-2 border-b border-r border-slate-200">06.01 - 12.00</th>
+                            <th class="p-2 border-b border-r border-slate-200">12.01 - 18.00</th>
+                            <th class="p-2 border-b border-r border-slate-200">18.01 - 23.59</th>
                         </tr>
                     </thead>
                     <tbody class="text-slate-800">

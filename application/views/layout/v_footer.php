@@ -1,11 +1,11 @@
- <footer class="bg-darkblue pt-20 pb-10 border-t-4 border-brandyellow">
+<footer class="bg-darkblue pt-20 pb-10 border-t-4 border-brandyellow">
         <div class="max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-10">
             
             <div class="lg:col-span-5">
                 <div class="flex items-center gap-3 mb-6">
-                    <div class="w-10 h-10 bg-white rounded flex items-center justify-center p-1">
-                        <span class="text-darkblue font-black text-xl">PU</span>
-                    </div>
+                    <img src="<?= base_url('assets/img/logobbwsms.png') ?>"
+                         alt="Logo BBWS Mesuji Sekampung"
+                         class="h-12 w-auto object-contain transition-all duration-300 bg-white p-1.5 rounded-xl shadow-md">
                     <span class="text-white font-bold tracking-widest text-xl"><?= $app_name ?></span>
                 </div>
                 <p class="text-slate-400 font-light text-sm leading-relaxed mb-8 max-w-sm">

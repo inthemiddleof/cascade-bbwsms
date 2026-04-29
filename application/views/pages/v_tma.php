@@ -76,26 +76,31 @@
             </div>
 
             <div class="overflow-x-auto table-container">
-                <table class="w-full text-[11px] text-left border-collapse min-w-[950px]" id="tmaTable">
+                <table class="w-full text-[11px] text-left border-collapse min-w-[1100px]" id="tmaTable">
                     <thead class="text-darkblue font-bold uppercase text-center bg-slate-50">
                         <tr>
                             <th rowspan="2" class="p-4 border-b border-r border-slate-200 w-12">No</th>
                             <th rowspan="2" class="p-4 border-b border-r border-slate-200 min-w-[280px] text-left">Nama Pos / Stasiun</th>
-                            <th colspan="3" class="p-3 border-b border-r border-slate-200 bg-blue-50/50">Telemetri (m)</th>
+                            <th colspan="4" class="p-3 border-b border-r border-slate-200 bg-blue-50/50">Telemetri (m)</th>
                             <th rowspan="2" class="p-4 border-b border-r border-slate-200 w-24 bg-blue-50">Last (m)</th>
-                            <th colspan="3" class="p-3 border-b border-r border-slate-200 bg-slate-100">Manual (m)</th>
-                            <th colspan="3" class="p-3 border-b border-slate-200 bg-orange-50/30">Siaga (m)</th>
+                            <th colspan="4" class="p-3 border-b border-r border-slate-200 bg-slate-100">Manual (m)</th>
+                            <th colspan="4" class="p-3 border-b border-slate-200 bg-orange-50/30">Siaga (m)</th>
                         </tr>
                         <tr class="text-[10px]">
-                            <th class="p-2 border-b border-r border-slate-200 bg-blue-50/30">06.00</th>
-                            <th class="p-2 border-b border-r border-slate-200 bg-blue-50/30">12.00</th>
-                            <th class="p-2 border-b border-r border-slate-200 bg-blue-50/30">18.00</th>
-                            <th class="p-2 border-b border-r border-slate-200 bg-slate-50">06.00</th>
-                            <th class="p-2 border-b border-r border-slate-200 bg-slate-50">12.00</th>
-                            <th class="p-2 border-b border-r border-slate-200 bg-slate-50">18.00</th>
-                            <th class="p-2 border-b border-r border-slate-200 bg-emerald-50">Hijau</th>
-                            <th class="p-2 border-b border-r border-slate-200 bg-amber-50">Kuning</th>
-                            <th class="p-2 border-b border-slate-200 bg-red-50">Merah</th>
+                            <th class="p-2 border-b border-r border-slate-200 bg-blue-50/30">00.00-06.00</th>
+                            <th class="p-2 border-b border-r border-slate-200 bg-blue-50/30">06.01-12.00</th>
+                            <th class="p-2 border-b border-r border-slate-200 bg-blue-50/30">12.01-18.00</th>
+                            <th class="p-2 border-b border-r border-slate-200 bg-blue-50/30">18.01-23.59</th>
+                            
+                            <th class="p-2 border-b border-r border-slate-200 bg-slate-50">00.00-06.00</th>
+                            <th class="p-2 border-b border-r border-slate-200 bg-slate-50">06.01-12.00</th>
+                            <th class="p-2 border-b border-r border-slate-200 bg-slate-50">12.01-18.00</th>
+                            <th class="p-2 border-b border-r border-slate-200 bg-slate-50">18.01-23.59</th>
+                            
+                            <th class="p-2 border-b border-r border-slate-200 bg-emerald-50">Siaga 4</th>
+                            <th class="p-2 border-b border-r border-slate-200 bg-yellow-50">Siaga 3</th>
+                            <th class="p-2 border-b border-r border-slate-200 bg-orange-50">Siaga 2</th>
+                            <th class="p-2 border-b border-slate-200 bg-red-50">Siaga 1</th>
                         </tr>
                     </thead>
                     <tbody class="text-slate-800 text-center">
@@ -112,19 +117,22 @@
                                 <?php endif; ?>
                             </td>
                             
-                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= number_format($row['telemetri']['06'], 2) ?></td>
-                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= number_format($row['telemetri']['12'], 2) ?></td>
-                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= number_format($row['telemetri']['18'], 2) ?></td>
+                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= number_format($row['telemetri']['w1'], 2) ?></td>
+                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= number_format($row['telemetri']['w2'], 2) ?></td>
+                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= number_format($row['telemetri']['w3'], 2) ?></td>
+                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= number_format($row['telemetri']['w4'], 2) ?></td>
                             
                             <td class="p-3 border-r border-slate-100 font-black text-blue-700 bg-blue-50/30"><?= number_format($row['last'], 2) ?></td>
                             
-                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= number_format($row['manual']['06'], 2) ?></td>
-                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= number_format($row['manual']['12'], 2) ?></td>
-                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= number_format($row['manual']['18'], 2) ?></td>
+                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= number_format($row['manual']['w1'], 2) ?></td>
+                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= number_format($row['manual']['w2'], 2) ?></td>
+                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= number_format($row['manual']['w3'], 2) ?></td>
+                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= number_format($row['manual']['w4'], 2) ?></td>
 
-                            <td class="p-3 border-r border-slate-100 font-bold text-emerald-600 bg-emerald-50/20"><?= number_format($row['siaga']['hijau'], 2) ?></td>
-                            <td class="p-3 border-r border-slate-100 font-bold text-amber-600 bg-amber-50/20"><?= number_format($row['siaga']['kuning'], 2) ?></td>
-                            <td class="p-3 font-bold text-red-600 bg-red-50/20"><?= number_format($row['siaga']['merah'], 2) ?></td>
+                            <td class="p-3 border-r border-slate-100 font-bold text-emerald-600 bg-emerald-50/20"><?= number_format($row['siaga']['siaga4'], 2) ?></td>
+                            <td class="p-3 border-r border-slate-100 font-bold text-amber-500 bg-yellow-50/20"><?= number_format($row['siaga']['siaga3'], 2) ?></td>
+                            <td class="p-3 border-r border-slate-100 font-bold text-orange-600 bg-orange-50/20"><?= number_format($row['siaga']['siaga2'], 2) ?></td>
+                            <td class="p-3 font-bold text-red-600 bg-red-50/20"><?= number_format($row['siaga']['siaga1'], 2) ?></td>
                         </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -164,8 +172,8 @@
 
         cells.forEach(cell => {
             cell.addEventListener("mouseenter", function() {
-                // Highlight diterapkan pada index 2-4 (Telemetri) dan 6-8 (Manual)
-                if ((this.cellIndex >= 2 && this.cellIndex <= 4) || (this.cellIndex >= 6 && this.cellIndex <= 8)) {
+                // Highlight diterapkan pada index 2-5 (Telemetri) dan 7-10 (Manual) dikarenakan jumlah kolom bertambah
+                if ((this.cellIndex >= 2 && this.cellIndex <= 5) || (this.cellIndex >= 7 && this.cellIndex <= 10)) {
                     const colIndex = this.cellIndex;
                     const rows = table.querySelectorAll("tr");
                     rows.forEach(row => {
@@ -178,7 +186,7 @@
             });
 
             cell.addEventListener("mouseleave", function() {
-                if ((this.cellIndex >= 2 && this.cellIndex <= 4) || (this.cellIndex >= 6 && this.cellIndex <= 8)) {
+                if ((this.cellIndex >= 2 && this.cellIndex <= 5) || (this.cellIndex >= 7 && this.cellIndex <= 10)) {
                     const colIndex = this.cellIndex;
                     const rows = table.querySelectorAll("tr");
                     rows.forEach(row => {

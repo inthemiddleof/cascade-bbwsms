@@ -80,7 +80,6 @@ class Welcome extends CI_Controller {
         $status_bendungan = "NORMAL";
         if ($latest_tma) {
             $lvl = (float)$latest_tma['WLevel'];
-            // Menggunakan siaga1 sebagai ambang batas tertinggi (Bahaya/Awas)
             if ($lvl >= (float)$latest_tma['siaga1'] && (float)$latest_tma['siaga1'] > 0) $status_bendungan = "BAHAYA";
             elseif ($lvl >= (float)$latest_tma['siaga2'] && (float)$latest_tma['siaga2'] > 0) $status_bendungan = "SIAGA";
             elseif ($lvl >= (float)$latest_tma['siaga3'] && (float)$latest_tma['siaga3'] > 0) $status_bendungan = "WASPADA";
@@ -110,279 +109,383 @@ class Welcome extends CI_Controller {
         $this->load->view('layout/v_footer', $data);
     }
 
-    public function curah_hujan() {
-        $tanggal = $this->input->get('tanggal') ?: date('Y-m-d');
-        $tanggal_besok = date('Y-m-d', strtotime($tanggal . ' +1 day'));
-        
-        $data['app_name']      = "CASCADE";
-        $data['title']         = "Data Curah Hujan";
-        $data['tanggal_pilih'] = $tanggal;
+public function curah_hujan() {
+    $tanggal = $this->input->get('tanggal') ?: date('Y-m-d');
     
-        $sql = "
-            SELECT 
-                nama_alat, 
-                device_id, 
-                Rain, 
-                ReceivedDate, 
-                ReceivedTime,
-                CONCAT(ReceivedDate, ' ', ReceivedTime) as full_time
-            FROM data_telemetri
-            WHERE id_tipe = 'PCH' 
-            AND CONCAT(ReceivedDate, ' ', ReceivedTime) BETWEEN ? AND ?
-            ORDER BY nama_alat ASC, ReceivedDate ASC, ReceivedTime ASC
-        ";
-        
-        $query_transaksi = $this->db->query($sql, [
-            $tanggal . ' 07:01:00', 
-            $tanggal_besok . ' 07:00:59'
-        ])->result_array();
-    
-        $transaksi_map = [];
-        $latest_time_found = "00:00:00"; 
-    
-        foreach ($query_transaksi as $tr) {
-            $nama = $tr['nama_alat'];
-            $time = $tr['ReceivedTime'];
-            $rain = (float)($tr['Rain'] ?? 0);
-            $full_time = $tr['full_time'];
-    
-            if (!isset($transaksi_map[$nama])) {
-                $transaksi_map[$nama] = [
-                    'w1' => 0, 'w2' => 0, 'w3' => 0, 'w4' => 0, 
-                    'last_time' => '00:00:00',
-                    'device_id' => $tr['device_id']
-                ];
-            }
-    
-            if ($time > $latest_time_found) {
-                $latest_time_found = $time;
-            }
-            if ($time >= '07:01:00' && $time <= '13:00:00' && $tr['ReceivedDate'] == $tanggal) {
-                if ($rain > $transaksi_map[$nama]['w1']) $transaksi_map[$nama]['w1'] = $rain;
-            } 
-            elseif ($time >= '13:01:00' && $time <= '19:00:00' && $tr['ReceivedDate'] == $tanggal) {
-                if ($rain > $transaksi_map[$nama]['w2']) $transaksi_map[$nama]['w2'] = $rain;
-            } 
-            elseif (
-                ($time >= '19:01:00' && $tr['ReceivedDate'] == $tanggal) || 
-                ($time <= '01:00:00' && $tr['ReceivedDate'] == $tanggal_besok)
-            ) {
-                if ($rain > $transaksi_map[$nama]['w3']) $transaksi_map[$nama]['w3'] = $rain;
-            } 
-            elseif ($time >= '01:01:00' && $time <= '07:00:00' && $tr['ReceivedDate'] == $tanggal_besok) {
-                if ($rain > $transaksi_map[$nama]['w4']) $transaksi_map[$nama]['w4'] = $rain;
-            }
-            
-            $transaksi_map[$nama]['last_time'] = $time;
-        }
-    
-        $pencatatan = [];
-        $total_hujan_wilayah = 0; 
-        $max_hujan = 0; 
-        $no = 1;
-    
-        foreach ($transaksi_map as $nama => $val) {
-            $total_harian = max($val['w1'], $val['w2'], $val['w3'], $val['w4']);
-    
-            $item = [
-                'no'     => $no++,
-                'pos'    => $nama,
-                'waktu'  => substr($val['last_time'], 0, 5),
-                'w1'     => $val['w1'],
-                'w2'     => $val['w2'],
-                'w3'     => $val['w3'],
-                'w4'     => $val['w4'],
-                'total'  => $total_harian,
-                'manual' => '-'
-            ];
-    
-            if ($item['total'] > $max_hujan) $max_hujan = $item['total'];
-            $total_hujan_wilayah += $item['total'];
-            $pencatatan[] = $item;
-        }
-    
-        $data['last_update'] = ($latest_time_found !== "00:00:00") 
-            ? date('d M Y', strtotime($tanggal)) . ", " . substr($latest_time_found, 0, 5) . " WIB"
-            : date('d M Y', strtotime($tanggal)) . ", Data Belum Tersedia";
-    
-        $data['summary'] = [
-            'pos_aktif'   => count($transaksi_map),
-            'total_pos'   => count($transaksi_map),
-            'max_hujan'   => $max_hujan,
-            'avg_wilayah' => count($transaksi_map) > 0 ? round($total_hujan_wilayah / count($transaksi_map), 2) : 0
-        ];
-        
-        $data['pencatatan'] = $pencatatan;
-    
-        $this->load->view('layout/v_header', $data);
-        $this->load->view('pages/v_curah_hujan', $data);
-        $this->load->view('layout/v_footer', $data);
+    $data['app_name']      = "CASCADE";
+    $data['title']         = "Data Curah Hujan";
+    $data['tanggal_pilih'] = $tanggal;
+
+    $w1_start = $tanggal . ' 00:00:00';
+    $w1_end   = $tanggal . ' 06:00:59';
+    $w2_start = $tanggal . ' 06:01:00';
+    $w2_end   = $tanggal . ' 12:00:59';
+    $w3_start = $tanggal . ' 12:01:00';
+    $w3_end   = $tanggal . ' 18:00:59';
+    $w4_start = $tanggal . ' 18:01:00';
+    $w4_end   = $tanggal . ' 23:59:59';
+
+    $all_stations = []; 
+
+    $this->db->where('tipe_pos', 'PCH');
+    $master_pos = $this->db->get('master_pos')->result_array();
+    foreach ($master_pos as $pos) {
+        $nama = $pos['nama_pos'];
+        $all_stations[$nama] = ['nama' => $nama, 'lokasi' => $pos['sub_wilayah'] ?? '-'];
     }
 
-    public function tma() {
-        $tanggal = $this->input->get('tanggal') ?: date('Y-m-d');
-        $tanggal_besok = date('Y-m-d', strtotime($tanggal . ' +1 day'));
+    $this->db->select('nama_alat');
+    $this->db->distinct();
+    $this->db->where('id_tipe', 'PCH');
+    $pos_telemetri_all = $this->db->get('data_telemetri')->result_array();
+    foreach ($pos_telemetri_all as $pt) {
+        $nama = $pt['nama_alat'];
+        if (!isset($all_stations[$nama])) {
+            $all_stations[$nama] = ['nama' => $nama, 'lokasi' => '-'];
+        }
+    }
+
+    $sql = "
+        SELECT nama_alat, Rain, CONCAT(ReceivedDate, ' ', ReceivedTime) as full_time
+        FROM data_telemetri
+        WHERE id_tipe = 'PCH' 
+        AND CONCAT(ReceivedDate, ' ', ReceivedTime) BETWEEN ? AND ?
+        ORDER BY ReceivedDate ASC, ReceivedTime ASC
+    ";
+    $query_transaksi = $this->db->query($sql, [$w1_start, $w4_end])->result_array();
+
+    $transaksi_map = [];
+    $latest_full_time = null; 
+
+    foreach ($query_transaksi as $tr) {
+        $nama = $tr['nama_alat'];
+        $f_time = $tr['full_time'];
+        $rain = (float)($tr['Rain'] ?? 0);
+        
+        if (!isset($transaksi_map[$nama])) {
+            $transaksi_map[$nama] = ['w1'=>0, 'w2'=>0, 'w3'=>0, 'w4'=>0, 'last'=>null];
+        }
+
+        if ($latest_full_time == null || $f_time > $latest_full_time) {
+            $latest_full_time = $f_time;
+        }
+
+        if ($f_time >= $w1_start && $f_time <= $w1_end) {
+            $transaksi_map[$nama]['w1'] = max($transaksi_map[$nama]['w1'], $rain);
+        } elseif ($f_time >= $w2_start && $f_time <= $w2_end) {
+            $transaksi_map[$nama]['w2'] = max($transaksi_map[$nama]['w2'], $rain);
+        } elseif ($f_time >= $w3_start && $f_time <= $w3_end) {
+            $transaksi_map[$nama]['w3'] = max($transaksi_map[$nama]['w3'], $rain);
+        } elseif ($f_time >= $w4_start && $f_time <= $w4_end) {
+            $transaksi_map[$nama]['w4'] = max($transaksi_map[$nama]['w4'], $rain);
+        }
+        
+        $transaksi_map[$nama]['last'] = $f_time;
+    }
+
+    ksort($all_stations);
+
+    $pencatatan = [];
+    $total_hujan_wilayah = 0; $max_hujan = 0; $pos_aktif = 0; $no = 1;
+
+    foreach ($all_stations as $nama => $info) {
+        $has_data = isset($transaksi_map[$nama]);
+        $val = $has_data ? $transaksi_map[$nama] : ['w1'=>0, 'w2'=>0, 'w3'=>0, 'w4'=>0, 'last'=>null];
+        $total_harian = max($val['w1'], $val['w2'], $val['w3'], $val['w4']);
+        
+        if($has_data) $pos_aktif++;
+
+        $pencatatan[] = [
+            'no'     => $no++,
+            'pos'    => $nama,
+            'lokasi' => $info['lokasi'],
+            'waktu'  => $val['last'] ? date('H:i', strtotime($val['last'])) : '--:--',
+            'w1'     => $val['w1'], 'w2' => $val['w2'], 'w3' => $val['w3'], 'w4' => $val['w4'],
+            'total'  => $total_harian,
+            'manual' => '-'
+        ];
+        
+        if ($total_harian > $max_hujan) $max_hujan = $total_harian;
+        $total_hujan_wilayah += $total_harian;
+    }
+
+    $data['last_update'] = ($latest_full_time) 
+        ? "Data Terakhir: " . date('H:i', strtotime($latest_full_time)) . " WIB"
+        : date('d M Y', strtotime($tanggal)) . ": Data Belum Tersedia";
+
+    $data['summary'] = [
+        'pos_aktif'   => $pos_aktif,
+        'total_pos'   => count($all_stations),
+        'max_hujan'   => $max_hujan,
+        'avg_wilayah' => count($all_stations) > 0 ? round($total_hujan_wilayah / count($all_stations), 2) : 0
+    ];
     
+    $data['pencatatan'] = $pencatatan;
+
+    $this->load->view('layout/v_header', $data);
+    $this->load->view('pages/v_curah_hujan', $data);
+    $this->load->view('layout/v_footer', $data);
+}
+
+ public function tma() {
+        $tanggal = $this->input->get('tanggal') ?: date('Y-m-d');
+        
         $data['app_name']      = "CASCADE";
         $data['title']         = "Tinggi Muka Air";
         $data['tanggal_pilih'] = $tanggal;
-    
+
+        $w1_start = $tanggal . ' 00:00:00';
+        $w1_end   = $tanggal . ' 06:00:59';
+        $w2_start = $tanggal . ' 06:01:00';
+        $w2_end   = $tanggal . ' 12:00:59';
+        $w3_start = $tanggal . ' 12:01:00';
+        $w3_end   = $tanggal . ' 18:00:59';
+        $w4_start = $tanggal . ' 18:01:00';
+        $w4_end   = $tanggal . ' 23:59:59';
+
+        $all_stations = []; 
+
+        $this->db->where('tipe_pos', 'PDA'); 
+        $master_pos = $this->db->get('master_pos')->result_array();
+        
+        foreach ($master_pos as $pos) {
+            $nama = $pos['nama_pos'];
+            $all_stations[$nama] = [
+                'nama'   => $nama, 
+                'lokasi' => $pos['sub_wilayah'] ?? '-',
+                'siaga1' => (float)($pos['siaga1'] ?? 0),
+                'siaga2' => (float)($pos['siaga2'] ?? 0),
+                'siaga3' => (float)($pos['siaga3'] ?? 0),
+                'siaga4' => (float)($pos['siaga4'] ?? 0)
+            ];
+        }
+
+        $sql_all_tele = "SELECT nama_alat, MAX(siaga1) as s1, MAX(siaga2) as s2, MAX(siaga3) as s3, MAX(siaga4) as s4 
+                         FROM data_telemetri WHERE id_tipe = 'PDA' GROUP BY nama_alat";
+        $pos_telemetri_all = $this->db->query($sql_all_tele)->result_array();
+        
+        foreach ($pos_telemetri_all as $pt) {
+            $nama = $pt['nama_alat'];
+            if (!isset($all_stations[$nama])) {
+                $all_stations[$nama] = [
+                    'nama'   => $nama, 
+                    'lokasi' => '-',
+                    'siaga1' => (float)($pt['s1'] ?? 0),
+                    'siaga2' => (float)($pt['s2'] ?? 0),
+                    'siaga3' => (float)($pt['s3'] ?? 0),
+                    'siaga4' => (float)($pt['s4'] ?? 0)
+                ];
+            }
+        }
+
         $sql = "
-            SELECT 
-                nama_alat, 
-                device_id, 
-                WLevel, 
-                ReceivedDate, 
-                ReceivedTime,
-                siaga1, siaga2, siaga3, siaga4,
-                CONCAT(ReceivedDate, ' ', ReceivedTime) as full_time
+            SELECT nama_alat, WLevel, CONCAT(ReceivedDate, ' ', ReceivedTime) as full_time
             FROM data_telemetri
             WHERE id_tipe = 'PDA' 
             AND CONCAT(ReceivedDate, ' ', ReceivedTime) BETWEEN ? AND ?
-            ORDER BY nama_alat ASC, ReceivedDate ASC, ReceivedTime ASC
+            ORDER BY ReceivedDate ASC, ReceivedTime ASC
         ";
-        
-        $query_transaksi = $this->db->query($sql, [
-            $tanggal . ' 07:01:00', 
-            $tanggal_besok . ' 07:00:59'
-        ])->result_array();
-    
+        $query_transaksi = $this->db->query($sql, [$w1_start, $w4_end])->result_array();
+
         $transaksi_map = [];
-        $latest_update_time = "00:00";
-    
+        $latest_full_time = null; 
+
         foreach ($query_transaksi as $tr) {
             $nama = $tr['nama_alat'];
-            $time_full = $tr['ReceivedTime'];
-            $time_short = substr($time_full, 0, 5);
-            $wlevel = (float)$tr['WLevel'];
-    
+            $f_time = $tr['full_time'];
+            $wlevel = (float)($tr['WLevel'] ?? 0);
+            
             if (!isset($transaksi_map[$nama])) {
-                $transaksi_map[$nama] = [
-                    'jam_data'  => [],
-                    'last_val'  => $wlevel,
-                    'last_time' => $time_short,
-                    'siaga'     => [
-                        's1' => (float)$tr['siaga1'],
-                        's2' => (float)$tr['siaga2'],
-                        's3' => (float)$tr['siaga3'],
-                        's4' => (float)$tr['siaga4']
-                    ]
-                ];
+                $transaksi_map[$nama] = ['w1'=>0, 'w2'=>0, 'w3'=>0, 'w4'=>0, 'last_val'=>0, 'last_time'=>null];
             }
-    
-            $hour = (int)substr($time_full, 0, 2);
-            $curr_date = $tr['ReceivedDate'];
-    
-            if ($hour == 6 && $curr_date == $tanggal_besok) {
-                $transaksi_map[$nama]['jam_data'][6] = $wlevel;
-            } elseif ($hour == 12 && $curr_date == $tanggal) {
-                $transaksi_map[$nama]['jam_data'][12] = $wlevel;
-            } elseif ($hour == 18 && $curr_date == $tanggal) {
-                $transaksi_map[$nama]['jam_data'][18] = $wlevel;
+
+            if ($latest_full_time == null || $f_time > $latest_full_time) {
+                $latest_full_time = $f_time;
             }
-    
+
+            if ($f_time >= $w1_start && $f_time <= $w1_end) {
+                $transaksi_map[$nama]['w1'] = max($transaksi_map[$nama]['w1'], $wlevel);
+            } elseif ($f_time >= $w2_start && $f_time <= $w2_end) {
+                $transaksi_map[$nama]['w2'] = max($transaksi_map[$nama]['w2'], $wlevel);
+            } elseif ($f_time >= $w3_start && $f_time <= $w3_end) {
+                $transaksi_map[$nama]['w3'] = max($transaksi_map[$nama]['w3'], $wlevel);
+            } elseif ($f_time >= $w4_start && $f_time <= $w4_end) {
+                $transaksi_map[$nama]['w4'] = max($transaksi_map[$nama]['w4'], $wlevel);
+            }
+            
             $transaksi_map[$nama]['last_val'] = $wlevel;
-            $transaksi_map[$nama]['last_time'] = $time_short;
-    
-            if ($time_short > $latest_update_time) {
-                $latest_update_time = $time_short;
-            }
+            $transaksi_map[$nama]['last_time'] = $f_time;
         }
-    
+
+        ksort($all_stations);
+
         $pencatatan_tma = [];
         $total_w_level = 0; 
         $max_w_level = 0; 
-        $count_bahaya = 0;
+        $count_bahaya = 0; 
+        $pos_aktif = 0; 
         $no = 1;
-    
-        foreach ($transaksi_map as $nama => $val) {
+
+        foreach ($all_stations as $nama => $info) {
+            $has_data = isset($transaksi_map[$nama]);
+            $val = $has_data ? $transaksi_map[$nama] : ['w1'=>0, 'w2'=>0, 'w3'=>0, 'w4'=>0, 'last_val'=>0, 'last_time'=>null];
+            
+            if($has_data) $pos_aktif++;
+
             $last_val = $val['last_val'];
-            $siaga = $val['siaga'];
-    
+            $siaga1 = $info['siaga1']; 
+
             if ($last_val > $max_w_level) $max_w_level = $last_val;
             $total_w_level += $last_val;
-    
-            if ($siaga['s1'] > 0 && $last_val >= $siaga['s1']) {
+
+            if ($siaga1 > 0 && $last_val >= $siaga1) {
                 $count_bahaya++;
             }
-    
+
             $pencatatan_tma[] = [
-                'no'        => $no++,
-                'pos'       => $nama,
-                'waktu'     => $val['last_time'],
+                'no'     => $no++,
+                'pos'    => $nama,
+                'lokasi' => $info['lokasi'],
+                'waktu'  => $val['last_time'] ? date('H:i', strtotime($val['last_time'])) : '--:--',
                 'telemetri' => [
-                    '06' => $val['jam_data'][6] ?? 0,
-                    '12' => $val['jam_data'][12] ?? 0,
-                    '18' => $val['jam_data'][18] ?? 0,
+                    'w1' => $val['w1'],
+                    'w2' => $val['w2'],
+                    'w3' => $val['w3'],
+                    'w4' => $val['w4']
                 ],
-                'last'      => $last_val,
-                'manual'    => ['06' => 0, '12' => 0, '18' => 0],
-                'siaga'     => [
-                    's1'     => $siaga['s1'],
-                    's2'     => $siaga['s2'],
-                    's3'     => $siaga['s3'],
-                    's4'     => $siaga['s4'],
-                    'hijau'  => (float)($siaga['s3'] > 0 ? $siaga['s3'] : $siaga['s4']),
-                    'kuning' => (float)$siaga['s2'],
-                    'merah'  => (float)$siaga['s1']
+                'last'   => $last_val,
+                'manual' => [ 
+                    'w1' => 0, 'w2' => 0, 'w3' => 0, 'w4' => 0
+                ],
+                'siaga'  => [
+                    'siaga1' => $info['siaga1'],
+                    'siaga2' => $info['siaga2'],
+                    'siaga3' => $info['siaga3'],
+                    'siaga4' => $info['siaga4'],
                 ]
             ];
         }
-    
-        $data['last_update'] = ($latest_update_time !== "00:00") 
-            ? date('d M Y', strtotime($tanggal)) . ", " . $latest_update_time . " WIB"
-            : date('d M Y', strtotime($tanggal)) . ", Data Belum Tersedia";
-    
+
+        $data['last_update'] = ($latest_full_time) 
+            ? "Data Terakhir: " . date('H:i', strtotime($latest_full_time)) . " WIB"
+            : date('d M Y', strtotime($tanggal)) . ": Data Belum Tersedia";
+
         $data['summary'] = [
-            'pos_aktif'     => count($transaksi_map),
-            'total_pos'     => count($transaksi_map),
+            'pos_aktif'     => $pos_aktif,
+            'total_pos'     => count($all_stations),
             'tma_tertinggi' => $max_w_level,
-            'tma_rata_rata' => count($transaksi_map) > 0 ? round($total_w_level / count($transaksi_map), 2) : 0,
+            'tma_rata_rata' => count($all_stations) > 0 ? round($total_w_level / count($all_stations), 2) : 0,
             'status_siaga'  => $count_bahaya,
-            'status_aman'   => count($transaksi_map) - $count_bahaya
+            'status_aman'   => count($all_stations) - $count_bahaya
         ];
-    
+        
         $data['pencatatan_tma'] = $pencatatan_tma;
-    
+
         $this->load->view('layout/v_header', $data);
         $this->load->view('pages/v_tma', $data);
         $this->load->view('layout/v_footer', $data);
     }
 
-        public function peta() {
-        $sql = "
-            SELECT 
-                device_id as id_tampil,
-                nama_alat as nama_tampil,
-                id_tipe as tipe_tampil,
-                CAST(COALESCE(Lat, 0) AS DECIMAL(10,8)) as latitude,
-                CAST(COALESCE(Lng, 0) AS DECIMAL(11,8)) as longitude,
-                COALESCE(Rain, 0) as rain,
-                COALESCE(WLevel, 0) as w_level,
-                CONCAT(ReceivedDate, ' ', ReceivedTime) as last_update,
-                'TELEMETRY' as asal_data -- Kolom ini wajib ada agar error di v_peta.php hilang
-            FROM data_telemetri 
-            WHERE id IN (
-                SELECT MAX(id) 
+    public function peta() {
+            $tanggal_akhir = date('Y-m-d');
+            $tanggal_awal  = date('Y-m-d', strtotime('-6 days')); 
+
+            $dates_template = [];
+            for ($i = 6; $i >= 0; $i--) {
+                $dates_template[date('Y-m-d', strtotime("-$i days"))] = 0;
+            }
+
+            $sql_current = "
+                SELECT 
+                    nama_alat as nama_tampil,
+                    device_id as id_tampil,
+                    id_tipe as tipe_tampil,
+                    CAST(COALESCE(Lat, 0) AS DECIMAL(10,8)) as latitude,
+                    CAST(COALESCE(Lng, 0) AS DECIMAL(11,8)) as longitude,
+                    COALESCE(Rain, 0) as rain,
+                    COALESCE(WLevel, 0) as w_level,
+                    siaga1 as siaga_merah,
+                    siaga2 as siaga_kuning,
+                    CONCAT(ReceivedDate, ' ', ReceivedTime) as last_update
                 FROM data_telemetri 
-                GROUP BY nama_alat -- Mengelompokkan berdasarkan nama lokasi agar unik
-            )
-            ORDER BY nama_alat ASC
-        ";
-    
-        $semua_pos = $this->db->query($sql)->result_array();
-    
-        $data = [
-            'app_name'     => 'CASCADE',
-            'title'        => 'Monitoring 40 Pos Telemetri',
-            'semua_pos'    => $semua_pos,
-            'summary'      => [
-                'total'   => count($semua_pos),
-                'online'  => count(array_filter($semua_pos, fn($p) => !empty($p['last_update'])))
-            ]
-        ];
-    
-        $this->load->view('layout/v_header_peta', $data);
-        $this->load->view('pages/v_peta', $data);
-    }
+                WHERE id IN (
+                    SELECT MAX(id) 
+                    FROM data_telemetri 
+                    GROUP BY nama_alat
+                )
+                ORDER BY nama_alat ASC
+            ";
+            $current_data = $this->db->query($sql_current)->result_array();
+
+            $semua_pos = [];
+            foreach ($current_data as $row) {
+                $nama_kunci = strtoupper(trim($row['nama_tampil'])); 
+                $semua_pos[$nama_kunci] = $row;
+                $semua_pos[$nama_kunci]['history_map'] = $dates_template; 
+            }
+
+            $sql_history = "
+                SELECT nama_alat, id_tipe, Rain, WLevel, ReceivedDate
+                FROM data_telemetri
+                WHERE ReceivedDate >= ? AND ReceivedDate <= ?
+                ORDER BY ReceivedDate ASC, ReceivedTime ASC
+            ";
+            $history_data = $this->db->query($sql_history, [$tanggal_awal, $tanggal_akhir])->result_array();
+
+            foreach ($history_data as $row) {
+                $nama_kunci = strtoupper(trim($row['nama_alat']));
+                $date = $row['ReceivedDate'];
+
+                if (isset($semua_pos[$nama_kunci]) && isset($semua_pos[$nama_kunci]['history_map'][$date])) {
+                    
+                    $tipe_pos = strtoupper(trim($semua_pos[$nama_kunci]['tipe_tampil']));
+                    
+                    if ($tipe_pos === 'PCH') {
+                        $semua_pos[$nama_kunci]['history_map'][$date] += (float)$row['Rain'];
+                    } else if ($tipe_pos === 'PDA') {
+                        $semua_pos[$nama_kunci]['history_map'][$date] = (float)$row['WLevel'];
+                    }
+                }
+            }
+
+            $final_pos = [];
+            foreach ($semua_pos as $pos) {
+                if (empty($pos['latitude']) || empty($pos['longitude'])) continue;
+
+                $labels = [];
+                $values = [];
+                foreach ($pos['history_map'] as $date => $val) {
+                    $labels[] = date('d M', strtotime($date)); 
+                    $values[] = round($val, 2);
+                }
+                $pos['chart_labels'] = $labels;
+                $pos['chart_values'] = $values;
+                
+                $tipe_pos = strtoupper(trim($pos['tipe_tampil']));
+                if ($tipe_pos === 'PCH') {
+                    $pos['chart_title'] = 'Curah Hujan';
+                    $pos['chart_unit']  = 'mm';
+                } else {
+                    $pos['chart_title'] = 'Ketinggian Air';
+                    $pos['chart_unit']  = 'm'; 
+                }
+
+                unset($pos['history_map']); 
+                
+                $final_pos[] = $pos;
+            }
+
+            $data = [
+                'app_name'  => 'CASCADE',
+                'title'     => 'Monitoring Pos Peta',
+                'semua_pos' => $final_pos,
+                'summary'   => [
+                    'total'  => count($final_pos),
+                    'online' => count(array_filter($final_pos, fn($p) => !empty($p['last_update'])))
+                ]
+            ];
+        
+            $this->load->view('layout/v_header_peta', $data);
+            $this->load->view('pages/v_peta', $data);
+        }
 }
