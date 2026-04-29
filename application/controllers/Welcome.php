@@ -432,21 +432,30 @@ public function curah_hujan() {
             ";
             $history_data = $this->db->query($sql_history, [$tanggal_awal, $tanggal_akhir])->result_array();
 
-            foreach ($history_data as $row) {
-                $nama_kunci = strtoupper(trim($row['nama_alat']));
-                $date = $row['ReceivedDate'];
+// 4. Kalkulasi Data Historis secara Ketat berdasarkan Tipe Master
+        foreach ($history_data as $row) {
+            $nama_kunci = strtoupper(trim($row['nama_alat']));
+            $date = $row['ReceivedDate'];
 
-                if (isset($semua_pos[$nama_kunci]) && isset($semua_pos[$nama_kunci]['history_map'][$date])) {
-                    
-                    $tipe_pos = strtoupper(trim($semua_pos[$nama_kunci]['tipe_tampil']));
-                    
-                    if ($tipe_pos === 'PCH') {
-                        $semua_pos[$nama_kunci]['history_map'][$date] += (float)$row['Rain'];
-                    } else if ($tipe_pos === 'PDA') {
-                        $semua_pos[$nama_kunci]['history_map'][$date] = (float)$row['WLevel'];
-                    }
+            if (isset($semua_pos[$nama_kunci]) && isset($semua_pos[$nama_kunci]['history_map'][$date])) {
+                
+                // Gunakan tipe_tampil dari array induk agar konsisten
+                $tipe_pos = strtoupper(trim($semua_pos[$nama_kunci]['tipe_tampil']));
+                
+                if ($tipe_pos === 'PCH') {
+                    // [PERBAIKAN LOGIKA]: 
+                    // Ambil nilai tertinggi di hari itu karena alat telemetri 
+                    // umumnya mengirimkan nilai hujan kumulatif harian.
+                    $semua_pos[$nama_kunci]['history_map'][$date] = max(
+                        $semua_pos[$nama_kunci]['history_map'][$date], 
+                        (float)$row['Rain']
+                    );
+                } else {
+                    // PDA (atau lainnya): Timpa dengan nilai WLevel terbaru per hari tersebut
+                    $semua_pos[$nama_kunci]['history_map'][$date] = (float)$row['WLevel'];
                 }
             }
+        }
 
             $final_pos = [];
             foreach ($semua_pos as $pos) {
