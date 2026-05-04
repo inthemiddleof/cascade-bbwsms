@@ -1,4 +1,4 @@
-<main class="bg-slate-50 min-h-screen pb-24 text-slate-800 lg:pt-36">
+<main class="bg-slate-50 min-h-screen pb-24 text-slate-800 pt-32">
     <div class="max-w-7xl mx-auto px-6 lg:px-12">
         
         <div class="mb-8 border-l-4 border-brandyellow pl-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
@@ -8,7 +8,7 @@
             </div>
             
             <div class="flex items-center gap-4 bg-white p-2 pr-4 rounded-xl shadow-sm border border-slate-200">
-                <form action="<?= base_url('index.php/welcome/tma') ?>" method="GET" class="flex items-center gap-3">
+                <form action="<?= base_url('index.php/Tma') ?>" method="GET" class="flex items-center gap-3">
                     <input type="date" name="tanggal" value="<?= $tanggal_pilih ?>" 
                            class="bg-slate-50 border border-slate-200 text-darkblue text-xs font-bold rounded-lg px-3 py-2 cursor-pointer outline-none focus:ring-2 focus:ring-blue-500"
                            onchange="this.form.submit()">
@@ -22,7 +22,6 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
-            
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-5 transition-all hover:shadow-md">
                 <div class="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -67,40 +66,48 @@
                     </p>
                 </div>
             </div>
-
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="bg-darkblue px-6 py-4 flex justify-between items-center">
+            
+            <div class="bg-darkblue px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 relative z-20">
                 <h3 class="text-white text-xs font-bold tracking-widest uppercase">Data Pengamatan Tinggi Muka Air</h3>
+                
+                <div class="relative w-full sm:w-72">
+                    <input type="text" id="searchPos" placeholder="Cari nama pos atau stasiun..." 
+                           class="w-full bg-white/10 border border-white/20 text-white placeholder-blue-200 text-xs font-medium rounded-lg px-3 py-2.5 pl-9 focus:outline-none focus:ring-2 focus:ring-brandyellow transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-2.5 text-blue-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
             </div>
 
-            <div class="overflow-x-auto table-container">
+            <div class="overflow-x-auto overflow-y-auto max-h-[600px] table-container relative">
                 <table class="w-full text-[11px] text-left border-collapse min-w-[1100px]" id="tmaTable">
-                    <thead class="text-darkblue font-bold uppercase text-center bg-slate-50">
+                    <thead class="text-darkblue font-bold uppercase text-center sticky top-0 z-20 shadow-sm">
                         <tr>
-                            <th rowspan="2" class="p-4 border-b border-r border-slate-200 w-12">No</th>
-                            <th rowspan="2" class="p-4 border-b border-r border-slate-200 min-w-[280px] text-left">Nama Pos / Stasiun</th>
-                            <th colspan="4" class="p-3 border-b border-r border-slate-200 bg-blue-50/50">Telemetri (m)</th>
-                            <th rowspan="2" class="p-4 border-b border-r border-slate-200 w-24 bg-blue-50">Last (m)</th>
-                            <th colspan="4" class="p-3 border-b border-r border-slate-200 bg-slate-100">Manual (m)</th>
-                            <th colspan="4" class="p-3 border-b border-slate-200 bg-orange-50/30">Siaga (m)</th>
+                            <th rowspan="2" class="p-4 border-b border-r border-slate-300 bg-slate-100 w-12">No</th>
+                            <th rowspan="2" class="p-4 border-b border-r border-slate-300 bg-slate-100 min-w-[280px] text-left">Nama Pos / Stasiun</th>
+                            <th colspan="4" class="p-3 border-b border-r border-slate-300 bg-blue-100">Telemetri (m)</th>
+                            <th rowspan="2" class="p-4 border-b border-r border-slate-300 bg-blue-200 w-24">Last (m)</th>
+                            <th colspan="4" class="p-3 border-b border-r border-slate-300 bg-slate-200">Manual (m)</th>
+                            <th colspan="4" class="p-3 border-b border-slate-300 bg-orange-100">Siaga (m)</th>
                         </tr>
                         <tr class="text-[10px]">
-                            <th class="p-2 border-b border-r border-slate-200 bg-blue-50/30">00.00-06.00</th>
-                            <th class="p-2 border-b border-r border-slate-200 bg-blue-50/30">06.01-12.00</th>
-                            <th class="p-2 border-b border-r border-slate-200 bg-blue-50/30">12.01-18.00</th>
-                            <th class="p-2 border-b border-r border-slate-200 bg-blue-50/30">18.01-23.59</th>
+                            <th class="p-2 border-b border-r border-slate-300 bg-blue-50">00.00-06.00</th>
+                            <th class="p-2 border-b border-r border-slate-300 bg-blue-50">06.01-12.00</th>
+                            <th class="p-2 border-b border-r border-slate-300 bg-blue-50">12.01-18.00</th>
+                            <th class="p-2 border-b border-r border-slate-300 bg-blue-50">18.01-23.59</th>
                             
-                            <th class="p-2 border-b border-r border-slate-200 bg-slate-50">00.00-06.00</th>
-                            <th class="p-2 border-b border-r border-slate-200 bg-slate-50">06.01-12.00</th>
-                            <th class="p-2 border-b border-r border-slate-200 bg-slate-50">12.01-18.00</th>
-                            <th class="p-2 border-b border-r border-slate-200 bg-slate-50">18.01-23.59</th>
+                            <th class="p-2 border-b border-r border-slate-300 bg-slate-50">00.00-06.00</th>
+                            <th class="p-2 border-b border-r border-slate-300 bg-slate-50">06.01-12.00</th>
+                            <th class="p-2 border-b border-r border-slate-300 bg-slate-50">12.01-18.00</th>
+                            <th class="p-2 border-b border-r border-slate-300 bg-slate-50">18.01-23.59</th>
                             
-                            <th class="p-2 border-b border-r border-slate-200 bg-emerald-50">Siaga 4</th>
-                            <th class="p-2 border-b border-r border-slate-200 bg-yellow-50">Siaga 3</th>
-                            <th class="p-2 border-b border-r border-slate-200 bg-orange-50">Siaga 2</th>
-                            <th class="p-2 border-b border-slate-200 bg-red-50">Siaga 1</th>
+                            <th class="p-2 border-b border-r border-slate-300 bg-emerald-100">Siaga 4</th>
+                            <th class="p-2 border-b border-r border-slate-300 bg-yellow-100">Siaga 3</th>
+                            <th class="p-2 border-b border-r border-slate-300 bg-orange-200">Siaga 2</th>
+                            <th class="p-2 border-b border-slate-300 bg-red-100">Siaga 1</th>
                         </tr>
                     </thead>
                     <tbody class="text-slate-800 text-center">
@@ -124,10 +131,10 @@
                             
                             <td class="p-3 border-r border-slate-100 font-black text-blue-700 bg-blue-50/30"><?= number_format($row['last'], 2) ?></td>
                             
-                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= number_format($row['manual']['w1'], 2) ?></td>
-                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= number_format($row['manual']['w2'], 2) ?></td>
-                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= number_format($row['manual']['w3'], 2) ?></td>
-                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= number_format($row['manual']['w4'], 2) ?></td>
+                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= isset($row['manual']['w1']) ? number_format($row['manual']['w1'], 2) : '-' ?></td>
+                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= isset($row['manual']['w2']) ? number_format($row['manual']['w2'], 2) : '-' ?></td>
+                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= isset($row['manual']['w3']) ? number_format($row['manual']['w3'], 2) : '-' ?></td>
+                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= isset($row['manual']['w4']) ? number_format($row['manual']['w4'], 2) : '-' ?></td>
 
                             <td class="p-3 border-r border-slate-100 font-bold text-emerald-600 bg-emerald-50/20"><?= number_format($row['siaga']['siaga4'], 2) ?></td>
                             <td class="p-3 border-r border-slate-100 font-bold text-amber-500 bg-yellow-50/20"><?= number_format($row['siaga']['siaga3'], 2) ?></td>
@@ -143,9 +150,10 @@
 </main>
 
 <style>
-    /* Styling Scrollbar khusus untuk tabel */
+    /* Styling Scrollbar khusus untuk tabel X dan Y */
     .table-container::-webkit-scrollbar {
-        height: 8px;
+        width: 8px; /* Scrollbar vertikal */
+        height: 8px; /* Scrollbar horizontal */
     }
     .table-container::-webkit-scrollbar-track {
         background: #f1f5f9;
@@ -165,8 +173,34 @@
 </style>
 
 <script>
-    // Fitur Highlight X & Y untuk kolom Data Telemetri dan Manual
     document.addEventListener("DOMContentLoaded", function() {
+        
+        // --- 1. FITUR SEARCH BAR ---
+        const searchInput = document.getElementById("searchPos");
+        const tableRows = document.querySelectorAll("#tmaTable tbody tr");
+
+        if (searchInput) {
+            searchInput.addEventListener("input", function() {
+                const searchTerm = this.value.toLowerCase();
+
+                tableRows.forEach(row => {
+                    // Ambil cell kolom ke-2 yang berisi Nama Pos
+                    const posNameCell = row.querySelector("td:nth-child(2)"); 
+                    
+                    if (posNameCell) {
+                        const posName = posNameCell.textContent.toLowerCase();
+                        // Tampilkan/sembunyikan berdasarkan pencocokan kata
+                        if (posName.includes(searchTerm)) {
+                            row.style.display = "";
+                        } else {
+                            row.style.display = "none";
+                        }
+                    }
+                });
+            });
+        }
+
+        // --- 2. FITUR HIGHLIGHT X & Y ---
         const table = document.getElementById("tmaTable");
         const cells = table.querySelectorAll("td, th");
 

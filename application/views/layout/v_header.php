@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= (isset($app_name) ? $app_name : 'CASCADE') ?> - <?= (isset($title) ? $title : 'BBWS MS') ?></title>
-    
+    <title><?= (isset($app_name) ? $app_name : 'Sistem Informasi Hidrologi') ?> - <?= (isset($title) ? $title : 'BBWSMS') ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -18,17 +17,14 @@
             }
         }
     </script>
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style> 
         body { font-family: 'Inter', sans-serif; }
     </style>
-
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
     <style>
         .dropdown-menu { z-index: 9999 !important; }
         #map { z-index: 1 !important; }
@@ -40,30 +36,35 @@
 <body class="bg-white text-slate-800 antialiased selection:bg-brandyellow selection:text-darkblue">
 
     <?php 
-        $current_page = $this->uri->segment(2); 
-        $is_home = empty($current_page) || $current_page === 'index';
-        $is_data_active = in_array($current_page, ['curah_hujan', 'tma', 'kualitas_air']);
+        $current_page = ucfirst($this->uri->segment(1)); 
+        $is_home = empty($current_page) || in_array($current_page, ['Dashboard', 'Beranda']);
+        $is_data_active = in_array($current_page, ['CurahHujan', 'Tma']);
     ?>
 
     <nav id="main-nav" class="fixed top-4 left-0 right-0 z-50 nav-transition">
         <div class="max-w-7xl mx-auto px-4 lg:px-8">
-      <div id="nav-inner" class="bg-white rounded-2xl shadow-lg nav-transition" style="border: 1px solid #facc15; box-shadow: 0 0 12px rgba(250, 204, 21, 0.4), 0 4px 24px rgba(0,0,0,0.08);">
+            <div id="nav-inner" class="bg-white rounded-2xl shadow-lg nav-transition" style="border: 1px solid #facc15; box-shadow: 0 0 12px rgba(250, 204, 21, 0.4), 0 4px 24px rgba(0,0,0,0.08);">
                 <div id="nav-container" class="px-6 lg:px-8 flex justify-between items-center h-16 lg:h-20 transition-all duration-300 ease-in-out">
                     
-                    <!-- LOGO / BRAND -->
-                    <a href="<?= base_url() ?>" class="flex items-center gap-3 group">
-                        <!-- Logo gambar, hapus kotak PU & subtitle -->
+                    <a href="<?= base_url() ?>" class="flex items-center gap-3 md:gap-4 group">
                         <img src="<?= base_url('assets/img/logobbwsms.png') ?>"
                              alt="Logo BBWS Mesuji Sekampung"
-                             class="h-14 w-auto object-contain transition-all duration-300">
-                        <span id="app-name" class="font-bold tracking-widest text-lg leading-tight text-darkblue group-hover:text-brandyellow transition-colors duration-300">
-                            <?= $app_name ?>
-                        </span>
+                             class="h-12 md:h-14 w-auto object-contain transition-transform duration-300 group-hover:scale-105">
+                        
+                        <div class="hidden sm:block h-10 w-px bg-gray-200 group-hover:bg-brandyellow transition-colors duration-300"></div>
+                        
+                        <div id="app-name" class="flex flex-col justify-center transition-all duration-300">
+                            <span class="text-[10px] md:text-xs font-bold tracking-[0.25em] text-slate-400 uppercase mb-1 leading-none group-hover:text-darkblue transition-colors duration-300">
+                                Sistem Informasi
+                            </span>
+                            <span class="font-black text-lg md:text-xl tracking-wide text-darkblue leading-none group-hover:text-brandyellow transition-colors duration-300">
+                                HIDROLOGI
+                            </span>
+                        </div>
                     </a>
                     
-                    <!-- DESKTOP MENU -->
                     <div class="hidden md:flex items-center gap-8 text-sm font-semibold tracking-wide h-full">
-                        <a href="<?= base_url() ?>" class="nav-link relative h-full flex items-center transition-colors duration-300 <?= $is_home ? 'text-brandyellow' : 'text-darkblue hover:text-brandyellow' ?>">
+                        <a href="<?= base_url('Dashboard') ?>" class="nav-link relative h-full flex items-center transition-colors duration-300 <?= $is_home ? 'text-brandyellow' : 'text-darkblue hover:text-brandyellow' ?>">
                             <span>Beranda</span>
                         </a>
                         
@@ -75,20 +76,20 @@
                                 </svg>
                             </button>
                             <div class="absolute top-full left-0 w-52 bg-white text-slate-800 shadow-xl rounded-xl overflow-hidden border border-gray-100 opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 ease-out z-50">
-                                <a href="<?= base_url('index.php/welcome/curah_hujan') ?>" class="block px-5 py-3.5 hover:bg-blue-50 hover:text-darkblue transition-colors border-b border-gray-50 <?= ($current_page == 'curah_hujan') ? 'bg-blue-50/50 text-darkblue font-black' : '' ?>">Curah Hujan</a>
-                                <a href="<?= base_url('index.php/welcome/tma') ?>" class="block px-5 py-3.5 hover:bg-blue-50 hover:text-darkblue transition-colors <?= ($current_page == 'tma') ? 'bg-blue-50/50 text-darkblue font-black' : '' ?>">Tinggi Muka Air</a>
+                                <a href="<?= base_url('CurahHujan') ?>" class="block px-5 py-3.5 hover:bg-blue-50 hover:text-darkblue transition-colors border-b border-gray-50 <?= ($current_page == 'CurahHujan') ? 'bg-blue-50/50 text-darkblue font-black' : '' ?>">Curah Hujan</a>
+                                <a href="<?= base_url('Tma') ?>" class="block px-5 py-3.5 hover:bg-blue-50 hover:text-darkblue transition-colors <?= ($current_page == 'Tma') ? 'bg-blue-50/50 text-darkblue font-black' : '' ?>">Tinggi Muka Air</a>
                             </div>
                         </div>
 
                         <div class="relative group h-full">
-                            <button class="nav-link relative h-full flex items-center gap-1 transition-colors duration-300 <?= ($current_page == 'peta') ? 'text-brandyellow' : 'text-darkblue hover:text-brandyellow' ?>">
+                            <button class="nav-link relative h-full flex items-center gap-1 transition-colors duration-300 <?= ($current_page == 'Peta') ? 'text-brandyellow' : 'text-darkblue hover:text-brandyellow' ?>">
                                 Peta 
                                 <svg class="nav-icon w-4 h-4 -rotate-90 transition-transform duration-300 group-hover:rotate-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                 </svg>
                             </button>
                             <div class="absolute top-full left-0 w-52 bg-white text-slate-800 shadow-xl rounded-xl overflow-hidden border border-gray-100 opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 ease-out z-50">
-                                <a href="<?= base_url('index.php/welcome/peta') ?>" class="block px-5 py-3.5 hover:bg-blue-50 hover:text-darkblue transition-colors border-b border-gray-50">Sebaran Stasiun</a>
+                                <a href="<?= base_url('Peta') ?>" class="block px-5 py-3.5 hover:bg-blue-50 hover:text-darkblue transition-colors border-b border-gray-50 <?= ($current_page == 'Peta') ? 'bg-blue-50/50 text-darkblue font-black' : '' ?>">Sebaran Stasiun</a>
                             </div>
                         </div>
                     </div>
@@ -103,20 +104,20 @@
 
                 <div id="mobile-menu" class="hidden md:hidden border-t border-gray-100">
                     <div class="px-6 py-4 space-y-4">
-                        <a href="<?= base_url() ?>" class="mobile-nav-link block font-semibold <?= $is_home ? 'text-brandyellow' : 'text-darkblue hover:text-brandyellow' ?>">Beranda</a>
+                        <a href="<?= base_url('Dashboard') ?>" class="mobile-nav-link block font-semibold <?= $is_home ? 'text-brandyellow' : 'text-darkblue hover:text-brandyellow' ?>">Beranda</a>
                         
                         <div>
                             <p class="font-semibold text-gray-400 mb-2 uppercase text-xs tracking-widest">Data</p>
                             <div class="flex flex-col gap-3 pl-3 border-l border-gray-200">
-                                <a href="<?= base_url('index.php/welcome/curah_hujan') ?>" class="mobile-nav-link <?= ($current_page == 'curah_hujan') ? 'text-brandyellow font-semibold' : 'text-darkblue hover:text-brandyellow' ?>">Curah Hujan</a>
-                                <a href="<?= base_url('index.php/welcome/tma') ?>" class="mobile-nav-link <?= ($current_page == 'tma') ? 'text-brandyellow font-semibold' : 'text-darkblue hover:text-brandyellow' ?>">Tinggi Muka Air</a>
+                                <a href="<?= base_url('CurahHujan') ?>" class="mobile-nav-link <?= ($current_page == 'CurahHujan') ? 'text-brandyellow font-semibold' : 'text-darkblue hover:text-brandyellow' ?>">Curah Hujan</a>
+                                <a href="<?= base_url('Tma') ?>" class="mobile-nav-link <?= ($current_page == 'Tma') ? 'text-brandyellow font-semibold' : 'text-darkblue hover:text-brandyellow' ?>">Tinggi Muka Air</a>
                             </div>
                         </div>
 
                         <div>
                             <p class="font-semibold text-gray-400 mb-2 uppercase text-xs tracking-widest">Peta</p>
                             <div class="flex flex-col gap-3 pl-3 border-l border-gray-200">
-                                <a href="<?= base_url('index.php/welcome/peta') ?>" class="mobile-nav-link text-darkblue hover:text-brandyellow">Sebaran Stasiun</a>
+                                <a href="<?= base_url('Peta') ?>" class="mobile-nav-link <?= ($current_page == 'Peta') ? 'text-brandyellow font-semibold' : 'text-darkblue hover:text-brandyellow' ?>">Sebaran Stasiun</a>
                             </div>
                         </div>
                     </div>
@@ -178,3 +179,5 @@
             });
         }
 </script>
+</body>
+</html>

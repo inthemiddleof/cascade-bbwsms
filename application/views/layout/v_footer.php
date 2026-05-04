@@ -1,13 +1,24 @@
 <footer class="bg-darkblue pt-20 pb-10 border-t-4 border-brandyellow">
         <div class="max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-10">
             
-            <div class="lg:col-span-5">
-                <div class="flex items-center gap-3 mb-6">
+                <div class="lg:col-span-5">
+                    <div class="flex items-center gap-4 mb-6 group cursor-default">
                     <img src="<?= base_url('assets/img/logobbwsms.png') ?>"
                          alt="Logo BBWS Mesuji Sekampung"
-                         class="h-12 w-auto object-contain transition-all duration-300 bg-white p-1.5 rounded-xl shadow-md">
-                    <span class="text-white font-bold tracking-widest text-xl"><?= $app_name ?></span>
+                         class="h-12 md:h-14 w-auto object-contain transition-transform duration-300 bg-white p-1.5 rounded-xl shadow-md group-hover:scale-105">
+                    
+                    <div class="h-10 w-px bg-white/20 group-hover:bg-brandyellow transition-colors duration-300"></div>
+                    
+                    <div class="flex flex-col justify-center transition-all duration-300">
+                        <span class="text-[10px] md:text-xs font-bold tracking-[0.25em] text-slate-400 uppercase mb-1 leading-none group-hover:text-white transition-colors duration-300">
+                            Sistem Informasi
+                        </span>
+                        <span class="font-black text-lg md:text-xl tracking-wide text-white leading-none group-hover:text-brandyellow transition-colors duration-300">
+                            HIDROLOGI
+                        </span>
+                    </div>
                 </div>
+
                 <p class="text-slate-400 font-light text-sm leading-relaxed mb-8 max-w-sm">
                     Sistem Informasi Hidrologi dan Kualitas Air terpadu untuk monitoring dan pelaporan wilayah Sungai Mesuji Sekampung.
                 </p>

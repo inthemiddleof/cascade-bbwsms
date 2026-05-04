@@ -1,4 +1,4 @@
-<main class="bg-slate-50 min-h-screen pb-24 text-slate-800 lg:pt-36">
+<main class="bg-slate-50 min-h-screen pb-24 text-slate-800 pt-32">
     <div class="max-w-7xl mx-auto px-6 lg:px-12">
         
         <div class="mb-8 border-l-4 border-brandyellow pl-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
@@ -8,7 +8,7 @@
             </div>
             
             <div class="flex items-center gap-4 bg-white p-2 pr-4 rounded-xl shadow-sm border border-slate-200">
-                <form action="<?= base_url('index.php/welcome/curah_hujan') ?>" method="GET" class="flex items-center gap-3">
+                <form action="<?= base_url('index.php/CurahHujan') ?>" method="GET" class="flex items-center gap-3">
                     <input type="date" name="tanggal" value="<?= $tanggal_pilih ?>" 
                            class="bg-slate-50 border border-slate-200 text-darkblue text-xs font-bold rounded-lg px-3 py-2 cursor-pointer outline-none focus:ring-2 focus:ring-blue-500"
                            onchange="this.form.submit()">
@@ -93,25 +93,34 @@
         ?>
 
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="bg-darkblue px-6 py-4 flex justify-between items-center">
+            
+            <div class="bg-darkblue px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 relative z-20">
                 <h3 class="text-white text-xs font-bold tracking-widest uppercase">Data Pengamatan Curah Hujan</h3>
+                
+                <div class="relative w-full sm:w-72">
+                    <input type="text" id="searchPos" placeholder="Cari nama pos atau stasiun..." 
+                           class="w-full bg-white/10 border border-white/20 text-white placeholder-blue-200 text-xs font-medium rounded-lg px-3 py-2.5 pl-9 focus:outline-none focus:ring-2 focus:ring-brandyellow transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-2.5 text-blue-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
             </div>
 
-            <div class="overflow-x-auto table-container">
+            <div class="overflow-x-auto overflow-y-auto max-h-[600px] table-container relative">
                 <table class="w-full text-[11px] text-left border-collapse min-w-[950px]" id="rainTable">
-                    <thead class="text-darkblue font-bold uppercase text-center bg-slate-80">
+                    <thead class="text-darkblue font-bold uppercase text-center sticky top-0 z-20 shadow-sm">
                         <tr>
-                            <th rowspan="2" class="p-4 border-b border-r border-slate-200 w-12">No</th>
-                            <th rowspan="2" class="p-4 border-b border-r border-slate-200 min-w-[280px] text-left">Nama Pos / Stasiun</th>
-                            <th colspan="4" class="p-3 border-b border-r border-slate-200 bg-blue-50/50">Waktu Pengamatan (WIB)</th>
-                            <th rowspan="2" class="p-4 border-b border-r border-slate-200 w-24">Total (mm)</th>
-                            <th rowspan="2" class="p-4 border-b border-slate-200 w-24">Manual (mm)</th>
+                            <th rowspan="2" class="p-4 border-b border-r border-slate-300 bg-slate-100 w-12">No</th>
+                            <th rowspan="2" class="p-4 border-b border-r border-slate-300 bg-slate-100 min-w-[280px] text-left">Nama Pos / Stasiun</th>
+                            <th colspan="4" class="p-3 border-b border-r border-slate-300 bg-blue-100">Waktu Pengamatan (WIB)</th>
+                            <th rowspan="2" class="p-4 border-b border-r border-slate-300 bg-slate-100 w-24">Total (mm)</th>
+                            <th rowspan="2" class="p-4 border-b border-slate-300 bg-slate-100 w-24">Manual (mm)</th>
                         </tr>
-                        <tr class="text-[10px] bg-blue-50/30">
-                            <th class="p-2 border-b border-r border-slate-200">00.00 - 06.00</th>
-                            <th class="p-2 border-b border-r border-slate-200">06.01 - 12.00</th>
-                            <th class="p-2 border-b border-r border-slate-200">12.01 - 18.00</th>
-                            <th class="p-2 border-b border-r border-slate-200">18.01 - 23.59</th>
+                        <tr class="text-[10px]">
+                            <th class="p-2 border-b border-r border-slate-300 bg-blue-50">00.00 - 06.00</th>
+                            <th class="p-2 border-b border-r border-slate-300 bg-blue-50">06.01 - 12.00</th>
+                            <th class="p-2 border-b border-r border-slate-300 bg-blue-50">12.01 - 18.00</th>
+                            <th class="p-2 border-b border-r border-slate-300 bg-blue-50">18.01 - 23.59</th>
                         </tr>
                     </thead>
                     <tbody class="text-slate-800">
@@ -150,8 +159,8 @@
 </main>
 
 <style>
-    /* Styling Scrollbar khusus untuk tabel */
     .table-container::-webkit-scrollbar {
+        width: 8px;
         height: 8px;
     }
     .table-container::-webkit-scrollbar-track {
@@ -173,12 +182,35 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        
+        const searchInput = document.getElementById("searchPos");
+        const tableRows = document.querySelectorAll("#rainTable tbody tr");
+
+        if (searchInput) {
+            searchInput.addEventListener("input", function() {
+                const searchTerm = this.value.toLowerCase();
+
+                tableRows.forEach(row => {
+                    const posNameCell = row.querySelector("td:nth-child(2)"); 
+                    
+                    if (posNameCell) {
+                        const posName = posNameCell.textContent.toLowerCase();
+                        if (posName.includes(searchTerm)) {
+                            row.style.display = "";
+                        } else {
+                            row.style.display = "none";
+                        }
+                    }
+                });
+            });
+        }
+
         const table = document.getElementById("rainTable");
         const cells = table.querySelectorAll("td, th");
 
         cells.forEach(cell => {
             cell.addEventListener("mouseenter", function() {
-                if (this.cellIndex > 1 && this.cellIndex < 6) { // Hanya overlay pada kolom w1-w4
+                if (this.cellIndex > 1 && this.cellIndex < 6) {
                     const colIndex = this.cellIndex;
                     const rows = table.querySelectorAll("tr");
                     rows.forEach(row => {

@@ -135,24 +135,44 @@
     let currentChart = null;
     const posDataStore = {}; // Menyimpan data historis dari PHP ke JS
 
-    // Setup Marker Style
-    function getMarkerConfig(tipe, val, merah, kuning) {
+    // Setup Marker Style Baru
+    function getMarkerConfig(tipe, val, merah, kuning, last_update) {
         let statusClass = 'bg-offline';
         let pulseClass = '';
-        let iconContent = (tipe === 'PDA') ? '💧' : '🌤️';
+        
+        // Ikon default sesuai jenis pos
+        let iconContent = (tipe === 'PDA') ? '💧' : '🌧️';
 
-        if (val !== null && val !== undefined) {
+        // Pengecekan pos online atau tidak berdasarkan last_update
+        if (last_update && last_update !== '') {
             if (tipe === 'PDA') {
-                if (val >= merah && merah > 0) { statusClass = 'bg-danger'; pulseClass = 'pulse-danger'; iconContent = '⚠️'; }
-                else if (val >= kuning && kuning > 0) { statusClass = 'bg-warning'; iconContent = '🌊'; }
-                else { statusClass = 'bg-normal'; }
-            } else {
-                if (val >= 50) { statusClass = 'bg-danger'; iconContent = '⛈️'; }
-                else if (val > 0) { statusClass = 'bg-normal'; iconContent = '🌧️'; }
+                if (val >= merah && merah > 0) { 
+                    statusClass = 'bg-danger'; 
+                    pulseClass = 'pulse-danger'; 
+                    iconContent = '⚠️'; 
+                }
+                else if (val >= kuning && kuning > 0) { 
+                    statusClass = 'bg-warning'; 
+                    iconContent = '🌊'; 
+                }
+                else { 
+                    statusClass = 'bg-normal'; 
+                }
+            } else { // PCH (Hujan)
+                if (val >= 50) { 
+                    statusClass = 'bg-danger'; 
+                    iconContent = '⛈️'; 
+                }
+                else { 
+                    statusClass = 'bg-normal'; 
+                }
             }
         } else {
-            iconContent = '❓';
+            // Jika offline, biarkan background tetap offline (abu-abu)
+            // Ikon tetap terjaga pada 💧 atau 🌧️ sesuai inisiasi di atas
+            statusClass = 'bg-offline';
         }
+        
         return { statusClass, pulseClass, iconContent };
     }
 
@@ -246,7 +266,8 @@
 
         posDataStore[p.id] = p; // Daftarkan di memori JS untuk dipanggil Sidebar Kiri
 
-        let mConfig = getMarkerConfig(p.tipe, p.last_update ? p.val : null, p.merah, p.kuning);
+        // Panggil fungsi getMarkerConfig dengan passing variabel last_update
+        let mConfig = getMarkerConfig(p.tipe, p.val, p.merah, p.kuning, p.last_update);
 
         const customIcon = L.divIcon({
             className: 'custom-div-icon',
