@@ -57,7 +57,7 @@
             <div id="nav-container" class="flex justify-between items-center h-16 lg:h-20">
                 
                     <a href="<?= base_url() ?>" class="flex items-center gap-3 md:gap-4 group">
-                        <img src="<?= base_url('assets/img/logobbwsms.png') ?>"
+                        <img src="<?= base_url('assets/img/logobbwsmsbaru.png') ?>"
                              alt="Logo BBWS Mesuji Sekampung"
                              class="h-12 md:h-14 w-auto object-contain transition-transform duration-300 group-hover:scale-105">
                         

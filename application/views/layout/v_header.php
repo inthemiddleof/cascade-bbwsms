@@ -47,10 +47,9 @@
                 <div id="nav-container" class="px-6 lg:px-8 flex justify-between items-center h-16 lg:h-20 transition-all duration-300 ease-in-out">
                     
                     <a href="<?= base_url() ?>" class="flex items-center gap-3 md:gap-4 group">
-                        <img src="<?= base_url('assets/img/logobbwsms.png') ?>"
+                        <img src="<?= base_url('assets/img/logobbwsmsbaru.png') ?>"
                              alt="Logo BBWS Mesuji Sekampung"
                              class="h-12 md:h-14 w-auto object-contain transition-transform duration-300 group-hover:scale-105">
-                        
                         <div class="hidden sm:block h-10 w-px bg-gray-200 group-hover:bg-brandyellow transition-colors duration-300"></div>
                         
                         <div id="app-name" class="flex flex-col justify-center transition-all duration-300">

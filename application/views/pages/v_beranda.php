@@ -2,7 +2,6 @@
     
     <div class="absolute inset-0 bg-darkblue/70 mix-blend-multiply"></div>
     <div class="absolute inset-0 bg-gradient-to-t from-darkblue/90 via-transparent to-transparent"></div>
-
     <div class="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] z-[5]">
         <svg class="relative block w-full h-[60px] md:h-[80px] lg:h-[100px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
             <path class="wave-top" d="M0,64L80,58.7C160,53,320,43,480,48C640,53,800,75,960,80C1120,85,1280,75,1360,69.3L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z" fill="#0a2a4a" fill-opacity="0.4"/>
@@ -16,7 +15,6 @@
             <path d="M0,64L80,58.7C160,53,320,43,480,48C640,53,800,75,960,80C1120,85,1280,75,1360,69.3L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z" fill="#1a6bbf" fill-opacity="0.3"/>
         </svg>
     </div>
-
     <div class="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-12 flex flex-col lg:flex-row items-center justify-between gap-12 py-16">
         
         <div class="w-full lg:w-1/2 text-white">
@@ -91,41 +89,11 @@
                     </div>
 
                 </div>
-                </div>
+            </div>
         </div>
         
     </div>
 </header>
-
-<style>
-    @keyframes waveAnimation {
-        0% { transform: translateX(0) translateY(0); }
-        25% { transform: translateX(-25px) translateY(-5px); }
-        50% { transform: translateX(-50px) translateY(0); }
-        75% { transform: translateX(-25px) translateY(5px); }
-        100% { transform: translateX(0) translateY(0); }
-    }
-
-    .animate-wave {
-        animation: waveAnimation 8s ease-in-out infinite;
-    }
-
-    /* Gelombang statis dengan gradasi */
-    .wave-top, .wave-middle, .wave-bottom {
-        transition: all 0.3s ease;
-    }
-
-    /* Hover effect untuk gelombang */
-    header:hover .wave-top { transform: translateY(-3px); }
-    header:hover .wave-middle { transform: translateY(-2px); }
-
-    @media (max-width: 768px) {
-        .animate-wave {
-            animation-duration: 6s;
-        }
-    }
-</style>
-
 <section class="relative py-24 overflow-hidden bg-slate-50">
     <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full opacity-5 pointer-events-none">
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-full fill-darkblue">
@@ -194,200 +162,325 @@
         </div>
     </div>
 </section>
+<section id="galeri" class="py-24 bg-slate-50 relative">
+    <div class="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-white to-transparent pointer-events-none"></div>
 
-<section id="galeri" class="py-24 bg-white">
-    
-    <div class="max-w-7xl mx-auto px-6 lg:px-12">
-        
-        <div class="max-w-7xl mx-auto px-6 lg:px-12">
-        <div class="mb-8">
-            <h2 class="text-2xl font-black text-darkblue uppercase tracking-tight">Kondisi Bendungan</h2>
-            <p class="text-slate-500 font-light">Klik pada ikon bendungan untuk melihat detail teknis.</p>
+    <div class="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+            <div>
+                <div class="inline-block px-3 py-1 bg-brandyellow/20 text-yellow-600 text-[10px] font-bold rounded-md mb-3 tracking-[0.2em] uppercase">
+                    Peta Sebaran
+                </div>
+                <h2 class="text-3xl md:text-4xl font-black text-darkblue uppercase tracking-tight">Kondisi <span class="text-transparent bg-clip-text bg-gradient-to-r from-darkblue to-blue-500">Bendungan</span></h2>
+                <p class="text-slate-500 font-light mt-2 max-w-2xl">Pantau lokasi, level air, dan curah hujan di berbagai titik bendungan secara interaktif. Klik pada ikon marker yang berdenyut untuk melihat detail teknis.</p>
+            </div>
         </div>
-        
+
         <!-- Container Peta -->
-        <div id="map" class="w-full h-[500px] rounded-3xl shadow-xl border-4 border-white overflow-hidden z-10"></div>
-    </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="relative p-2 bg-white rounded-[2.5rem] shadow-2xl border border-slate-100">
+            <div id="map" class="w-full h-[450px] md:h-[600px] rounded-[2rem] overflow-hidden z-10 bg-slate-100"></div>
         </div>
-
-        <div class="mt-10 text-center md:hidden">
-            <a href="#" class="inline-flex items-center justify-center px-6 py-3 border-2 border-darkblue text-darkblue font-bold rounded-lg w-full">
-                Lihat Semua Galeri
-            </a>
-        </div>
-
     </div>
 </section>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-
-<script>
-    // 1. Data dari Controller
-    var mapData = <?= json_encode($map_data) ?>;
-
-    // 2. Inisialisasi Map (Tanpa setView karena akan menggunakan fitBounds)
-    var map = L.map('map');
-
-    // 3. Tile Layer "HD" (Google Satellite Hybrid untuk detail maksimal)
-    var googleHybrid = L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
-        maxZoom: 20,
-        subdomains:['mt0','mt1','mt2','mt3'],
-        attribution: '© Google Maps Satellite'
-    }).addTo(map);
-
-    // 4. Konfigurasi Ikon Kustom
-    var damIcon = L.icon({
-        iconUrl: '<?= base_url("assets/img/logoair.jpg"); ?>',
-        iconSize: [45, 45], // Ukuran sedikit diperbesar agar lebih jelas
-        iconAnchor: [22, 45], 
-        popupAnchor: [0, -45],
-        className: 'custom-marker-shadow' // Untuk tambahan CSS nantinya
-    });
-
-    // Array untuk menampung koordinat agar bisa auto-zoom (fitBounds)
-    var markersArray = [];
-
-    // 5. Perulangan Data Bendungan
-    // 5. Perulangan Data Bendungan
-mapData.forEach(function(item) {
-    var latLng = [parseFloat(item.lat), parseFloat(item.lng)];
-    markersArray.push(latLng);
-
-    // Konten Popup dengan Data Teknis Tambahan
-    var popupContent = `
-        <div class="custom-popup-container">
-            <div class="popup-header">
-                <strong>${item.nama}</strong>
-                <span class="status-badge">${item.wlevel} m</span>
-            </div>
-            
-            <div class="popup-body">
-                <div class="data-section">
-                    <p class="section-title">Monitoring Real-time</p>
-                    <div class="grid-data">
-                        <span>Hujan: <b>${item.rain} mm</b></span>
-                        <span>Update: <small>${item.last_update}</small></span>
-                    </div>
-                </div>
-
-                <div class="data-section tech-info">
-                    <p class="section-title">Data Teknis Bendungan</p>
-                    <table class="tech-table">
-                        <tr><td>Tipe</td><td>: ${item.tipe || '-'}</td></tr>
-                        <tr><td>Pj. Puncak</td><td>: ${item.pj_puncak || '-'} m</td></tr>
-                        <tr><td>Elev. Puncak (Tepi)</td><td>: ${item.el_tepi || '-'} m</td></tr>
-                        <tr><td>Elev. Puncak (Tengah)</td><td>: ${item.el_tengah || '-'} m</td></tr>
-                        <tr><td>Lebar Puncak</td><td>: ${item.lb_puncak || '-'} m</td></tr>
-                        <tr><td>Tinggi Max</td><td>: ${item.tinggi_max || '-'} m</td></tr>
-                        <tr><td>Vol. Timbunan</td><td>: ${item.vol_timbunan || '-'} m³</td></tr>
-                        <tr><td>Pj. Inspeksi</td><td>: ${item.pj_inspeksi || '-'} m</td></tr>
-                        <tr><td>Pj. Akses</td><td>: ${item.pj_akses || '-'} m</td></tr>
-                    </table>
-                </div>
-            </div>
-
-            <a href="<?= base_url('Peta') ?>" class="popup-btn">LIHAT PETA</a>
-        </div>
-    `;
-    
-    // Buat Marker
-var marker = L.marker(latLng, {icon: damIcon})
-    .addTo(map)
-    .bindPopup(popupContent, {
-        maxWidth: 280,      // Batasi lebar maksimal
-        minWidth: 250,      // Kunci lebar minimal agar tidak menciut saat zoom out
-        className: 'custom-leaflet-popup' // Tambahkan class khusus
-    });
-
-    marker.on('click', function() {
-        map.flyTo(latLng, 16, {
-            animate: true,
-            duration: 1.5
-        });
-    });
-});
-
-    // 7. PURE FOCUS: Otomatis memfokuskan kamera ke semua bendungan yang ada
-    if (markersArray.length > 0) {
-        var bounds = L.latLngBounds(markersArray);
-        map.fitBounds(bounds, {
-            padding: [50, 50],
-            maxZoom: 15 // Agar tidak terlalu zoom-in jika hanya ada 1 titik
-        });
-    }
-</script>
-
 <style>
-    /* Styling khusus untuk Popup agar terlihat profesional */
+    @keyframes waveAnimation {
+        0% { transform: translateX(0) translateY(0); }
+        25% { transform: translateX(-25px) translateY(-5px); }
+        50% { transform: translateX(-50px) translateY(0); }
+        75% { transform: translateX(-25px) translateY(5px); }
+        100% { transform: translateX(0) translateY(0); }
+    }
+    .animate-wave {
+        animation: waveAnimation 8s ease-in-out infinite;
+    }
+    .wave-top, .wave-middle, .wave-bottom {
+        transition: all 0.3s ease;
+    }
+    header:hover .wave-top { transform: translateY(-3px); }
+    header:hover .wave-middle { transform: translateY(-2px); }
+    @media (max-width: 768px) {
+        .animate-wave {
+            animation-duration: 6s;
+        }
+    }
+
+    /* ANIMATED CSS MARKER PETA */
+    .custom-div-icon {
+        background: transparent;
+        border: none;
+    }
+    .marker-pin {
+        width: 30px;
+        height: 30px;
+        border-radius: 50% 50% 50% 0;
+        background: #0a2a4a;
+        position: absolute;
+        transform: rotate(-45deg);
+        left: 50%;
+        top: 50%;
+        margin: -15px 0 0 -15px;
+        border: 2px solid #feb700;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        transition: transform 0.3s ease;
+    }
+    .marker-pin::after {
+        content: '';
+        width: 14px;
+        height: 14px;
+        margin: 6px 0 0 6px;
+        background: #fff;
+        position: absolute;
+        border-radius: 50%;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .custom-div-icon:hover .marker-pin {
+        transform: rotate(-45deg) scale(1.1);
+        background: #134a7a;
+    }
+    .marker-pulse {
+        width: 30px;
+        height: 30px;
+        background: rgba(254, 183, 0, 0.6);
+        border-radius: 50%;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        margin: -15px 0 0 -15px;
+        animation: map-pulse 2s infinite;
+        z-index: -1;
+    }
+    @keyframes map-pulse {
+        0% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(2.5); opacity: 0; }
+    }
+
+    .leaflet-popup-content-wrapper {
+        padding: 0;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+    .leaflet-popup-content {
+        margin: 0;
+        width: 320px !important;
+    }
+    .leaflet-popup-tip-container {
+        margin-top: -1px;
+    }
     .custom-popup-container {
-        min-width: 250px;
-        font-family: 'Poppins', sans-serif;
+        font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
     }
     .popup-header {
-        background: #134a7a;
+        background: linear-gradient(135deg, #0a2a4a 0%, #134a7a 100%);
         color: white;
-        padding: 10px;
-        margin: -14px -14px 10px -14px; /* offset Leaflet default padding */
-        border-radius: 4px 4px 0 0;
+        padding: 16px;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        gap: 8px;
     }
-    .status-badge {
-        background: #feb700;
-        color: #0a2a4a;
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-weight: bold;
-        font-size: 11px;
+    .popup-title {
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        margin: 0;
+        line-height: 1.2;
+    }
+    .update-badge {
+        background: rgba(255,255,255,0.15);
+        color: #fff;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 9px;
+        text-align: right;
+        min-width: fit-content;
+    }
+    .popup-body {
+        padding: 16px;
+        background: #fff;
+        max-height: 260px; 
+        overflow-y: auto;  
+    }
+   
+    .popup-body::-webkit-scrollbar {
+        width: 6px;
+    }
+    .popup-body::-webkit-scrollbar-track {
+        background: #f1f5f9; 
+    }
+    .popup-body::-webkit-scrollbar-thumb {
+        background: #cbd5e1; 
+        border-radius: 10px;
+    }
+    .popup-body::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8; 
+    }
+
+    .data-section {
+        margin-bottom: 16px;
     }
     .section-title {
-        font-weight: bold;
-        color: #134a7a;
-        font-size: 11px;
+        font-weight: 700;
+        color: #64748b;
+        font-size: 10px;
         text-transform: uppercase;
-        margin-bottom: 5px;
-        border-bottom: 1px solid #eee;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
     }
+    .section-title::after {
+        content: '';
+        height: 1px;
+        flex: 1;
+        background: #f1f5f9;
+    }
+    
+    /* Tabel Data Teknis */
     .tech-table {
         width: 100%;
         font-size: 11px;
         border-collapse: collapse;
-        color: #444;
     }
+    .tech-table tr:nth-child(even) { background: #f8fafc; }
     .tech-table td {
-        padding: 2px 0;
+        padding: 6px 8px;
+        border-bottom: 1px solid #f1f5f9;
     }
     .tech-table td:first-child {
-        width: 60%;
-        color: #777;
+        color: #64748b;
+        font-weight: 500;
+        width: 50%;
     }
-    .grid-data {
-        display: flex;
-        flex-direction: column;
-        margin-bottom: 12px;
-        font-size: 12px;
+    .tech-table td:last-child {
+        color: #0f172a;
+        font-weight: 600;
+        text-align: left;
     }
     .popup-btn {
         display: block;
-        margin-top: 15px;
         text-align: center;
-        background: #134a7a;
-        color: white !important;
-        padding: 10px;
-        border-radius: 6px;
+        background: #f8fafc;
+        color: #0a2a4a !important;
+        padding: 12px;
         text-decoration: none;
-        font-size: 11px;
-        font-weight: bold;
-        transition: background 0.3s;
+        font-size: 12px;
+        font-weight: 700;
+        transition: all 0.2s;
+        border-top: 1px solid #e2e8f0;
     }
     .popup-btn:hover {
-        background: #0d3d66;
+        background: #feb700;
+        color: #0a2a4a !important;
     }
 </style>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var mapData = <?= json_encode($map_data) ?>;
+
+        var map = L.map('map', {
+            zoomControl: false 
+        });
+
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+        var googleHybrid = L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            subdomains:['mt0','mt1','mt2','mt3'],
+            attribution: '© Google Maps'
+        }).addTo(map);
+
+        var modernIcon = L.divIcon({
+            className: 'custom-div-icon',
+            html: "<div class='marker-pulse'></div><div class='marker-pin'></div>",
+            iconSize: [30, 42],
+            iconAnchor: [15, 42],
+            popupAnchor: [0, -40]
+        });
+
+        var markersArray = [];
+
+        mapData.forEach(function(item) {
+            var latLng = [parseFloat(item.lat), parseFloat(item.lng)];
+            markersArray.push(latLng);
+
+            var popupContent = `
+                <div class="custom-popup-container">
+                    <div class="popup-header">
+                        <h4 class="popup-title">${item.nama}</h4>
+                        <span class="update-badge">${item.last_update}</span>
+                    </div>
+                    
+                    <div class="popup-body">
+                        
+                        <!-- CARD TMA & CURAH HUJAN BERSAMAAN -->
+                        <div class="data-section">
+                            <p class="section-title">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                Hidrologi Aktual
+                            </p>
+                            <div class="flex gap-2">
+                                <div class="flex-1 bg-blue-50 border border-blue-100 rounded-lg p-3 flex flex-col items-center justify-center text-center">
+                                    <span class="text-[9px] text-blue-600 font-bold uppercase mb-1 tracking-wider">TMA (Level Air)</span>
+                                    <span class="text-xl font-black text-darkblue leading-none">${item.wlevel} <span class="text-xs font-medium text-slate-500">m</span></span>
+                                </div>
+                                <div class="flex-1 bg-yellow-50 border border-yellow-100 rounded-lg p-3 flex flex-col items-center justify-center text-center">
+                                    <span class="text-[9px] text-yellow-600 font-bold uppercase mb-1 tracking-wider">Curah Hujan</span>
+                                    <span class="text-xl font-black text-darkblue leading-none">${item.rain} <span class="text-xs font-medium text-slate-500">mm</span></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TABEL DATA TEKNIS -->
+                        <div class="data-section">
+                            <p class="section-title">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                Detail Teknis
+                            </p>
+                            <table class="tech-table">
+                                <tr><td>Tipe</td><td>: ${item.tipe || '-'}</td></tr>
+                                <tr><td>Pj. Puncak</td><td>: ${item.pj_puncak || '-'} m</td></tr>
+                                <tr><td>Elev. Puncak (Tepi)</td><td>: ${item.el_tepi || '-'} m</td></tr>
+                                <tr><td>Elev. Puncak (Tengah)</td><td>: ${item.el_tengah || '-'} m</td></tr>
+                                <tr><td>Lebar Puncak</td><td>: ${item.lb_puncak || '-'} m</td></tr>
+                                <tr><td>Tinggi Max</td><td>: ${item.tinggi_max || '-'} m</td></tr>
+                                <tr><td>Vol. Timbunan</td><td>: ${item.vol_timbunan || '-'} m³</td></tr>
+                                <tr><td>Pj. Inspeksi</td><td>: ${item.pj_inspeksi || '-'} m</td></tr>
+                                <tr><td>Pj. Akses</td><td>: ${item.pj_akses || '-'} m</td></tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <a href="<?= base_url('Peta') ?>" class="popup-btn">LIHAT PETA PENUH</a>
+                </div>
+            `;
+            
+            var marker = L.marker(latLng, {icon: modernIcon})
+                .addTo(map)
+                // Menambahkan autoPanPadding agar popup tidak mepet ke batas atas map
+                .bindPopup(popupContent, { autoPanPadding: [20, 20] });
+
+            marker.on('click', function() {
+                map.flyTo(latLng, 16, {
+                    animate: true,
+                    duration: 1.5
+                });
+            });
+        });
+
+        if (markersArray.length > 0) {
+            var bounds = L.latLngBounds(markersArray);
+            map.fitBounds(bounds, {
+                padding: [50, 50],
+                maxZoom: 12
+            });
+        }
+    });
+</script>

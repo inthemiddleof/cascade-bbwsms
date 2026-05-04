@@ -3,7 +3,7 @@
             
                 <div class="lg:col-span-5">
                     <div class="flex items-center gap-4 mb-6 group cursor-default">
-                    <img src="<?= base_url('assets/img/logobbwsms.png') ?>"
+                    <img src="<?= base_url('assets/img/logobbwsmsbaru.png') ?>"
                          alt="Logo BBWS Mesuji Sekampung"
                          class="h-12 md:h-14 w-auto object-contain transition-transform duration-300 bg-white p-1.5 rounded-xl shadow-md group-hover:scale-105">
                     
