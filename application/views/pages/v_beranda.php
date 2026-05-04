@@ -34,7 +34,7 @@
             <p class="text-lg text-slate-300 font-light max-w-lg mb-8 leading-relaxed">
                 Menyajikan data riil data monitoring di wilayah sungai mesuji-sekampung dan wilayah mesuji-tulang bawang.
             </p>
-            <a href="#galeri" class="inline-flex items-center justify-center px-8 py-3.5 bg-brandyellow hover:bg-yellow-400 text-darkblue font-bold rounded-lg transition-all shadow-[0_0_20px_rgba(254,183,0,0.3)] hover:shadow-[0_0_25px_rgba(254,183,0,0.5)]">
+            <a href="<?= base_url('CurahHujan') ?>" class="inline-flex items-center justify-center px-8 py-3.5 bg-brandyellow hover:bg-yellow-400 text-darkblue font-bold rounded-lg transition-all shadow-[0_0_20px_rgba(254,183,0,0.3)] hover:shadow-[0_0_25px_rgba(254,183,0,0.5)]">
                 Jelajahi Data
             </a>
         </div>
@@ -201,7 +201,7 @@
         
         <div class="max-w-7xl mx-auto px-6 lg:px-12">
         <div class="mb-8">
-            <h2 class="text-2xl font-black text-darkblue uppercase tracking-tight">Sebaran Bendungan</h2>
+            <h2 class="text-2xl font-black text-darkblue uppercase tracking-tight">Kondisi Bendungan</h2>
             <p class="text-slate-500 font-light">Klik pada ikon bendungan untuk melihat detail teknis.</p>
         </div>
         
@@ -254,49 +254,64 @@
     var markersArray = [];
 
     // 5. Perulangan Data Bendungan
-    mapData.forEach(function(item) {
-        var latLng = [parseFloat(item.lat), parseFloat(item.lng)];
-        markersArray.push(latLng);
+    // 5. Perulangan Data Bendungan
+mapData.forEach(function(item) {
+    var latLng = [parseFloat(item.lat), parseFloat(item.lng)];
+    markersArray.push(latLng);
 
-        // Konten Popup yang sudah rapi
-        var popupContent = `
-            <div style="min-width: 200px; font-family: 'Poppins', sans-serif;">
-                <strong style="font-size:14px; color:#134a7a;">${item.nama}</strong><br>
-                <hr style="margin: 8px 0; border: 0; border-top: 1px solid #eee;">
-                <table style="width:100%; font-size:12px; border-collapse: collapse;">
-                    <tr>
-                        <td style="padding: 2px 0;">TMA</td>
-                        <td>: <b>${item.wlevel} m</b></td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 2px 0;">Hujan</td>
-                        <td>: <b>${item.rain} mm</b></td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 2px 0;">Update</td>
-                        <td>: <small class="text-muted">${item.last_update}</small></td>
-                    </tr>
-                </table>
-                <a href="<?= base_url('detail/bendungan/') ?>${item.nama.toLowerCase().replace(/ /g, '-')}" 
-                   style="display:block; margin-top:10px; text-align:center; background:#134a7a; color:white; padding:8px; border-radius:5px; text-decoration:none; font-size:11px; font-weight:bold;">
-                   LIHAT DETAIL LENGKAP
-                </a>
+    // Konten Popup dengan Data Teknis Tambahan
+    var popupContent = `
+        <div class="custom-popup-container">
+            <div class="popup-header">
+                <strong>${item.nama}</strong>
+                <span class="status-badge">${item.wlevel} m</span>
             </div>
-        `;
-        
-        // Buat Marker
-        var marker = L.marker(latLng, {icon: damIcon})
-            .addTo(map)
-            .bindPopup(popupContent);
+            
+            <div class="popup-body">
+                <div class="data-section">
+                    <p class="section-title">Monitoring Real-time</p>
+                    <div class="grid-data">
+                        <span>Hujan: <b>${item.rain} mm</b></span>
+                        <span>Update: <small>${item.last_update}</small></span>
+                    </div>
+                </div>
 
-        // 6. EVENT: Klik lokasi untuk Smooth Zoom (HD Experience)
-        marker.on('click', function() {
-            map.flyTo(latLng, 16, { // Zoom ke level 16 agar sangat detail
-                animate: true,
-                duration: 1.5
-            });
+                <div class="data-section tech-info">
+                    <p class="section-title">Data Teknis Bendungan</p>
+                    <table class="tech-table">
+                        <tr><td>Tipe</td><td>: ${item.tipe || '-'}</td></tr>
+                        <tr><td>Pj. Puncak</td><td>: ${item.pj_puncak || '-'} m</td></tr>
+                        <tr><td>Elev. Puncak (Tepi)</td><td>: ${item.el_tepi || '-'} m</td></tr>
+                        <tr><td>Elev. Puncak (Tengah)</td><td>: ${item.el_tengah || '-'} m</td></tr>
+                        <tr><td>Lebar Puncak</td><td>: ${item.lb_puncak || '-'} m</td></tr>
+                        <tr><td>Tinggi Max</td><td>: ${item.tinggi_max || '-'} m</td></tr>
+                        <tr><td>Vol. Timbunan</td><td>: ${item.vol_timbunan || '-'} m³</td></tr>
+                        <tr><td>Pj. Inspeksi</td><td>: ${item.pj_inspeksi || '-'} m</td></tr>
+                        <tr><td>Pj. Akses</td><td>: ${item.pj_akses || '-'} m</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <a href="<?= base_url('Peta') ?>" class="popup-btn">LIHAT PETA</a>
+        </div>
+    `;
+    
+    // Buat Marker
+var marker = L.marker(latLng, {icon: damIcon})
+    .addTo(map)
+    .bindPopup(popupContent, {
+        maxWidth: 280,      // Batasi lebar maksimal
+        minWidth: 250,      // Kunci lebar minimal agar tidak menciut saat zoom out
+        className: 'custom-leaflet-popup' // Tambahkan class khusus
+    });
+
+    marker.on('click', function() {
+        map.flyTo(latLng, 16, {
+            animate: true,
+            duration: 1.5
         });
     });
+});
 
     // 7. PURE FOCUS: Otomatis memfokuskan kamera ke semua bendungan yang ada
     if (markersArray.length > 0) {
@@ -309,17 +324,70 @@
 </script>
 
 <style>
-    /* Membuat tampilan marker lebih "hidup" */
-    .leaflet-marker-icon {
-        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
-        cursor: pointer !important;
-        border-radius: 50%; /* Jika gambar bulat */
+    /* Styling khusus untuk Popup agar terlihat profesional */
+    .custom-popup-container {
+        min-width: 250px;
+        font-family: 'Poppins', sans-serif;
     }
-    
-    #map { 
-        height: 600px; 
-        width: 100%; 
-        border-radius: 12px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    .popup-header {
+        background: #134a7a;
+        color: white;
+        padding: 10px;
+        margin: -14px -14px 10px -14px; /* offset Leaflet default padding */
+        border-radius: 4px 4px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .status-badge {
+        background: #feb700;
+        color: #0a2a4a;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: bold;
+        font-size: 11px;
+    }
+    .section-title {
+        font-weight: bold;
+        color: #134a7a;
+        font-size: 11px;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+        border-bottom: 1px solid #eee;
+    }
+    .tech-table {
+        width: 100%;
+        font-size: 11px;
+        border-collapse: collapse;
+        color: #444;
+    }
+    .tech-table td {
+        padding: 2px 0;
+    }
+    .tech-table td:first-child {
+        width: 60%;
+        color: #777;
+    }
+    .grid-data {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 12px;
+        font-size: 12px;
+    }
+    .popup-btn {
+        display: block;
+        margin-top: 15px;
+        text-align: center;
+        background: #134a7a;
+        color: white !important;
+        padding: 10px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 11px;
+        font-weight: bold;
+        transition: background 0.3s;
+    }
+    .popup-btn:hover {
+        background: #0d3d66;
     }
 </style>

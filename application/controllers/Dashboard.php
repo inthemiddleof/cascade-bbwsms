@@ -89,7 +89,7 @@ class Dashboard extends CI_Controller {
 
         $koordinat_bendungan = [
         ['nama' => 'Bendungan Batutegi', 'lat' => -5.251021126560068, 'lng' => 104.77911027418415],
-        ['nama' => 'Bendungan Sekampung', 'lat' => -5.3521978233079235, 'lng' => 104.91809621347446],
+        ['nama' => 'Bendungan Sekampung', 'lat' => -5.333278198094192, 'lng' => 104.91836085462279],
         ['nama' => 'Bendungan Way Rarem', 'lat' => -4.927468011391385, 'lng' => 104.78694612395397],
         ['nama' => 'Bendungan Way Jepara', 'lat' => -5.211567462399912, 'lng' => 105.67273735964285],
         ['nama' => 'Bendungan Marga Tiga', 'lat' => -5.207558751020262, 'lng' => 105.48742603587237],
