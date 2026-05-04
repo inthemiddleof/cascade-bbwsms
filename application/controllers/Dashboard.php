@@ -86,11 +86,35 @@ class Dashboard extends CI_Controller {
                 $status_bendungan = "WASPADA";
             }
         }
+
+        $koordinat_bendungan = [
+        ['nama' => 'Bendungan Batutegi', 'lat' => -5.251021126560068, 'lng' => 104.77911027418415],
+        ['nama' => 'Bendungan Sekampung', 'lat' => -5.3521978233079235, 'lng' => 104.91809621347446],
+        ['nama' => 'Bendungan Way Rarem', 'lat' => -4.927468011391385, 'lng' => 104.78694612395397],
+        ['nama' => 'Bendungan Way Jepara', 'lat' => -5.211567462399912, 'lng' => 105.67273735964285],
+        ['nama' => 'Bendungan Marga Tiga', 'lat' => -5.207558751020262, 'lng' => 105.48742603587237],
+    ];
+
+    // Ambil data telemetri terbaru untuk tiap bendungan (opsional untuk akurasi popup)
+    foreach ($koordinat_bendungan as &$bend) {
+        $this->db->select('t.wlevel, t.rain, t.received_at');
+        $this->db->from('data_telemetri t');
+        $this->db->join('master_pos m', 't.id_pos = m.id_pos');
+        $this->db->where('m.nama_pos LIKE', '%' . str_replace('Bendungan ', '', $bend['nama']) . '%');
+        $this->db->order_by('t.received_at', 'DESC');
+        $this->db->limit(1);
+        $res = $this->db->get()->row_array();
+        
+        $bend['wlevel'] = $res['wlevel'] ?? '0.00';
+        $bend['rain'] = $res['rain'] ?? '0.00';
+        $bend['last_update'] = isset($res['received_at']) ? date('H:i', strtotime($res['received_at'])) : '-';
+    }
     
         $data = [
             'app_name' => "CASCADE",
             'title'    => "Sistem Informasi Hidrologi",
             'hero_bg'  => "https://images.unsplash.com/photo-1545459723-861eb1bb3809",
+            'map_data' => $koordinat_bendungan,
             'dam_status' => [
                 'nama'   => !empty($latest_tma['nama_pos']) ? $latest_tma['nama_pos'] : 'Pos Belum Tersedia',
                 'level'  => number_format($latest_tma['wlevel'] ?? 0, 2),

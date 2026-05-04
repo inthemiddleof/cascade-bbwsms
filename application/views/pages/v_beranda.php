@@ -196,30 +196,20 @@
 </section>
 
 <section id="galeri" class="py-24 bg-white">
+    
     <div class="max-w-7xl mx-auto px-6 lg:px-12">
         
-        <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
-            <div>
-                <h2 class="text-3xl font-black text-darkblue uppercase tracking-tight">Kondisi Bendungan</h2>
-                <p class="text-slate-500 mt-2 font-light">Pemantauan Real Time Bendungan.</p>
-            </div>
+        <div class="max-w-7xl mx-auto px-6 lg:px-12">
+        <div class="mb-8">
+            <h2 class="text-2xl font-black text-darkblue uppercase tracking-tight">Sebaran Bendungan</h2>
+            <p class="text-slate-500 font-light">Klik pada ikon bendungan untuk melihat detail teknis.</p>
         </div>
+        
+        <!-- Container Peta -->
+        <div id="map" class="w-full h-[500px] rounded-3xl shadow-xl border-4 border-white overflow-hidden z-10"></div>
+    </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <?php foreach($galeri as $item): ?>
-            <div class="group relative aspect-square overflow-hidden rounded-xl bg-slate-100 cursor-pointer">
-                <img src="<?= base_url('assets/img/galeri/' . $item['foto']) ?>" 
-                     alt="<?= $item['judul'] ?>" 
-                     class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
-                
-                <div class="absolute inset-0 bg-darkblue/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
-                    <p class="text-brandyellow text-xs font-bold tracking-widest uppercase mb-1">
-                        <?= isset($item['kategori']) ? $item['kategori'] : 'Kegiatan' ?>
-                    </p>
-                    <p class="text-white font-medium"><?= $item['judul'] ?></p>
-                </div>
-            </div>
-            <?php endforeach; ?>
         </div>
 
         <div class="mt-10 text-center md:hidden">
@@ -230,3 +220,106 @@
 
     </div>
 </section>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+<script>
+    // 1. Data dari Controller
+    var mapData = <?= json_encode($map_data) ?>;
+
+    // 2. Inisialisasi Map (Tanpa setView karena akan menggunakan fitBounds)
+    var map = L.map('map');
+
+    // 3. Tile Layer "HD" (Google Satellite Hybrid untuk detail maksimal)
+    var googleHybrid = L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+        maxZoom: 20,
+        subdomains:['mt0','mt1','mt2','mt3'],
+        attribution: '© Google Maps Satellite'
+    }).addTo(map);
+
+    // 4. Konfigurasi Ikon Kustom
+    var damIcon = L.icon({
+        iconUrl: '<?= base_url("assets/img/logoair.jpg"); ?>',
+        iconSize: [45, 45], // Ukuran sedikit diperbesar agar lebih jelas
+        iconAnchor: [22, 45], 
+        popupAnchor: [0, -45],
+        className: 'custom-marker-shadow' // Untuk tambahan CSS nantinya
+    });
+
+    // Array untuk menampung koordinat agar bisa auto-zoom (fitBounds)
+    var markersArray = [];
+
+    // 5. Perulangan Data Bendungan
+    mapData.forEach(function(item) {
+        var latLng = [parseFloat(item.lat), parseFloat(item.lng)];
+        markersArray.push(latLng);
+
+        // Konten Popup yang sudah rapi
+        var popupContent = `
+            <div style="min-width: 200px; font-family: 'Poppins', sans-serif;">
+                <strong style="font-size:14px; color:#134a7a;">${item.nama}</strong><br>
+                <hr style="margin: 8px 0; border: 0; border-top: 1px solid #eee;">
+                <table style="width:100%; font-size:12px; border-collapse: collapse;">
+                    <tr>
+                        <td style="padding: 2px 0;">TMA</td>
+                        <td>: <b>${item.wlevel} m</b></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 2px 0;">Hujan</td>
+                        <td>: <b>${item.rain} mm</b></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 2px 0;">Update</td>
+                        <td>: <small class="text-muted">${item.last_update}</small></td>
+                    </tr>
+                </table>
+                <a href="<?= base_url('detail/bendungan/') ?>${item.nama.toLowerCase().replace(/ /g, '-')}" 
+                   style="display:block; margin-top:10px; text-align:center; background:#134a7a; color:white; padding:8px; border-radius:5px; text-decoration:none; font-size:11px; font-weight:bold;">
+                   LIHAT DETAIL LENGKAP
+                </a>
+            </div>
+        `;
+        
+        // Buat Marker
+        var marker = L.marker(latLng, {icon: damIcon})
+            .addTo(map)
+            .bindPopup(popupContent);
+
+        // 6. EVENT: Klik lokasi untuk Smooth Zoom (HD Experience)
+        marker.on('click', function() {
+            map.flyTo(latLng, 16, { // Zoom ke level 16 agar sangat detail
+                animate: true,
+                duration: 1.5
+            });
+        });
+    });
+
+    // 7. PURE FOCUS: Otomatis memfokuskan kamera ke semua bendungan yang ada
+    if (markersArray.length > 0) {
+        var bounds = L.latLngBounds(markersArray);
+        map.fitBounds(bounds, {
+            padding: [50, 50],
+            maxZoom: 15 // Agar tidak terlalu zoom-in jika hanya ada 1 titik
+        });
+    }
+</script>
+
+<style>
+    /* Membuat tampilan marker lebih "hidup" */
+    .leaflet-marker-icon {
+        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+        cursor: pointer !important;
+        border-radius: 50%; /* Jika gambar bulat */
+    }
+    
+    #map { 
+        height: 600px; 
+        width: 100%; 
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+</style>
