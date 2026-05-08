@@ -230,26 +230,54 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 2. Load Data WS (Wilayah Sungai)
-    var wsData = <?= $ws_geojson ?>; 
-    if (wsData) {
-        L.geoJSON(wsData, {
-            style: {
+    // --- LAYER WS (Wilayah Sungai) ---
+var wsData = <?= $ws_geojson ?>; 
+if (wsData) {
+    var wsLayer = L.geoJSON(wsData, {
+        style: function(feature) {
+            return {
                 fillColor: "#3498db",
-                weight: 1.5,
+                weight: 2,
                 opacity: 1,
                 color: '#2980b9',
-                fillOpacity: 0.05 
-            },
-            onEachFeature: function (feature, layer) {
-                if (feature.properties && feature.properties.WS) {
-                    layer.bindTooltip("Wilayah Sungai: " + feature.properties.WS, {
-                        sticky: true,
-                        className: 'ws-label'
-                    });
-                }
-            }
-        }).addTo(heroMap);
-    }
+                fillOpacity: 0.1 // Transparansi awal
+            };
+        },
+        onEachFeature: function (feature, layer) {
+            // 1. Interaksi saat Mouse Mendekat (Highlight)
+            layer.on('mouseover', function (e) {
+                var layer = e.target;
+                layer.setStyle({
+                    weight: 4,
+                    color: '#1a5276',
+                    fillOpacity: 0.3
+                });
+                layer.bringToFront(); // Agar garis highlight tidak tertutup DAS
+            });
+
+            // 2. Interaksi saat Mouse Keluar (Reset Style)
+            layer.on('mouseout', function (e) {
+                wsLayer.resetStyle(e.target);
+            });
+
+            // 3. Interaksi saat DIKLIK (Zoom ke Geometri WS)
+            layer.on('click', function (e) {
+                // Ini kuncinya: fitBounds akan mengikuti lekuk poligon, bukan sekadar kotak
+                heroMap.fitBounds(e.target.getBounds(), {
+                    padding: [50, 50], // Beri ruang di pinggir peta agar tidak terlalu mepet
+                    animate: true,
+                    duration: 1.5
+                });
+                
+                // Opsional: Tampilkan Popup nama WS
+                layer.bindPopup("<b>Wilayah Sungai:</b> " + feature.properties.WS).openPopup();
+            });
+
+            // Tooltip tetap ada jika diinginkan
+            layer.bindTooltip("WS: " + feature.properties.WS, { sticky: true });
+        }
+    }).addTo(heroMap);
+}
 
     // --- FUNGSI REUSABLE UNTUK MARKER CUSTOM ---
     function createCustomIcon(color) {
