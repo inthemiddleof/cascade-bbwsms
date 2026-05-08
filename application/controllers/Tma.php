@@ -12,7 +12,7 @@ class Tma extends CI_Controller {
     public function index() {
         $tanggal = $this->input->get('tanggal') ?: date('Y-m-d');
         
-        $data['app_name']      = "CASCADE";
+        $data['app_name']      = "HydroSmart";
         $data['title']         = "Tinggi Muka Air";
         $data['tanggal_pilih'] = $tanggal;
 

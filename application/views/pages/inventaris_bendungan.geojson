@@ -1,0 +1,217 @@
+{
+  "type": "FeatureCollection",
+  "name": "inventaris_bendungan",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          104.78095615,
+          -5.25453912
+        ]
+      },
+      "properties": {
+        "no": 1,
+        "nama_balai": "BBWS Mesuji Sekampung",
+        "nama_bendungan": "Batu Tegi",
+        "nomor_registrasi_bendungan": 2020020168,
+        "wilayah_sungai": "Seputih Sekampung",
+        "nama_das": "Sekampung",
+        "kewenangan_pemilik": "Pusat",
+        "kewenangan_op": "Pusat",
+        "lintas_kewenangan": "Dalam Kab/Kota",
+        "tahun_mulai_konstruksi": 1995,
+        "tahun_selesai_konstruksi": 2002,
+        "status_pemeliharaan": "Baik",
+        "status_serah_terima_op": "Sudah Serah Terima tapi belum ada BAST",
+        "provinsi": "Lampung",
+        "kabupaten_kota": "Tanggamus",
+        "kecamatan": "Air Naningan",
+        "kelurahan_desa": "Batu Tegi",
+        "tipe_bendungan": "Urugan Tanah",
+        "detail_tipe_bendungan": "Timbunan Batu Dengan Inti Tanah Kedap Air",
+        "tinggi_bendungan_m": 120,
+        "panjang_puncak_m": 283,
+        "lebar_puncak_m": 12,
+        "luas_genangan_m2": 1893300,
+        "manfaat": "DI Sekampung Sistem",
+        "tanggal_impounding": 2021,
+        "izin_operasi": "01/KB/M/2004 / 19-02-2004",
+        "latitude": -5.25453912,
+        "longitude": 104.78095615,
+        "sumber_sheet": "Bendungan"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          104.918286,
+          -5.333469
+        ]
+      },
+      "properties": {
+        "no": 2,
+        "nama_balai": "BBWS Mesuji Sekampung",
+        "nama_bendungan": "Way Sekampung",
+        "nomor_registrasi_bendungan": 2020210257,
+        "wilayah_sungai": "Seputih Sekampung",
+        "nama_das": "Sekampung",
+        "kewenangan_pemilik": "Pusat",
+        "kewenangan_op": "Pusat",
+        "lintas_kewenangan": "Strategis Nasional",
+        "tahun_mulai_konstruksi": 2016,
+        "tahun_selesai_konstruksi": 2021,
+        "status_pemeliharaan": "Baik",
+        "status_serah_terima_op": "Proses POP (Sidang Pleno BTB)",
+        "provinsi": "Lampung",
+        "kabupaten_kota": "Pringsewu",
+        "kecamatan": "Pagelaran",
+        "kelurahan_desa": "Bumi Ratu",
+        "tipe_bendungan": "Urugan Batu",
+        "detail_tipe_bendungan": "Urugan Batu Dengan Inti Tegak",
+        "tinggi_bendungan_m": 47,
+        "panjang_puncak_m": 365,
+        "lebar_puncak_m": 12,
+        "luas_genangan_m2": 2358900,
+        "manfaat": "-",
+        "tanggal_impounding": 2021,
+        "izin_operasi": "Proses POP (Menunggu Sidang Pleno BTB)",
+        "latitude": -5.333469,
+        "longitude": 104.918286,
+        "sumber_sheet": "Bendungan"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.485416,
+          -5.207571
+        ]
+      },
+      "properties": {
+        "no": 3,
+        "nama_balai": "BBWS Mesuji Sekampung",
+        "nama_bendungan": "Marga Tiga",
+        "nomor_registrasi_bendungan": 2020210277,
+        "wilayah_sungai": "Seputih Sekampung",
+        "nama_das": "Sekampung",
+        "kewenangan_pemilik": "Pusat",
+        "kewenangan_op": "Belum OP",
+        "lintas_kewenangan": "Strategis Nasional",
+        "tahun_mulai_konstruksi": 2018,
+        "tahun_selesai_konstruksi": 2022,
+        "status_pemeliharaan": "Baik",
+        "status_serah_terima_op": "Proses POP",
+        "provinsi": "Lampung",
+        "kabupaten_kota": "Lampung Timur",
+        "kecamatan": "Marga Tiga",
+        "kelurahan_desa": "Negeri Jemanten dan Tri Sinar",
+        "tipe_bendungan": "Urugan Batu",
+        "detail_tipe_bendungan": "Kombinasi Bendungan Beton Gravity Dan Urugan Batu Dengan Inti Tegak",
+        "tinggi_bendungan_m": 28.75,
+        "panjang_puncak_m": 321.76,
+        "lebar_puncak_m": 7,
+        "luas_genangan_m2": 2475000,
+        "manfaat": "DI Jabung",
+        "tanggal_impounding": 2024,
+        "izin_operasi": "Proses POP",
+        "latitude": -5.207571,
+        "longitude": 105.485416,
+        "sumber_sheet": "Bendungan"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.672665,
+          -5.211921
+        ]
+      },
+      "properties": {
+        "no": 4,
+        "nama_balai": "BBWS Mesuji Sekampung",
+        "nama_bendungan": "Way Jepara",
+        "nomor_registrasi_bendungan": 2019780054,
+        "wilayah_sungai": "Seputih Sekampung",
+        "nama_das": "Jepara",
+        "kewenangan_pemilik": "Pusat",
+        "kewenangan_op": "Pusat",
+        "lintas_kewenangan": "Dalam Kab/Kota",
+        "tahun_mulai_konstruksi": 1975,
+        "tahun_selesai_konstruksi": 1978,
+        "status_pemeliharaan": "Baik",
+        "status_serah_terima_op": "Sudah Serah Terima tapi belum ada BAST",
+        "provinsi": "Lampung",
+        "kabupaten_kota": "Lampung Timur",
+        "kecamatan": "Way Jepara",
+        "kelurahan_desa": "Sumur Bandung",
+        "tipe_bendungan": "Urugan Tanah",
+        "detail_tipe_bendungan": "Urugan Batu Dengan Inti Tanah/Lempung",
+        "tinggi_bendungan_m": 16.6,
+        "panjang_puncak_m": 70,
+        "lebar_puncak_m": 6,
+        "luas_genangan_m2": 1370000,
+        "manfaat": "DI Way Jepara",
+        "tanggal_impounding": 1978,
+        "izin_operasi": "SA.04.03-Mn/2177 / 03-12-2021",
+        "latitude": -5.211921,
+        "longitude": 105.672665,
+        "sumber_sheet": "Bendungan"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          104.785113,
+          -4.925719
+        ]
+      },
+      "properties": {
+        "no": 5,
+        "nama_balai": "BBWS Mesuji Sekampung",
+        "nama_bendungan": "Way Rarem",
+        "nomor_registrasi_bendungan": 2019840077,
+        "wilayah_sungai": "Mesuji-Tulang Bawang",
+        "nama_das": "Tulang Bawang",
+        "kewenangan_pemilik": "Pusat",
+        "kewenangan_op": "Pusat",
+        "lintas_kewenangan": "Dalam Kab/Kota",
+        "tahun_mulai_konstruksi": 1981,
+        "tahun_selesai_konstruksi": 1984,
+        "status_pemeliharaan": "Baik",
+        "status_serah_terima_op": "Sudah Serah Terima tapi belum ada BAST",
+        "provinsi": "Lampung",
+        "kabupaten_kota": "Lampung Utara",
+        "kecamatan": "Abung Pekurun",
+        "kelurahan_desa": "Pekurun",
+        "tipe_bendungan": "Urugan Tanah",
+        "detail_tipe_bendungan": "Timbunan Batu Dengan Inti Tanah Kedap Air",
+        "tinggi_bendungan_m": 32,
+        "panjang_puncak_m": 2.202,
+        "lebar_puncak_m": 8,
+        "luas_genangan_m2": 506100,
+        "manfaat": "DI Way Rarem",
+        "tanggal_impounding": 1984,
+        "izin_operasi": "SA.04.03-Mn/2174 / 15-12-2021",
+        "latitude": -4.925719,
+        "longitude": 104.785113,
+        "sumber_sheet": "Bendungan"
+      }
+    }
+  ]
+}

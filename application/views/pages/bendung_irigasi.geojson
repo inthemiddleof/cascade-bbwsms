@@ -1,0 +1,456 @@
+{
+  "type": "FeatureCollection",
+  "name": "Inventaris_Bendung",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "BBWS/BWS": "BBWS Mesuji Sekampung",
+        "Jenis Bendung": "Bendung Gerak",
+        "Nama Bendung": "Gerak Jabung",
+        "Kab/ Kota": "Kab. Lampung Timur",
+        "Tinggi Bendung (m)": 3.9,
+        "Lebar Bendung (m)": 120,
+        "Jumlah Intake (buah)": 3,
+        "Fungsi Bendung": "Irigasi",
+        "Nama DI": "Jabung",
+        "Kapasitas Debit (m3/s)": 23.51,
+        "Luas Layanan (Ha)": 14138,
+        "Kewenangan": "Pusat",
+        "Tahun Pembangunan": "2012 - 2017"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.657415,
+          -5.458633
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "BBWS/BWS": "BBWS Mesuji Sekampung",
+        "Jenis Bendung": "Bendung Tetap",
+        "Nama Bendung": "Agroguruh",
+        "Kab/ Kota": "Kab. Lampung Selatan",
+        "Tinggi Bendung (m)": 5,
+        "Lebar Bendung (m)": 140,
+        "Jumlah Intake (buah)": 13,
+        "Fungsi Bendung": "Irigasi",
+        "Nama DI": "Sekampung System",
+        "Kapasitas Debit (m3/s)": 113.12,
+        "Luas Layanan (Ha)": 66573,
+        "Kewenangan": "Pusat",
+        "Tahun Pembangunan": "1984 - 1985"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.179504,
+          -5.199925
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "BBWS/BWS": "BBWS Mesuji Sekampung",
+        "Jenis Bendung": "Bendung Tetap",
+        "Nama Bendung": "Garongan",
+        "Kab/ Kota": "Kab. Lampung Timur",
+        "Tinggi Bendung (m)": 3,
+        "Lebar Bendung (m)": 15,
+        "Jumlah Intake (buah)": 4,
+        "Fungsi Bendung": "Irigasi",
+        "Nama DI": "Sekampung System",
+        "Kapasitas Debit (m3/s)": 4,
+        "Luas Layanan (Ha)": 7680,
+        "Kewenangan": "Pusat",
+        "Tahun Pembangunan": 1953
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.408625,
+          -5.068152
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "BBWS/BWS": "BBWS Mesuji Sekampung",
+        "Jenis Bendung": "Bendung Tetap",
+        "Nama Bendung": "Curup",
+        "Kab/ Kota": "Kab. Lampung Timur",
+        "Tinggi Bendung (m)": 3,
+        "Lebar Bendung (m)": 263,
+        "Jumlah Intake (buah)": 3,
+        "Fungsi Bendung": "Irigasi",
+        "Nama DI": "Way Curup",
+        "Kapasitas Debit (m3/s)": 13.7,
+        "Luas Layanan (Ha)": 4689,
+        "Kewenangan": "Pusat",
+        "Tahun Pembangunan": "1970 - 1971"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.740009,
+          -5.280575
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "BBWS/BWS": "BBWS Mesuji Sekampung",
+        "Jenis Bendung": "Bendung Tetap",
+        "Nama Bendung": "Raman",
+        "Kab/ Kota": "Kab. Lampung Timur",
+        "Tinggi Bendung (m)": 2.6,
+        "Lebar Bendung (m)": 14,
+        "Jumlah Intake (buah)": 2,
+        "Fungsi Bendung": "Irigasi",
+        "Nama DI": "Sekampung System",
+        "Kapasitas Debit (m3/s)": 5,
+        "Luas Layanan (Ha)": 5096,
+        "Kewenangan": "Pusat",
+        "Tahun Pembangunan": 1960
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.317216,
+          -5.055224
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "BBWS/BWS": "BBWS Mesuji Sekampung",
+        "Jenis Bendung": "Bendung Tetap",
+        "Nama Bendung": "Ajibaru",
+        "Kab/ Kota": "Kab. Lampung Tengah",
+        "Tinggi Bendung (m)": 3.3,
+        "Lebar Bendung (m)": 45,
+        "Jumlah Intake (buah)": 5,
+        "Fungsi Bendung": "Irigasi",
+        "Nama DI": "Sekampung System",
+        "Kapasitas Debit (m3/s)": 33,
+        "Luas Layanan (Ha)": 20201,
+        "Kewenangan": "Pusat",
+        "Tahun Pembangunan": "1984 - 1986"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.0332153,
+          -5.015904452
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "BBWS/BWS": "BBWS Mesuji Sekampung",
+        "Jenis Bendung": "Bendung Tetap",
+        "Nama Bendung": "Bumi Agung",
+        "Kab/ Kota": "Kab. Lampung Utara",
+        "Tinggi Bendung (m)": 3,
+        "Lebar Bendung (m)": 28,
+        "Jumlah Intake (buah)": 2,
+        "Fungsi Bendung": "Irigasi",
+        "Nama DI": "Bumi Agung",
+        "Kapasitas Debit (m3/s)": 15.2,
+        "Luas Layanan (Ha)": 5240,
+        "Kewenangan": "Pusat",
+        "Tahun Pembangunan": 1994
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          104.774349,
+          -4.818044
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "BBWS/BWS": "BBWS Mesuji Sekampung",
+        "Jenis Bendung": "Bendung Tetap",
+        "Nama Bendung": "Tulung Mas",
+        "Kab/ Kota": "Kab. Lampung Utara",
+        "Tinggi Bendung (m)": 6.25,
+        "Lebar Bendung (m)": 26,
+        "Jumlah Intake (buah)": 1,
+        "Fungsi Bendung": "Irigasi",
+        "Nama DI": "Way Tulung Mas",
+        "Kapasitas Debit (m3/s)": 4.32,
+        "Luas Layanan (Ha)": 3200,
+        "Kewenangan": "Pusat",
+        "Tahun Pembangunan": "1982 - 1985"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          104.774723,
+          -4.786844
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "BBWS/BWS": "BBWS Mesuji Sekampung",
+        "Jenis Bendung": "Bendung Tetap",
+        "Nama Bendung": "Way Umpu",
+        "Kab/ Kota": "Kab. Way Kanan",
+        "Tinggi Bendung (m)": 3,
+        "Lebar Bendung (m)": 35,
+        "Jumlah Intake (buah)": 4,
+        "Fungsi Bendung": "Irigasi",
+        "Nama DI": "Way Umpu",
+        "Kapasitas Debit (m3/s)": 12.4,
+        "Luas Layanan (Ha)": 5000,
+        "Kewenangan": "Pusat",
+        "Tahun Pembangunan": "1977 - 1978"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          104.470485,
+          -4.83169
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "BBWS/BWS": "BBWS Mesuji Sekampung",
+        "Jenis Bendung": "Bendung Tetap",
+        "Nama Bendung": "Tebu II",
+        "Kab/ Kota": "Kab. Tanggamus",
+        "Tinggi Bendung (m)": 4,
+        "Lebar Bendung (m)": 20,
+        "Jumlah Intake (buah)": 2,
+        "Fungsi Bendung": "Irigasi",
+        "Nama DI": "Tebu System",
+        "Kapasitas Debit (m3/s)": 3,
+        "Luas Layanan (Ha)": 5413,
+        "Kewenangan": "Pusat",
+        "Tahun Pembangunan": 1917
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          104.818162,
+          -5.355963
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "BBWS/BWS": "BBWS Mesuji Sekampung",
+        "Jenis Bendung": "Bendung Tetap",
+        "Nama Bendung": "Tebu III",
+        "Kab/ Kota": "Kab. Pringsewu",
+        "Tinggi Bendung (m)": 3,
+        "Lebar Bendung (m)": 20,
+        "Jumlah Intake (buah)": 2,
+        "Fungsi Bendung": "Irigasi",
+        "Nama DI": "Tebu System",
+        "Kapasitas Debit (m3/s)": 4,
+        "Luas Layanan (Ha)": 0,
+        "Kewenangan": "Pusat",
+        "Tahun Pembangunan": 1940
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          104.917437,
+          -5.35907
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "BBWS/BWS": "BBWS Mesuji Sekampung",
+        "Jenis Bendung": "Bendung Tetap",
+        "Nama Bendung": "Tebu IV",
+        "Kab/ Kota": "Kab. Tanggamus",
+        "Tinggi Bendung (m)": 5,
+        "Lebar Bendung (m)": 10,
+        "Jumlah Intake (buah)": 2,
+        "Fungsi Bendung": "Irigasi",
+        "Nama DI": "Tebu System",
+        "Kapasitas Debit (m3/s)": 12,
+        "Luas Layanan (Ha)": 2660,
+        "Kewenangan": "Pusat",
+        "Tahun Pembangunan": 1938
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          104.865482,
+          -5.356682
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "BBWS/BWS": "BBWS Mesuji Sekampung",
+        "Jenis Bendung": "Bendung Tetap",
+        "Nama Bendung": "Bendung Karang Sari",
+        "Kab/ Kota": "Kab. Tanggamus",
+        "Tinggi Bendung (m)": 1.1,
+        "Lebar Bendung (m)": 8,
+        "Jumlah Intake (buah)": "-",
+        "Fungsi Bendung": "Irigasi",
+        "Nama DI": 0,
+        "Kapasitas Debit (m3/s)": 0,
+        "Luas Layanan (Ha)": 0,
+        "Kewenangan": "Pusat",
+        "Tahun Pembangunan": 2021
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          104.6812875,
+          -5.27933756
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "BBWS/BWS": "BBWS Mesuji Sekampung",
+        "Jenis Bendung": "Bendung Tetap",
+        "Nama Bendung": "Way Pengubuan",
+        "Kab/ Kota": "Kab. Lampung Tengah",
+        "Tinggi Bendung (m)": 6.5,
+        "Lebar Bendung (m)": 38.5,
+        "Jumlah Intake (buah)": 3,
+        "Fungsi Bendung": "Irigasi",
+        "Nama DI": "Way Pangubuan",
+        "Kapasitas Debit (m3/s)": 7.38,
+        "Luas Layanan (Ha)": 5000,
+        "Kewenangan": "Pusat",
+        "Tahun Pembangunan": "1975 - 1978"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          104.824219,
+          -5.015271
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "BBWS/BWS": "BBWS Mesuji Sekampung",
+        "Jenis Bendung": "Bendung Tetap",
+        "Nama Bendung": "Ngambur",
+        "Kab/ Kota": "Kab. Pesisir Barat",
+        "Tinggi Bendung (m)": 5.2,
+        "Lebar Bendung (m)": 33,
+        "Jumlah Intake (buah)": 2,
+        "Fungsi Bendung": "Irigasi",
+        "Nama DI": "Way Ngambur",
+        "Kapasitas Debit (m3/s)": 30,
+        "Luas Layanan (Ha)": 570,
+        "Kewenangan": "Pusat",
+        "Tahun Pembangunan": 2005
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          104.12043,
+          -5.384637
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "BBWS/BWS": "BBWS Mesuji Sekampung",
+        "Jenis Bendung": "Bendung Tetap",
+        "Nama Bendung": "Kandis",
+        "Kab/ Kota": "Kab. Lampung Selatan",
+        "Tinggi Bendung (m)": 5,
+        "Lebar Bendung (m)": 32,
+        "Jumlah Intake (buah)": 3,
+        "Fungsi Bendung": "Irigasi",
+        "Nama DI": "Way Kandis II",
+        "Kapasitas Debit (m3/s)": 1,
+        "Luas Layanan (Ha)": 3000,
+        "Kewenangan": "Pusat",
+        "Tahun Pembangunan": "1993 - 1994"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.288391,
+          -5.297571
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "BBWS/BWS": "BBWS Mesuji Sekampung",
+        "Jenis Bendung": "Bendung Tetap",
+        "Nama Bendung": "Way sabu",
+        "Kab/ Kota": "Kab. Pesawaran",
+        "Tinggi Bendung (m)": 3,
+        "Lebar Bendung (m)": 25,
+        "Jumlah Intake (buah)": "-",
+        "Fungsi Bendung": "Irigasi",
+        "Nama DI": 0,
+        "Kapasitas Debit (m3/s)": 0,
+        "Luas Layanan (Ha)": 0,
+        "Kewenangan": "Pusat",
+        "Tahun Pembangunan": 1999
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.18515,
+          -5.555272
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "BBWS/BWS": "BBWS Mesuji Sekampung",
+        "Jenis Bendung": "Bendung Tetap",
+        "Nama Bendung": "Way besai",
+        "Kab/ Kota": "Kab. Way Kanan",
+        "Tinggi Bendung (m)": 3,
+        "Lebar Bendung (m)": 75,
+        "Jumlah Intake (buah)": 2,
+        "Fungsi Bendung": "Irigasi",
+        "Nama DI": "Way Besai",
+        "Kapasitas Debit (m3/s)": 6.39,
+        "Luas Layanan (Ha)": 3650,
+        "Kewenangan": "Pusat",
+        "Tahun Pembangunan": "2013 - 2014"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          104.506308,
+          -4.881457
+        ]
+      }
+    }
+  ]
+}

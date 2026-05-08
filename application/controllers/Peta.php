@@ -84,7 +84,7 @@ class Peta extends CI_Controller {
         }
 
         $data = [
-            'app_name'  => 'CASCADE',
+            'app_name'  => 'HydroSmart',
             'title'     => 'Monitoring Pos Peta',
             'semua_pos' => $final_pos,
             'summary'   => [

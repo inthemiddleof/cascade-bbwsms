@@ -121,7 +121,7 @@ class CurahHujan extends CI_Controller {
         unset($row); // Menghapus referensi pointer untuk mencegah bug
 
         $data = [
-            'app_name'      => "CASCADE",
+            'app_name'      => "HydroSmart",
             'title'         => "Data Curah Hujan",
             'tanggal_pilih' => $tanggal,
             'last_update'   => ($latest_full_time) ? "Data Terakhir: " . date('H:i', strtotime($latest_full_time)) . " WIB" : date('d M Y', strtotime($tanggal)) . ": Data Belum Tersedia",

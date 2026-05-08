@@ -65,10 +65,10 @@
                         
                         <div id="app-name" class="flex flex-col justify-center transition-all duration-300">
                             <span class="text-[10px] md:text-xs font-bold tracking-[0.25em] text-slate-400 uppercase mb-1 leading-none group-hover:text-darkblue transition-colors duration-300">
-                                Sistem Informasi
+                                HydroSmart
                             </span>
                             <span class="font-black text-lg md:text-xl tracking-wide text-darkblue leading-none group-hover:text-brandyellow transition-colors duration-300">
-                                HIDROLOGI
+                                BBWS MESUJI SEKAMPUNG
                             </span>
                         </div>
                     </a>

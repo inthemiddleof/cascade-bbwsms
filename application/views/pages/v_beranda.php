@@ -1,99 +1,9 @@
-<header class="relative w-full min-h-[85vh] flex items-center bg-darkblue pt-20 lg:pt-24 overflow-hidden" style="background-image: url('<?= $hero_bg ?>'); background-size: cover; background-position: center;">
+<header class="relative w-full h-screen min-h-[600px] overflow-hidden">
+    <div id="hero-map" class="absolute top-0 left-0 w-full h-full z-0"></div>
     
-    <div class="absolute inset-0 bg-darkblue/70 mix-blend-multiply"></div>
-    <div class="absolute inset-0 bg-gradient-to-t from-darkblue/90 via-transparent to-transparent"></div>
-    <div class="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] z-[5]">
-        <svg class="relative block w-full h-[60px] md:h-[80px] lg:h-[100px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
-            <path class="wave-top" d="M0,64L80,58.7C160,53,320,43,480,48C640,53,800,75,960,80C1120,85,1280,75,1360,69.3L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z" fill="#0a2a4a" fill-opacity="0.4"/>
-            <path class="wave-middle" d="M0,96L80,90.7C160,85,320,75,480,74.7C640,75,800,85,960,90.7C1120,96,1280,96,1360,96L1440,96L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z" fill="#0d3d66" fill-opacity="0.6"/>
-            <path class="wave-bottom" d="M0,106L80,101.3C160,96,320,85,480,85.3C640,85,800,96,960,101.3C1120,107,1280,107,1360,107L1440,107L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z" fill="#134a7a" fill-opacity="0.8"/>
-        </svg>
-    </div>
-
-    <div class="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] z-[4] opacity-50">
-        <svg class="relative block w-full h-[40px] md:h-[60px] lg:h-[80px] animate-wave" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
-            <path d="M0,64L80,58.7C160,53,320,43,480,48C640,53,800,75,960,80C1120,85,1280,75,1360,69.3L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z" fill="#1a6bbf" fill-opacity="0.3"/>
-        </svg>
-    </div>
-    <div class="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-12 flex flex-col lg:flex-row items-center justify-between gap-12 py-16">
-        
-        <div class="w-full lg:w-1/2 text-white">
-            <div class="inline-flex items-center gap-2 px-3 py-1 bg-brandyellow text-darkblue text-xs font-bold rounded-full mb-6 tracking-widest uppercase">
-                <span class="relative flex h-2.5 w-2.5">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
-            </span>
-                Live Portal
-            </div>
-            <h1 class="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] mb-6">
-                Sistem Informasi<br>
-                <span class="text-brandyellow">Hidrologi</span>
-            </h1>
-            <p class="text-lg text-slate-300 font-light max-w-lg mb-8 leading-relaxed">
-                Menyajikan data riil data monitoring di wilayah sungai mesuji-sekampung dan wilayah mesuji-tulang bawang.
-            </p>
-            <a href="<?= base_url('CurahHujan') ?>" class="inline-flex items-center justify-center px-8 py-3.5 bg-brandyellow hover:bg-yellow-400 text-darkblue font-bold rounded-lg transition-all shadow-[0_0_20px_rgba(254,183,0,0.3)] hover:shadow-[0_0_25px_rgba(254,183,0,0.5)]">
-                Jelajahi Data
-            </a>
-        </div>
-
-        <div class="w-full lg:w-1/2 flex justify-end lg:justify-end justify-center">
-            <div class="w-full sm:w-96 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 p-7 rounded-[2rem] shadow-[0_8px_32px_rgba(0,0,0,0.3)] relative overflow-hidden group">
-                
-                <div class="absolute -top-10 -right-10 w-40 h-40 bg-brandyellow/20 rounded-full blur-3xl transition-all duration-500 group-hover:bg-brandyellow/30"></div>
-                <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl transition-all duration-500"></div>
-
-                <div class="relative z-10">
-                    
-                    <div class="flex items-center justify-between mb-6">
-                        <div class="flex items-center gap-2.5">
-                            <span class="relative flex h-2 w-2">
-                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brandyellow opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-2 w-2 bg-brandyellow"></span>
-                            </span>
-                            <h3 class="text-white/60 text-[11px] font-semibold tracking-[0.2em] uppercase">Pantauan pos duga air</h3>
-                        </div>
-                        <span class="bg-red-500/20 text-red-400 text-[10px] font-bold px-2.5 py-1 rounded uppercase tracking-widest">
-                            <?= $dam_status['status'] ?>
-                        </span>
-                    </div>
-
-                    <div class="flex flex-col">
-                        <h4 class="text-white/90 font-medium text-base mb-1"><?= $dam_status['nama'] ?></h4>
-                        <div class="flex items-end gap-2">
-                            <span class="text-5xl font-bold text-white leading-none tracking-tight">
-                                <?= $dam_status['level'] ?>
-                            </span>
-                            <span class="text-white/50 text-sm font-medium mb-1">meter</span>
-                        </div>
-                    </div>
-
-                    <hr class="border-white/10 my-6">
-
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3.5">
-                            <div class="w-11 h-11 rounded-xl bg-white/5 flex items-center justify-center text-brandyellow">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path>
-                                </svg>
-                            </div>
-                            <div class="flex flex-col">
-                                <h3 class="text-white font-medium text-base"><?= $weather_data['kondisi'] ?></h3>
-                                <p class="text-white/50 text-[11px] mt-0.5 tracking-wide"><?= $weather_data['prediksi'] ?></p>
-                            </div>
-                        </div>
-                        <div class="flex flex-col items-end">
-                            <span class="text-2xl font-bold text-white leading-none"><?= $weather_data['curah'] ?></span>
-                            <span class="text-brandyellow/80 text-[10px] font-semibold uppercase tracking-widest mt-1.5">mm/24h</span>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-        
-    </div>
+    <div class="absolute bottom-0 left-0 w-full h-[2px] bg-gray-200 z-[5]"></div>
 </header>
+
 <section class="relative py-24 overflow-hidden bg-slate-50">
     <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full opacity-5 pointer-events-none">
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-full fill-darkblue">
@@ -113,7 +23,7 @@
                     <span class="text-transparent bg-clip-text bg-gradient-to-r from-darkblue to-blue-600">Memonitoring Curah Hujan dan Tinggi Muka Air</span>
                 </h2>
                 <p class="text-slate-600 leading-relaxed mb-8 font-light italic border-l-2 border-slate-200 pl-4">
-                    "Sistem informasi ini merupakan manifestasi transformasi digital BBWS Mesuji Sekampung dalam memantau siklus hidrologi secara akurat, transparan, dan real-time."
+                    "HydroSmart merupakan manifestasi transformasi digital BBWS Mesuji Sekampung dalam memantau siklus hidrologi secara akurat, transparan, dan real-time."
                 </p>
                 <div class="flex gap-4">
                     <div class="flex -space-x-3">
@@ -162,325 +72,313 @@
         </div>
     </div>
 </section>
-<section id="galeri" class="py-24 bg-slate-50 relative">
-    <div class="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-white to-transparent pointer-events-none"></div>
 
-    <div class="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
-        <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
-            <div>
-                <div class="inline-block px-3 py-1 bg-brandyellow/20 text-yellow-600 text-[10px] font-bold rounded-md mb-3 tracking-[0.2em] uppercase">
-                    Peta Sebaran
-                </div>
-                <h2 class="text-3xl md:text-4xl font-black text-darkblue uppercase tracking-tight">Kondisi <span class="text-transparent bg-clip-text bg-gradient-to-r from-darkblue to-blue-500">Bendungan</span></h2>
-                <p class="text-slate-500 font-light mt-2 max-w-2xl">Pantau lokasi, level air, dan curah hujan di berbagai titik bendungan secara interaktif. Klik pada ikon marker yang berdenyut untuk melihat detail teknis.</p>
-            </div>
-        </div>
-
-        <!-- Container Peta -->
-        <div class="relative p-2 bg-white rounded-[2.5rem] shadow-2xl border border-slate-100">
-            <div id="map" class="w-full h-[450px] md:h-[600px] rounded-[2rem] overflow-hidden z-10 bg-slate-100"></div>
-        </div>
-    </div>
-</section>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <style>
-    @keyframes waveAnimation {
-        0% { transform: translateX(0) translateY(0); }
-        25% { transform: translateX(-25px) translateY(-5px); }
-        50% { transform: translateX(-50px) translateY(0); }
-        75% { transform: translateX(-25px) translateY(5px); }
-        100% { transform: translateX(0) translateY(0); }
-    }
-    .animate-wave {
-        animation: waveAnimation 8s ease-in-out infinite;
-    }
-    .wave-top, .wave-middle, .wave-bottom {
-        transition: all 0.3s ease;
-    }
-    header:hover .wave-top { transform: translateY(-3px); }
-    header:hover .wave-middle { transform: translateY(-2px); }
-    @media (max-width: 768px) {
-        .animate-wave {
-            animation-duration: 6s;
-        }
-    }
-
-    /* ANIMATED CSS MARKER PETA */
-    .custom-div-icon {
-        background: transparent;
-        border: none;
-    }
-    .marker-pin {
-        width: 30px;
-        height: 30px;
-        border-radius: 50% 50% 50% 0;
-        background: #0a2a4a;
-        position: absolute;
-        transform: rotate(-45deg);
-        left: 50%;
-        top: 50%;
-        margin: -15px 0 0 -15px;
-        border: 2px solid #feb700;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-        transition: transform 0.3s ease;
-    }
-    .marker-pin::after {
-        content: '';
-        width: 14px;
-        height: 14px;
-        margin: 6px 0 0 6px;
-        background: #fff;
-        position: absolute;
-        border-radius: 50%;
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-    }
-    .custom-div-icon:hover .marker-pin {
-        transform: rotate(-45deg) scale(1.1);
-        background: #134a7a;
-    }
-    .marker-pulse {
-        width: 30px;
-        height: 30px;
-        background: rgba(254, 183, 0, 0.6);
-        border-radius: 50%;
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        margin: -15px 0 0 -15px;
-        animation: map-pulse 2s infinite;
-        z-index: -1;
-    }
-    @keyframes map-pulse {
-        0% { transform: scale(1); opacity: 1; }
-        100% { transform: scale(2.5); opacity: 0; }
-    }
-
-    .leaflet-popup-content-wrapper {
-        padding: 0;
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        border: 1px solid rgba(0,0,0,0.05);
-    }
-    .leaflet-popup-content {
-        margin: 0;
-        width: 320px !important;
-    }
-    .leaflet-popup-tip-container {
-        margin-top: -1px;
-    }
-    .custom-popup-container {
-        font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
-    }
-    .popup-header {
-        background: linear-gradient(135deg, #0a2a4a 0%, #134a7a 100%);
+    /* Style Label untuk Wilayah Sungai */
+    .ws-label {
+        background: rgba(10, 42, 74, 0.8);
+        border: 1px solid #feb700;
         color: white;
-        padding: 16px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 8px;
+        font-weight: bold;
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 4px;
     }
-    .popup-title {
-        font-size: 14px;
-        font-weight: 800;
-        letter-spacing: 0.5px;
-        margin: 0;
-        line-height: 1.2;
+    /* Marker Animasi */
+    .marker-pin-hero {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #feb700;
+        border: 2px solid white;
+        box-shadow: 0 0 10px rgba(0,0,0,0.5);
     }
-    .update-badge {
-        background: rgba(255,255,255,0.15);
-        color: #fff;
-        padding: 4px 8px;
-        border-radius: 6px;
-        font-weight: 600;
-        font-size: 9px;
-        text-align: right;
-        min-width: fit-content;
+    .marker-pulse-hero {
+        width: 24px;
+        height: 24px;
+        background: rgba(254, 183, 0, 0.4);
+        border-radius: 50%;
+        position: absolute;
+        margin: -6px 0 0 -6px;
+        animation: pulse-hero 2s infinite;
     }
-    .popup-body {
-        padding: 16px;
-        background: #fff;
-        max-height: 260px; 
-        overflow-y: auto;  
+    @keyframes pulse-hero {
+        0% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(3); opacity: 0; }
     }
-   
-    .popup-body::-webkit-scrollbar {
-        width: 6px;
-    }
-    .popup-body::-webkit-scrollbar-track {
-        background: #f1f5f9; 
-    }
-    .popup-body::-webkit-scrollbar-thumb {
-        background: #cbd5e1; 
-        border-radius: 10px;
-    }
-    .popup-body::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8; 
+    /* Menghilangkan padding default Leaflet agar desain Tailwind full-width */
+    .custom-leaflet-popup .leaflet-popup-content-wrapper {
+        padding: 0 !important;
+        overflow: hidden;
+        border-radius: 16px !important; /* Membuat sudut lebih rounded/modern */
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+        border: none !important;
+        background: #ffffff;
     }
 
-    .data-section {
-        margin-bottom: 16px;
+    /* 2. Menghapus padding default isi popup */
+    .custom-leaflet-popup .leaflet-popup-content {
+        margin: 0 !important;
+        width: 320px !important; /* Sesuaikan dengan w-80 di JavaScript */
+        line-height: 1.5;
     }
-    .section-title {
-        font-weight: 700;
-        color: #64748b;
-        font-size: 10px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
+
+    /* 3. Merapikan tombol close (X) di pojok kanan atas */
+    .custom-leaflet-popup .leaflet-popup-close-button {
+        top: 8px !important;
+        right: 8px !important;
+        color: rgba(255, 255, 255, 0.7) !important; /* Warna putih transparan agar menyatu dengan header biru */
+        font-size: 16px !important;
+        z-index: 10;
     }
-    .section-title::after {
-        content: '';
-        height: 1px;
-        flex: 1;
-        background: #f1f5f9;
+
+    .custom-leaflet-popup .leaflet-popup-close-button:hover {
+        color: #ffffff !important;
     }
-    
-    /* Tabel Data Teknis */
-    .tech-table {
-        width: 100%;
-        font-size: 11px;
-        border-collapse: collapse;
+
+    /* 4. Merapikan 'Ekor' (Tip) Popup */
+    .custom-leaflet-popup .leaflet-popup-tip-container {
+        width: 40px;
+        height: 20px;
+        position: relative;
+        margin-top: -1px; /* Menghilangkan celah antara box dan ekor */
     }
-    .tech-table tr:nth-child(even) { background: #f8fafc; }
-    .tech-table td {
-        padding: 6px 8px;
-        border-bottom: 1px solid #f1f5f9;
+
+    .custom-leaflet-popup .leaflet-popup-tip {
+        background: #ffffff;
+        box-shadow: none !important; /* Menghilangkan shadow ganda di ekor */
     }
-    .tech-table td:first-child {
-        color: #64748b;
-        font-weight: 500;
-        width: 50%;
+
+    /* 5. Mencegah Map "Goyang" saat popup terbuka */
+    .leaflet-popup {
+        margin-bottom: 20px;
     }
-    .tech-table td:last-child {
-        color: #0f172a;
+
+    /* Style Label Wilayah Sungai yang sudah ada tetap dipertahankan */
+    .ws-label {
+        background: rgba(10, 42, 74, 0.85);
+        border: 1px solid #feb700;
+        color: white;
         font-weight: 600;
-        text-align: left;
+        font-size: 10px;
+        padding: 3px 8px;
+        border-radius: 6px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-    .popup-btn {
-        display: block;
-        text-align: center;
-        background: #f8fafc;
-        color: #0a2a4a !important;
-        padding: 12px;
-        text-decoration: none;
-        font-size: 12px;
-        font-weight: 700;
-        transition: all 0.2s;
-        border-top: 1px solid #e2e8f0;
-    }
-    .popup-btn:hover {
-        background: #feb700;
-        color: #0a2a4a !important;
-    }
+
+    .das-label {
+    background: rgba(211, 84, 0, 0.8); /* Warna Cokelat Oranye */
+    border: 1px solid #ffffff;
+    color: white;
+    font-size: 9px;
+    padding: 2px 5px;
+    border-radius: 3px;
+}
 </style>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        var mapData = <?= json_encode($map_data) ?>;
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Initialize the map
+    var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    });
+    var heroMap = L.map('hero-map', {
+        zoomControl: true,
+        dragging: true,      
+        scrollWheelZoom: true, 
+        doubleClickZoom: true,
+        boxZoom: true,
+        touchZoom: true,
+        layers: [osm]
+    }).setView([-5.3971, 105.2668], 9);
 
-        var map = L.map('map', {
-            zoomControl: false 
+    var satellite = L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
+        subdomains:['mt0','mt1','mt2','mt3'],
+        attribution: '© Google Maps Satelit'
+    });
+
+    var baseMaps = {
+        "Peta Standar": osm,
+        "Satelit (Google)": satellite
+    };
+    L.control.layers(baseMaps).addTo(heroMap);
+
+
+    var dasData = <?= $das_geojson ?>;
+    if (dasData) {
+        L.geoJSON(dasData, {
+            style: {
+                fillColor: "#e67e22", // Warna Oranye DAS
+                weight: 1,
+                opacity: 0.8,
+                color: '#d35400',
+                fillOpacity: 0.03 // Sangat tipis agar tidak menumpuk dengan WS
+            },
+            onEachFeature: function (feature, layer) {
+                if (feature.properties && feature.properties.NAMA_DAS) {
+                    layer.bindTooltip("DAS: " + feature.properties.NAMA_DAS, {
+                        sticky: true,
+                        className: 'das-label' // Tambahkan style di CSS jika perlu
+                    });
+                }
+            }
+        }).addTo(heroMap);
+    }
+
+    // 2. Load Data WS (Wilayah Sungai)
+    var wsData = <?= $ws_geojson ?>; 
+    if (wsData) {
+        L.geoJSON(wsData, {
+            style: {
+                fillColor: "#3498db",
+                weight: 1.5,
+                opacity: 1,
+                color: '#2980b9',
+                fillOpacity: 0.05 
+            },
+            onEachFeature: function (feature, layer) {
+                if (feature.properties && feature.properties.WS) {
+                    layer.bindTooltip("Wilayah Sungai: " + feature.properties.WS, {
+                        sticky: true,
+                        className: 'ws-label'
+                    });
+                }
+            }
+        }).addTo(heroMap);
+    }
+
+    // --- FUNGSI REUSABLE UNTUK MARKER CUSTOM ---
+    function createCustomIcon(color) {
+        return L.divIcon({
+            className: 'custom-hero-icon',
+            html: `<div class="marker-pulse-hero" style="background: ${color}66"></div>
+                   <div class="marker-pin-hero" style="background:${color}; border: 2px solid white;"></div>`,
+            iconSize: [12, 12],
+            iconAnchor: [6, 6]
         });
+    }
 
-        L.control.zoom({ position: 'bottomright' }).addTo(map);
-
-        var googleHybrid = L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
-            maxZoom: 20,
-            subdomains:['mt0','mt1','mt2','mt3'],
-            attribution: '© Google Maps'
-        }).addTo(map);
-
-        var modernIcon = L.divIcon({
-            className: 'custom-div-icon',
-            html: "<div class='marker-pulse'></div><div class='marker-pin'></div>",
-            iconSize: [30, 42],
-            iconAnchor: [15, 42],
-            popupAnchor: [0, -40]
-        });
-
-        var markersArray = [];
-
-        mapData.forEach(function(item) {
-            var latLng = [parseFloat(item.lat), parseFloat(item.lng)];
-            markersArray.push(latLng);
-
-            var popupContent = `
-                <div class="custom-popup-container">
-                    <div class="popup-header">
-                        <h4 class="popup-title">${item.nama}</h4>
-                        <span class="update-badge">${item.last_update}</span>
-                    </div>
-                    
-                    <div class="popup-body">
-                        
-                        <!-- CARD TMA & CURAH HUJAN BERSAMAAN -->
-                        <div class="data-section">
-                            <p class="section-title">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                Hidrologi Aktual
-                            </p>
-                            <div class="flex gap-2">
-                                <div class="flex-1 bg-blue-50 border border-blue-100 rounded-lg p-3 flex flex-col items-center justify-center text-center">
-                                    <span class="text-[9px] text-blue-600 font-bold uppercase mb-1 tracking-wider">TMA (Level Air)</span>
-                                    <span class="text-xl font-black text-darkblue leading-none">${item.wlevel} <span class="text-xs font-medium text-slate-500">m</span></span>
+    // 3. LAYER BENDUNGAN (DAM) - Warna Merah
+    var bendunganData = <?= $bendungan_geojson ?>;
+    if (bendunganData) {
+        L.geoJSON(bendunganData, {
+            pointToLayer: function (feature, latlng) {
+                return L.marker(latlng, { icon: createCustomIcon('#ef4444') });
+            },
+            onEachFeature: function (feature, layer) {
+                layer.on('click', function(e) {
+                heroMap.flyTo(e.latlng, 16, { // Zoom ke level 13 dengan animasi
+                    animate: true,
+                    duration: 1.5 // durasi animasi dalam detik
+                });
+            });
+                var p = feature.properties;
+                var popupContent = `
+                    <div class="w-80 overflow-hidden rounded-xl bg-white shadow-2xl">
+                        <div class="bg-darkblue px-4 py-3 text-white">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[9px] font-bold uppercase tracking-widest text-brandyellow">Bendungan</span>
+                                <span class="rounded-md bg-white/10 px-2 py-0.5 text-[9px] font-mono">REG: ${p.nomor_registrasi_bendungan}</span>
+                            </div>
+                            <h4 class="mt-1 text-base font-black uppercase tracking-tight">${p.nama_bendungan}</h4>
+                        </div>
+                        <div class="p-4 bg-slate-50/50 space-y-4">
+                            <div class="grid grid-cols-3 gap-2 py-2 border-b border-slate-200">
+                                <div class="text-center border-r border-slate-200">
+                                    <p class="text-[8px] uppercase text-slate-400 font-bold">Tinggi</p>
+                                    <p class="text-xs font-black text-darkblue">${p.tinggi_bendungan_m} m</p>
                                 </div>
-                                <div class="flex-1 bg-yellow-50 border border-yellow-100 rounded-lg p-3 flex flex-col items-center justify-center text-center">
-                                    <span class="text-[9px] text-yellow-600 font-bold uppercase mb-1 tracking-wider">Curah Hujan</span>
-                                    <span class="text-xl font-black text-darkblue leading-none">${item.rain} <span class="text-xs font-medium text-slate-500">mm</span></span>
+                                <div class="text-center border-r border-slate-200">
+                                    <p class="text-[8px] uppercase text-slate-400 font-bold">Pjg Puncak</p>
+                                    <p class="text-xs font-black text-darkblue">${p.panjang_puncak_m} m</p>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-[8px] uppercase text-slate-400 font-bold">Genangan</p>
+                                    <p class="text-[10px] font-black text-darkblue">${Math.round(p.luas_genangan_m2/10000)} Ha</p>
+                                </div>
+                            </div>
+                            <div class="text-[11px] space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Tipe</span>
+                                    <span class="font-bold text-darkblue text-right w-2/3">${p.tipe_bendungan}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Manfaat</span>
+                                    <span class="font-bold text-blue-600">${p.manfaat}</span>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- TABEL DATA TEKNIS -->
-                        <div class="data-section">
-                            <p class="section-title">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                Detail Teknis
-                            </p>
-                            <table class="tech-table">
-                                <tr><td>Tipe</td><td>: ${item.tipe || '-'}</td></tr>
-                                <tr><td>Pj. Puncak</td><td>: ${item.pj_puncak || '-'} m</td></tr>
-                                <tr><td>Elev. Puncak (Tepi)</td><td>: ${item.el_tepi || '-'} m</td></tr>
-                                <tr><td>Elev. Puncak (Tengah)</td><td>: ${item.el_tengah || '-'} m</td></tr>
-                                <tr><td>Lebar Puncak</td><td>: ${item.lb_puncak || '-'} m</td></tr>
-                                <tr><td>Tinggi Max</td><td>: ${item.tinggi_max || '-'} m</td></tr>
-                                <tr><td>Vol. Timbunan</td><td>: ${item.vol_timbunan || '-'} m³</td></tr>
-                                <tr><td>Pj. Inspeksi</td><td>: ${item.pj_inspeksi || '-'} m</td></tr>
-                                <tr><td>Pj. Akses</td><td>: ${item.pj_akses || '-'} m</td></tr>
-                            </table>
+                        <div class="px-4 py-3 bg-white border-t border-slate-100">
+                            <a href="<?= base_url('Dashboard/detail_bendungan/') ?>${p.no}" class="flex items-center justify-center gap-2 w-full py-2 bg-darkblue text-white rounded-lg text-[11px] font-bold hover:bg-brandyellow hover:text-darkblue transition-all">
+                                Lihat Sebaran Peta
+                            </a>
                         </div>
-                    </div>
+                    </div>`;
+                layer.bindPopup(popupContent, { maxWidth: 300, minWidth: 300, autoPan: false, className: 'custom-leaflet-popup', offset: [0, -5] });
+                layer.bindTooltip(p.nama_bendungan, { direction: 'top', offset: [0, -10] });
+            }
+        }).addTo(heroMap);
+    }
 
-                    <a href="<?= base_url('Peta') ?>" class="popup-btn">LIHAT PETA PENUH</a>
-                </div>
-            `;
-            
-            var marker = L.marker(latLng, {icon: modernIcon})
-                .addTo(map)
-                // Menambahkan autoPanPadding agar popup tidak mepet ke batas atas map
-                .bindPopup(popupContent, { autoPanPadding: [20, 20] });
-
-            marker.on('click', function() {
-                map.flyTo(latLng, 16, {
+    // 4. LAYER BENDUNG IRIGASI (WEIR) - Warna Cyan/Biru Muda
+    var bendungIrigasiData = <?= $bendung_geojson ?>;
+    if (bendungIrigasiData) {
+        L.geoJSON(bendungIrigasiData, {
+            pointToLayer: function (feature, latlng) {
+                return L.marker(latlng, { icon: createCustomIcon('#06b6d4') }); // Cyan color
+            },
+            onEachFeature: function (feature, layer) {
+                layer.on('click', function(e) {
+                heroMap.flyTo(e.latlng, 15, { // Bendung biasanya lebih kecil, zoom lebih dalam (15)
                     animate: true,
                     duration: 1.5
                 });
             });
-        });
+                var p = feature.properties;
+                var popupContent = `
+                    <div class="w-80 overflow-hidden rounded-xl bg-white shadow-2xl border border-cyan-100">
+                        <div class="bg-cyan-600 px-4 py-3 text-white">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[9px] font-bold uppercase tracking-widest text-white/80">Bendung Irigasi</span>
+                                <span class="rounded-md bg-black/10 px-2 py-0.5 text-[9px] font-mono italic">${p['Jenis Bendung']}</span>
+                            </div>
+                            <h4 class="mt-1 text-base font-black uppercase tracking-tight">${p['Nama Bendung']}</h4>
+                        </div>
+                        <div class="p-4 bg-cyan-50/30 space-y-4">
+                            <div class="grid grid-cols-2 gap-3 py-2 border-b border-cyan-100">
+                                <div class="bg-white p-2 rounded-lg text-center shadow-sm border border-cyan-100">
+                                    <p class="text-[8px] uppercase text-cyan-500 font-bold">Kapasitas Debit</p>
+                                    <p class="text-sm font-black text-cyan-700">${p['Kapasitas Debit (m3/s)']} <span class="text-[9px] font-normal">m³/s</span></p>
+                                </div>
+                                <div class="bg-white p-2 rounded-lg text-center shadow-sm border border-cyan-100">
+                                    <p class="text-[8px] uppercase text-cyan-500 font-bold">Luas Layanan</p>
+                                    <p class="text-sm font-black text-cyan-700">${new Intl.NumberFormat('id-ID').format(p['Luas Layanan (Ha)'])} <span class="text-[9px] font-normal">Ha</span></p>
+                                </div>
+                            </div>
+                            <div class="text-[11px] space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500 italic">Nama DI</span>
+                                    <span class="font-bold text-cyan-800">${p['Nama DI']}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500 italic">Lokasi</span>
+                                    <span class="font-medium text-slate-700">${p['Kab/ Kota']}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-4 py-3 bg-white border-t border-slate-100">
+                            <div class="text-[9px] text-center text-slate-400 font-medium">Kewenangan: ${p['Kewenangan']}</div>
+                        </div>
+                    </div>`;
+                layer.bindPopup(popupContent, { maxWidth: 300, minWidth: 300, autoPan: false, className: 'custom-leaflet-popup', offset: [0, -5] });
+                layer.bindTooltip("Bendung: " + p['Nama Bendung'], { direction: 'top', offset: [0, -10] });
+            }
+        }).addTo(heroMap);
+    }
+});
 
-        if (markersArray.length > 0) {
-            var bounds = L.latLngBounds(markersArray);
-            map.fitBounds(bounds, {
-                padding: [50, 50],
-                maxZoom: 12
-            });
-        }
-    });
 </script>
