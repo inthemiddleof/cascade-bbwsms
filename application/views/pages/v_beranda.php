@@ -30,7 +30,7 @@
                 <span class="text-brandyellow">Hidrologi</span>
             </h1>
             <p class="text-lg text-slate-300 font-light max-w-lg mb-8 leading-relaxed">
-                Menyajikan data riil data monitoring di wilayah sungai mesuji-sekampung dan wilayah mesuji-tulang bawang.
+                Menyajikan data riil curah hujan dan ketinggian muka air pada wilayah sungai mesuji-sekampung dan wilayah mesuji-tulang bawang.
             </p>
             <a href="<?= base_url('CurahHujan') ?>" class="inline-flex items-center justify-center px-8 py-3.5 bg-brandyellow hover:bg-yellow-400 text-darkblue font-bold rounded-lg transition-all shadow-[0_0_20px_rgba(254,183,0,0.3)] hover:shadow-[0_0_25px_rgba(254,183,0,0.5)]">
                 Jelajahi Data
