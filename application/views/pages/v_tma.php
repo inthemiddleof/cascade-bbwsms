@@ -90,7 +90,8 @@
                             <th rowspan="2" class="p-4 border-b border-r border-slate-300 bg-slate-100 min-w-[280px] text-left">Nama Pos / Stasiun</th>
                             <th colspan="4" class="p-3 border-b border-r border-slate-300 bg-blue-100">Telemetri (m)</th>
                             <th rowspan="2" class="p-4 border-b border-r border-slate-300 bg-blue-200 w-24">Last (m)</th>
-                            <th colspan="4" class="p-3 border-b border-r border-slate-300 bg-slate-200">Manual (m)</th>
+                            <th rowspan="2" class="p-3 border-b border-r border-slate-300 bg-emerald-100 w-24">Manual (m)</th>
+                            <th rowspan="2" class="p-3 border-b border-r border-slate-300 bg-emerald-200 w-32 text-center">Petugas</th>
                             <th colspan="4" class="p-3 border-b border-slate-300 bg-orange-100">Siaga (m)</th>
                         </tr>
                         <tr class="text-[10px]">
@@ -99,15 +100,10 @@
                             <th class="p-2 border-b border-r border-slate-300 bg-blue-50">12.01-18.00</th>
                             <th class="p-2 border-b border-r border-slate-300 bg-blue-50">18.01-23.59</th>
                             
-                            <th class="p-2 border-b border-r border-slate-300 bg-slate-50">00.00-06.00</th>
-                            <th class="p-2 border-b border-r border-slate-300 bg-slate-50">06.01-12.00</th>
-                            <th class="p-2 border-b border-r border-slate-300 bg-slate-50">12.01-18.00</th>
-                            <th class="p-2 border-b border-r border-slate-300 bg-slate-50">18.01-23.59</th>
-                            
-                            <th class="p-2 border-b border-r border-slate-300 bg-emerald-100">Siaga 4</th>
-                            <th class="p-2 border-b border-r border-slate-300 bg-yellow-100">Siaga 3</th>
-                            <th class="p-2 border-b border-r border-slate-300 bg-orange-200">Siaga 2</th>
-                            <th class="p-2 border-b border-slate-300 bg-red-100">Siaga 1</th>
+                            <th class="p-2 border-b border-r border-slate-300 bg-emerald-50">Siaga 4</th>
+                            <th class="p-2 border-b border-r border-slate-300 bg-yellow-50">Siaga 3</th>
+                            <th class="p-2 border-b border-r border-slate-300 bg-orange-100">Siaga 2</th>
+                            <th class="p-2 border-b border-slate-300 bg-red-50">Siaga 1</th>
                         </tr>
                     </thead>
                     <tbody class="text-slate-800 text-center">
@@ -117,11 +113,17 @@
                             <td class="p-3 border-r border-slate-100 text-slate-400"><?= $row['no'] ?></td>
                             <td class="p-3 border-r border-slate-100 text-left">
                                 <span class="font-bold text-darkblue uppercase tracking-tighter"><?= $row['pos'] ?></span>
-                                <?php if($row['waktu'] != '--:--'): ?>
-                                    <span class="block text-[9px] text-slate-400 font-medium italic mt-0.5">Update: <?= $row['waktu'] ?> WIB</span>
-                                <?php else: ?>
-                                    <span class="block text-[9px] text-red-400 font-medium italic mt-0.5">Tidak ada data</span>
-                                <?php endif; ?>
+                                <div class="flex flex-col gap-0.5 mt-0.5">
+                                    <?php if($row['waktu'] != '--:--'): ?>
+                                        <span class="text-[8px] text-blue-500 font-medium italic">API: <?= $row['waktu'] ?> WIB</span>
+                                    <?php endif; ?>
+                                    <?php if($row['manual_time'] != '--:--'): ?>
+                                        <span class="text-[8px] text-emerald-600 font-medium italic">Manual: <?= $row['manual_time'] ?> WIB</span>
+                                    <?php endif; ?>
+                                    <?php if($row['waktu'] == '--:--' && $row['manual_time'] == '--:--'): ?>
+                                        <span class="text-[8px] text-red-400 font-medium italic">Tidak ada data</span>
+                                    <?php endif; ?>
+                                </div>
                             </td>
                             
                             <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= number_format($row['telemetri']['w1'], 2) ?></td>
@@ -129,12 +131,17 @@
                             <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= number_format($row['telemetri']['w3'], 2) ?></td>
                             <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= number_format($row['telemetri']['w4'], 2) ?></td>
                             
-                            <td class="p-3 border-r border-slate-100 font-black text-blue-700 bg-blue-50/30"><?= number_format($row['last'], 2) ?></td>
+                            <td class="p-3 border-r border-slate-100 font-black text-blue-700 bg-blue-50/30">
+                                <?= $row['last'] > 0 ? number_format($row['last'], 2) : '-' ?>
+                            </td>
                             
-                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= isset($row['manual']['w1']) ? number_format($row['manual']['w1'], 2) : '-' ?></td>
-                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= isset($row['manual']['w2']) ? number_format($row['manual']['w2'], 2) : '-' ?></td>
-                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= isset($row['manual']['w3']) ? number_format($row['manual']['w3'], 2) : '-' ?></td>
-                            <td class="p-3 border-r border-slate-100 font-semibold text-slate-800"><?= isset($row['manual']['w4']) ? number_format($row['manual']['w4'], 2) : '-' ?></td>
+                            <td class="p-3 border-r border-slate-100 font-black text-emerald-700 bg-emerald-50/30">
+                                <?= ($row['manual_val'] !== null) ? number_format($row['manual_val'], 2) : '-' ?>
+                            </td>
+
+                            <td class="p-3 border-r border-slate-100 font-medium text-slate-600 bg-emerald-50/10">
+                                <span class="uppercase text-[9px]"><?= $row['petugas'] ?></span>
+                            </td>
 
                             <td class="p-3 border-r border-slate-100 font-bold text-emerald-600 bg-emerald-50/20"><?= number_format($row['siaga']['siaga4'], 2) ?></td>
                             <td class="p-3 border-r border-slate-100 font-bold text-amber-500 bg-yellow-50/20"><?= number_format($row['siaga']['siaga3'], 2) ?></td>
@@ -150,31 +157,15 @@
 </main>
 
 <style>
-    /* Styling Scrollbar khusus untuk tabel X dan Y */
-    .table-container::-webkit-scrollbar {
-        width: 8px; /* Scrollbar vertikal */
-        height: 8px; /* Scrollbar horizontal */
-    }
-    .table-container::-webkit-scrollbar-track {
-        background: #f1f5f9;
-        border-radius: 4px;
-    }
-    .table-container::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 4px;
-    }
-    .table-container::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
-    }
-
-    .col-highlight {
-        background-color: rgba(239, 246, 255, 0.7) !important;
-    }
+    .table-container::-webkit-scrollbar { width: 8px; height: 8px; }
+    .table-container::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+    .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .table-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    .col-highlight { background-color: rgba(239, 246, 255, 0.7) !important; }
 </style>
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        
         // --- 1. FITUR SEARCH BAR ---
         const searchInput = document.getElementById("searchPos");
         const tableRows = document.querySelectorAll("#tmaTable tbody tr");
@@ -182,19 +173,11 @@
         if (searchInput) {
             searchInput.addEventListener("input", function() {
                 const searchTerm = this.value.toLowerCase();
-
                 tableRows.forEach(row => {
-                    // Ambil cell kolom ke-2 yang berisi Nama Pos
                     const posNameCell = row.querySelector("td:nth-child(2)"); 
-                    
                     if (posNameCell) {
                         const posName = posNameCell.textContent.toLowerCase();
-                        // Tampilkan/sembunyikan berdasarkan pencocokan kata
-                        if (posName.includes(searchTerm)) {
-                            row.style.display = "";
-                        } else {
-                            row.style.display = "none";
-                        }
+                        row.style.display = posName.includes(searchTerm) ? "" : "none";
                     }
                 });
             });
@@ -206,8 +189,7 @@
 
         cells.forEach(cell => {
             cell.addEventListener("mouseenter", function() {
-                // Highlight diterapkan pada index 2-5 (Telemetri) dan 7-10 (Manual) dikarenakan jumlah kolom bertambah
-                if ((this.cellIndex >= 2 && this.cellIndex <= 5) || (this.cellIndex >= 7 && this.cellIndex <= 10)) {
+                if (this.cellIndex >= 2 && this.cellIndex <= 7) {
                     const colIndex = this.cellIndex;
                     const rows = table.querySelectorAll("tr");
                     rows.forEach(row => {
@@ -220,7 +202,7 @@
             });
 
             cell.addEventListener("mouseleave", function() {
-                if ((this.cellIndex >= 2 && this.cellIndex <= 5) || (this.cellIndex >= 7 && this.cellIndex <= 10)) {
+                if (this.cellIndex >= 2 && this.cellIndex <= 7) {
                     const colIndex = this.cellIndex;
                     const rows = table.querySelectorAll("tr");
                     rows.forEach(row => {

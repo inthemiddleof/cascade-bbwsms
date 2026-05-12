@@ -178,6 +178,16 @@
     padding: 2px 5px;
     border-radius: 3px;
 }
+
+/* Menghilangkan kotak outline hitam saat poligon diklik */
+path.leaflet-interactive:focus {
+    outline: none;
+}
+
+/* Jika masih muncul di beberapa browser, gunakan ini juga */
+.leaflet-container :focus {
+    outline: none;
+}
 </style>
 
 <script>
@@ -212,11 +222,11 @@ document.addEventListener('DOMContentLoaded', function() {
     if (dasData) {
         L.geoJSON(dasData, {
             style: {
-                fillColor: "#e67e22", // Warna Oranye DAS
+                fillColor: "#d35400", // Warna Oranye DAS
                 weight: 1,
                 opacity: 0.8,
                 color: '#d35400',
-                fillOpacity: 0.03 // Sangat tipis agar tidak menumpuk dengan WS
+                fillOpacity: 0.15 // Sangat tipis agar tidak menumpuk dengan WS
             },
             onEachFeature: function (feature, layer) {
                 if (feature.properties && feature.properties.NAMA_DAS) {
@@ -291,67 +301,94 @@ if (wsData) {
     }
 
     // 3. LAYER BENDUNGAN (DAM) - Warna Merah
-    var bendunganData = <?= $bendungan_geojson ?>;
-    if (bendunganData) {
-        L.geoJSON(bendunganData, {
-            pointToLayer: function (feature, latlng) {
-                return L.marker(latlng, { icon: createCustomIcon('#ef4444') });
-            },
-            onEachFeature: function (feature, layer) {
-                layer.on('click', function(e) {
-                heroMap.flyTo(e.latlng, 16, { // Zoom ke level 13 dengan animasi
-                    animate: true,
-                    duration: 1.5 // durasi animasi dalam detik
-                });
-            });
-                var p = feature.properties;
-                var popupContent = `
-                    <div class="w-80 overflow-hidden rounded-xl bg-white shadow-2xl">
-                        <div class="bg-darkblue px-4 py-3 text-white">
-                            <div class="flex items-center justify-between">
-                                <span class="text-[9px] font-bold uppercase tracking-widest text-brandyellow">Bendungan</span>
-                                <span class="rounded-md bg-white/10 px-2 py-0.5 text-[9px] font-mono">REG: ${p.nomor_registrasi_bendungan}</span>
-                            </div>
-                            <h4 class="mt-1 text-base font-black uppercase tracking-tight">${p.nama_bendungan}</h4>
-                        </div>
-                        <div class="p-4 bg-slate-50/50 space-y-4">
-                            <div class="grid grid-cols-3 gap-2 py-2 border-b border-slate-200">
-                                <div class="text-center border-r border-slate-200">
-                                    <p class="text-[8px] uppercase text-slate-400 font-bold">Tinggi</p>
-                                    <p class="text-xs font-black text-darkblue">${p.tinggi_bendungan_m} m</p>
-                                </div>
-                                <div class="text-center border-r border-slate-200">
-                                    <p class="text-[8px] uppercase text-slate-400 font-bold">Pjg Puncak</p>
-                                    <p class="text-xs font-black text-darkblue">${p.panjang_puncak_m} m</p>
-                                </div>
-                                <div class="text-center">
-                                    <p class="text-[8px] uppercase text-slate-400 font-bold">Genangan</p>
-                                    <p class="text-[10px] font-black text-darkblue">${Math.round(p.luas_genangan_m2/10000)} Ha</p>
-                                </div>
-                            </div>
-                            <div class="text-[11px] space-y-2">
-                                <div class="flex justify-between">
-                                    <span class="text-slate-500">Tipe</span>
-                                    <span class="font-bold text-darkblue text-right w-2/3">${p.tipe_bendungan}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-slate-500">Manfaat</span>
-                                    <span class="font-bold text-blue-600">${p.manfaat}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="px-4 py-3 bg-white border-t border-slate-100">
-                            <a href="<?= base_url('Dashboard/detail_bendungan/') ?>${p.no}" class="flex items-center justify-center gap-2 w-full py-2 bg-darkblue text-white rounded-lg text-[11px] font-bold hover:bg-brandyellow hover:text-darkblue transition-all">
-                                Lihat Sebaran Peta
-                            </a>
-                        </div>
-                    </div>`;
-                layer.bindPopup(popupContent, { maxWidth: 300, minWidth: 300, autoPan: false, className: 'custom-leaflet-popup', offset: [0, -5] });
-                layer.bindTooltip(p.nama_bendungan, { direction: 'top', offset: [0, -10] });
-            }
-        }).addTo(heroMap);
-    }
+   // --- 3. LAYER BENDUNGAN (DINAMIS DARI DATABASE) ---
+var bendunganDataDB = <?= json_encode($bendungan_db) ?>;
 
+if (bendunganDataDB) {
+    bendunganDataDB.forEach(function(p) {
+        var latlng = [parseFloat(p.lat), parseFloat(p.lng)];
+        
+        // Membuat marker dengan ikon merah
+        var marker = L.marker(latlng, { 
+            icon: createCustomIcon('#ef4444') 
+        }).addTo(heroMap);
+
+        // Efek Zoom In saat diklik
+        marker.on('click', function(e) {
+            heroMap.flyTo(e.latlng, 16, {
+                animate: true,
+                duration: 1.5
+            });
+        });
+
+        // Konten Popup Modern dengan Integrasi Data Manual Petugas
+        var popupContent = `
+            <div class="w-80 overflow-hidden rounded-xl bg-white shadow-2xl">
+                <div class="bg-darkblue px-4 py-3 text-white">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[9px] font-bold uppercase tracking-widest text-brandyellow">Monitoring Bendungan</span>
+                        <span class="rounded-md bg-white/10 px-2 py-0.5 text-[9px] font-mono italic">ID: ${p.id_pos}</span>
+                    </div>
+                    <h4 class="mt-1 text-base font-black uppercase tracking-tight">${p.nama_pos}</h4>
+                </div>
+                
+                <div class="p-4 bg-slate-50/50 space-y-4">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="bg-white p-2 rounded-lg border border-blue-100 shadow-sm text-center">
+                            <p class="text-[8px] uppercase text-blue-500 font-bold">TMA (Manual)</p>
+                            <p class="text-sm font-black text-darkblue">${p.tma_manual || '0.00'} <span class="text-[9px] font-normal">m</span></p>
+                        </div>
+                        <div class="bg-white p-2 rounded-lg border border-blue-100 shadow-sm text-center">
+                            <p class="text-[8px] uppercase text-blue-500 font-bold">Hujan (Manual)</p>
+                            <p class="text-sm font-black text-darkblue">${p.curah_hujan_manual || '0'} <span class="text-[9px] font-normal">mm</span></p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 py-2 border-b border-slate-200 text-center">
+                        <div>
+                            <p class="text-[8px] uppercase text-slate-400 font-bold">Inflow</p>
+                            <p class="text-[11px] font-black text-darkblue">${p.inflow || '0'} <span class="text-[8px] font-normal">m³/s</span></p>
+                        </div>
+                        <div class="border-x border-slate-200">
+                            <p class="text-[8px] uppercase text-slate-400 font-bold">Outflow</p>
+                            <p class="text-[11px] font-black text-darkblue">${p.total_outflow || '0'} <span class="text-[8px] font-normal">m³/s</span></p>
+                        </div>
+                        <div>
+                            <p class="text-[8px] uppercase text-slate-400 font-bold">Volume</p>
+                            <p class="text-[11px] font-black text-darkblue">${p.volume || '0'} <span class="text-[8px] font-normal">jt.m³</span></p>
+                        </div>
+                    </div>
+
+                    <div class="text-[10px] space-y-1">
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-500 italic">Update Terakhir:</span>
+                            <span class="font-bold text-slate-700">${p.tgl_manual || p.tgl_bendungan || '-'}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-4 py-3 bg-white border-t border-slate-100">
+                    <a href="<?= base_url('Dashboard/detail_pos/') ?>${p.id_pos}" 
+                       class="flex items-center justify-center gap-2 w-full py-2 bg-darkblue text-white rounded-lg text-[11px] font-bold hover:bg-brandyellow hover:text-darkblue transition-all">
+                        BUKA DATABASE RIWAYAT
+                    </a>
+                </div>
+            </div>`;
+
+        marker.bindPopup(popupContent, { 
+            maxWidth: 320, 
+            minWidth: 320, 
+            autoPan: false, 
+            className: 'custom-leaflet-popup', 
+            offset: [0, -5] 
+        });
+
+        marker.bindTooltip(p.nama_pos, { 
+            direction: 'top', 
+            offset: [0, -10] 
+        });
+    });
+}
     // 4. LAYER BENDUNG IRIGASI (WEIR) - Warna Cyan/Biru Muda
     var bendungIrigasiData = <?= $bendung_geojson ?>;
     if (bendungIrigasiData) {

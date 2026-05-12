@@ -30,6 +30,8 @@ class CurahHujan extends CI_Controller {
             ];
         }
 
+        // --- 1. AMBIL DATA TELEMETRI ---
+        // Kita ambil data rain saja
         $this->db->select('t.id_pos, t.rain, t.received_at');
         $this->db->from('data_telemetri t');
         $this->db->join('master_pos m', 't.id_pos = m.id_pos');
@@ -39,9 +41,18 @@ class CurahHujan extends CI_Controller {
         $this->db->order_by('t.received_at', 'ASC');
         $query_transaksi = $this->db->get()->result_array();
 
+        // --- 2. AMBIL DATA MANUAL ---
+        $this->db->select('dm.id_pos, dm.rain, dm.created_at, u.nama_lengkap as petugas');
+        $this->db->from('data_manual dm');
+        $this->db->join('users u', 'dm.id_user = u.id_user', 'left');
+        $this->db->where('dm.tanggal_input', $tanggal);
+        $query_manual = $this->db->get()->result_array();
+
         $transaksi_map = [];
+        $manual_map = [];
         $latest_full_time = null; 
 
+        // Mapping & Penjumlahan (Accumulation) Data Telemetri
         foreach ($query_transaksi as $tr) {
             $id = $tr['id_pos'];
             $f_time = $tr['received_at'];
@@ -55,17 +66,30 @@ class CurahHujan extends CI_Controller {
                 $latest_full_time = $f_time;
             }
 
+            // Logika Akumulasi: Menjumlahkan data yang masuk di periode tersebut
             if ($f_time >= $w1_start && $f_time <= $w1_end) {
-                $transaksi_map[$id]['w1'] = max($transaksi_map[$id]['w1'], $rain);
+                $transaksi_map[$id]['w1'] += $rain;
             } elseif ($f_time >= $w2_start && $f_time <= $w2_end) {
-                $transaksi_map[$id]['w2'] = max($transaksi_map[$id]['w2'], $rain);
+                $transaksi_map[$id]['w2'] += $rain;
             } elseif ($f_time >= $w3_start && $f_time <= $w3_end) {
-                $transaksi_map[$id]['w3'] = max($transaksi_map[$id]['w3'], $rain);
+                $transaksi_map[$id]['w3'] += $rain;
             } elseif ($f_time >= $w4_start && $f_time <= $w4_end) {
-                $transaksi_map[$id]['w4'] = max($transaksi_map[$id]['w4'], $rain);
+                $transaksi_map[$id]['w4'] += $rain;
             }
             
             $transaksi_map[$id]['last'] = $f_time;
+        }
+
+        // Mapping Data Manual
+        foreach ($query_manual as $mn) {
+            if (!isset($manual_map[$mn['id_pos']]) || $mn['created_at'] > $manual_map[$mn['id_pos']]['created_at']) {
+                $manual_map[$mn['id_pos']] = [
+                    'rain' => $mn['rain'],
+                    'waktu' => date('H:i', strtotime($mn['created_at'])),
+                    'petugas' => $mn['petugas'],
+                    'created_at' => $mn['created_at']
+                ];
+            }
         }
 
         $pencatatan = [];
@@ -74,17 +98,24 @@ class CurahHujan extends CI_Controller {
         $pos_aktif = 0; 
 
         foreach ($all_stations as $id => $info) {
-            $has_data = isset($transaksi_map[$id]);
-            $val = $has_data ? $transaksi_map[$id] : ['w1'=>0, 'w2'=>0, 'w3'=>0, 'w4'=>0, 'last'=>null];
+            $has_tele = isset($transaksi_map[$id]);
+            $has_manual = isset($manual_map[$id]);
             
-            $total_harian = max($val['w1'], $val['w2'], $val['w3'], $val['w4']); 
+            $val = $has_tele ? $transaksi_map[$id] : ['w1'=>0, 'w2'=>0, 'w3'=>0, 'w4'=>0, 'last'=>null];
+            $man = $has_manual ? $manual_map[$id] : ['rain' => null, 'waktu' => '--:--', 'petugas' => '-'];
             
-            if($has_data) $pos_aktif++;
-            if ($total_harian > $max_hujan) $max_hujan = $total_harian;
-            $total_hujan_wilayah += $total_harian;
+            // TOTAL HARIAN = Penjumlahan dari W1 sampai W4
+            $total_akumulasi = $val['w1'] + $val['w2'] + $val['w3'] + $val['w4']; 
+            
+            if($has_tele || $has_manual) $pos_aktif++;
+            
+            // Gunakan total akumulasi untuk statistik
+            $stat_val = max($total_akumulasi, (float)$man['rain']);
+            if ($stat_val > $max_hujan) $max_hujan = $stat_val;
+            $total_hujan_wilayah += $stat_val;
 
             $pencatatan[] = [
-                // Nomor urut kita hapus dulu dari sini, akan diisi setelah di-sorting
+                'id_pos' => $id,
                 'pos'    => $info['nama'],
                 'lokasi' => $info['lokasi'],
                 'waktu'  => $val['last'] ? date('H:i', strtotime($val['last'])) : '--:--',
@@ -92,33 +123,24 @@ class CurahHujan extends CI_Controller {
                 'w2'     => $val['w2'], 
                 'w3'     => $val['w3'], 
                 'w4'     => $val['w4'],
-                'total'  => $total_harian,
-                'manual' => '-'
+                'total'  => $total_akumulasi, // Sekarang berisi hasil penjumlahan
+                'manual_rain'  => $man['rain'],
+                'manual_time'  => $man['waktu'],
+                'petugas'      => $man['petugas']
             ];
         }
 
-        // --- PROSES PENGURUTAN (SORTING) ---
+        // Sorting: Pos Aktif ke atas
         usort($pencatatan, function($a, $b) {
-            // Cek apakah pos aktif (waktu tidak sama dengan '--:--')
-            $a_aktif = ($a['waktu'] !== '--:--') ? 1 : 0;
-            $b_aktif = ($b['waktu'] !== '--:--') ? 1 : 0;
-
-            // Jika status aktifnya berbeda, pos yang aktif (1) diletakkan di atas pos tidak aktif (0)
-            if ($a_aktif !== $b_aktif) {
-                return $b_aktif - $a_aktif; 
-            }
-            
-            // Jika status aktifnya sama, urutkan berdasarkan abjad (nama pos)
+            $a_aktif = ($a['waktu'] !== '--:--' || $a['manual_time'] !== '--:--') ? 1 : 0;
+            $b_aktif = ($b['waktu'] !== '--:--' || $b['manual_time'] !== '--:--') ? 1 : 0;
+            if ($a_aktif !== $b_aktif) return $b_aktif - $a_aktif; 
             return strcmp($a['pos'], $b['pos']);
         });
 
-        // --- PENOMORAN ULANG ---
-        // Memberikan nomor urut yang rapi setelah data diurutkan
         $no = 1;
-        foreach ($pencatatan as &$row) {
-            $row['no'] = $no++;
-        }
-        unset($row); // Menghapus referensi pointer untuk mencegah bug
+        foreach ($pencatatan as &$row) { $row['no'] = $no++; }
+        unset($row);
 
         $data = [
             'app_name'      => "HydroSmart",
