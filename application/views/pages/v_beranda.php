@@ -114,24 +114,22 @@
     .custom-leaflet-popup .leaflet-popup-content-wrapper {
         padding: 0 !important;
         overflow: hidden;
-        border-radius: 16px !important; /* Membuat sudut lebih rounded/modern */
+        border-radius: 16px !important; 
         box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
         border: none !important;
         background: #ffffff;
     }
 
-    /* 2. Menghapus padding default isi popup */
     .custom-leaflet-popup .leaflet-popup-content {
         margin: 0 !important;
-        width: 320px !important; /* Sesuaikan dengan w-80 di JavaScript */
+        width: 320px !important; 
         line-height: 1.5;
     }
 
-    /* 3. Merapikan tombol close (X) di pojok kanan atas */
     .custom-leaflet-popup .leaflet-popup-close-button {
         top: 8px !important;
         right: 8px !important;
-        color: rgba(255, 255, 255, 0.7) !important; /* Warna putih transparan agar menyatu dengan header biru */
+        color: rgba(255, 255, 255, 0.7) !important; 
         font-size: 16px !important;
         z-index: 10;
     }
@@ -140,25 +138,22 @@
         color: #ffffff !important;
     }
 
-    /* 4. Merapikan 'Ekor' (Tip) Popup */
     .custom-leaflet-popup .leaflet-popup-tip-container {
         width: 40px;
         height: 20px;
         position: relative;
-        margin-top: -1px; /* Menghilangkan celah antara box dan ekor */
+        margin-top: -1px; 
     }
 
     .custom-leaflet-popup .leaflet-popup-tip {
         background: #ffffff;
-        box-shadow: none !important; /* Menghilangkan shadow ganda di ekor */
+        box-shadow: none !important; 
     }
 
-    /* 5. Mencegah Map "Goyang" saat popup terbuka */
     .leaflet-popup {
         margin-bottom: 20px;
     }
 
-    /* Style Label Wilayah Sungai yang sudah ada tetap dipertahankan */
     .ws-label {
         background: rgba(10, 42, 74, 0.85);
         border: 1px solid #feb700;
@@ -171,31 +166,31 @@
     }
 
     .das-label {
-    background: rgba(211, 84, 0, 0.8); /* Warna Cokelat Oranye */
+    background: rgba(211, 84, 0, 0.8); 
     border: 1px solid #ffffff;
     color: white;
     font-size: 9px;
     padding: 2px 5px;
     border-radius: 3px;
-}
+    }
 
-/* Menghilangkan kotak outline hitam saat poligon diklik */
-path.leaflet-interactive:focus {
-    outline: none;
-}
+    path.leaflet-interactive:focus {
+        outline: none;
+    }
 
-/* Jika masih muncul di beberapa browser, gunakan ini juga */
-.leaflet-container :focus {
-    outline: none;
-}
+    .leaflet-container :focus {
+        outline: none;
+    }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // 1. Initialize the map
-    var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap'
-    });
+    var osm = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap contributors © CARTO',
+    subdomains: 'abcd',
+    maxZoom: 20
+});
     var heroMap = L.map('hero-map', {
         zoomControl: true,
         dragging: true,      
@@ -203,13 +198,14 @@ document.addEventListener('DOMContentLoaded', function() {
         doubleClickZoom: true,
         boxZoom: true,
         touchZoom: true,
-        layers: [osm]
+        layers: [osm],
+        minZoom: 8 // Mencegah zoom out terlalu jauh agar mask tidak terlihat kotaknya
     }).setView([-5.3971, 105.2668], 9);
 
-    var satellite = L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
-        subdomains:['mt0','mt1','mt2','mt3'],
-        attribution: '© Google Maps Satelit'
-    });
+    var satellite = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', { // 's' saja untuk satelit murni tanpa label
+    subdomains:['mt0','mt1','mt2','mt3'],
+    attribution: '© Google Maps Satelit'
+});
 
     var baseMaps = {
         "Peta Standar": osm,
@@ -217,79 +213,116 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     L.control.layers(baseMaps).addTo(heroMap);
 
+    var layerInfrastruktur = L.layerGroup(); 
+    var layerHidrologi = L.layerGroup();     
+    var layerAlatBerat = L.layerGroup();     
+    var permanentLayers = L.layerGroup().addTo(heroMap);
 
-    var dasData = <?= $das_geojson ?>;
-    if (dasData) {
-        L.geoJSON(dasData, {
-            style: {
-                fillColor: "#d35400", // Warna Oranye DAS
-                weight: 1,
-                opacity: 0.8,
-                color: '#d35400',
-                fillOpacity: 0.15 // Sangat tipis agar tidak menumpuk dengan WS
-            },
-            onEachFeature: function (feature, layer) {
-                if (feature.properties && feature.properties.NAMA_DAS) {
-                    layer.bindTooltip("DAS: " + feature.properties.NAMA_DAS, {
-                        sticky: true,
-                        className: 'das-label' // Tambahkan style di CSS jika perlu
+    // --- FUNGSI MASKING (MODIFIKASI BARU) ---
+    function createMask(geojsonData) {
+        var outerBoundary = [
+            [[-90, -180], [-90, 180], [90, 180], [90, -180], [-90, -180]]
+        ];
+
+        geojsonData.features.forEach(function(feature) {
+            if (feature.geometry.type === 'Polygon') {
+                var coords = feature.geometry.coordinates.map(function(ring) {
+                    return ring.map(function(coord) {
+                        return [coord[1], coord[0]]; 
                     });
-                }
+                });
+                outerBoundary.push(coords[0]);
+            } else if (feature.geometry.type === 'MultiPolygon') {
+                feature.geometry.coordinates.forEach(function(polygon) {
+                    var coords = polygon.map(function(ring) {
+                        return ring.map(function(coord) {
+                            return [coord[1], coord[0]];
+                        });
+                    });
+                    outerBoundary.push(coords[0]);
+                });
             }
-        }).addTo(heroMap);
+        });
+
+        return L.polygon(outerBoundary, {
+            color: 'none',
+            weight: 0,
+            fillColor: '#f1f5f9', // Warna slate-50 sesuai background section Anda
+            fillOpacity: 1,
+            interactive: false
+        });
     }
 
-    // 2. Load Data WS (Wilayah Sungai)
-    // --- LAYER WS (Wilayah Sungai) ---
-var wsData = <?= $ws_geojson ?>; 
-if (wsData) {
-    var wsLayer = L.geoJSON(wsData, {
-        style: function(feature) {
-            return {
-                fillColor: "#3498db",
-                weight: 2,
-                opacity: 1,
-                color: '#2980b9',
-                fillOpacity: 0.1 // Transparansi awal
-            };
+    var dasData = <?= $das_geojson ?>;
+if (dasData) {
+    L.geoJSON(dasData, {
+        style: {
+            fillColor: "#6366f1", // Warna Ungu Indigo (Tailwind style)
+            weight: 5,          // Ketebalan garis aliran
+            opacity: 0.8,         // Transparansi garis
+            color: '#4338ca',     // Warna garis tepi ungu yang lebih gelap
+            fillOpacity: 0.3      // Transparansi isi poligon
         },
         onEachFeature: function (feature, layer) {
-            // 1. Interaksi saat Mouse Mendekat (Highlight)
-            layer.on('mouseover', function (e) {
-                var layer = e.target;
-                layer.setStyle({
-                    weight: 4,
-                    color: '#1a5276',
-                    fillOpacity: 0.3
+            if (feature.properties && feature.properties.NAMA_DAS) {
+                layer.bindTooltip("DAS: " + feature.properties.NAMA_DAS, {
+                    sticky: true,
+                    className: 'das-label'
                 });
-                layer.bringToFront(); // Agar garis highlight tidak tertutup DAS
-            });
-
-            // 2. Interaksi saat Mouse Keluar (Reset Style)
-            layer.on('mouseout', function (e) {
-                wsLayer.resetStyle(e.target);
-            });
-
-            // 3. Interaksi saat DIKLIK (Zoom ke Geometri WS)
-            layer.on('click', function (e) {
-                // Ini kuncinya: fitBounds akan mengikuti lekuk poligon, bukan sekadar kotak
-                heroMap.fitBounds(e.target.getBounds(), {
-                    padding: [50, 50], // Beri ruang di pinggir peta agar tidak terlalu mepet
-                    animate: true,
-                    duration: 1.5
-                });
-                
-                // Opsional: Tampilkan Popup nama WS
-                layer.bindPopup("<b>Wilayah Sungai:</b> " + feature.properties.WS).openPopup();
-            });
-
-            // Tooltip tetap ada jika diinginkan
-            layer.bindTooltip("WS: " + feature.properties.WS, { sticky: true });
+            }
         }
     }).addTo(heroMap);
 }
 
-    // --- FUNGSI REUSABLE UNTUK MARKER CUSTOM ---
+    // 2. Load Data WS (Wilayah Sungai) dengan MASKING
+    var wsData = <?= $ws_geojson ?>; 
+    if (wsData) {
+        // Tambahkan Masker agar menutupi luar Lampung
+        var maskLayer = createMask(wsData);
+        maskLayer.addTo(heroMap);
+
+        var wsLayer = L.geoJSON(wsData, {
+            style: function(feature) {
+                return {
+                    fillColor: "transparent",
+                    weight: 2,
+                    opacity: 1,
+                    color: '#2980b9',
+                    fillOpacity: 0 
+                };
+            },
+            onEachFeature: function (feature, layer) {
+                layer.on('mouseover', function (e) {
+                    var layer = e.target;
+                    layer.setStyle({
+                        weight: 4,
+                        color: '#1a5276',
+                        fillOpacity: 0.1
+                    });
+                    layer.bringToFront();
+                });
+
+                layer.on('mouseout', function (e) {
+                    wsLayer.resetStyle(e.target);
+                });
+
+                layer.on('click', function (e) {
+                    heroMap.fitBounds(e.target.getBounds(), {
+                        padding: [50, 50],
+                        animate: true,
+                        duration: 1.5
+                    });
+                    layer.bindPopup("<b>Wilayah Sungai:</b> " + feature.properties.WS).openPopup();
+                });
+
+                layer.bindTooltip("WS: " + feature.properties.WS, { sticky: true });
+            }
+        }).addTo(heroMap);
+
+        // Batasi geser peta agar tidak keluar jauh dari Lampung
+        heroMap.setMaxBounds(wsLayer.getBounds().pad(0.5));
+    }
+
     function createCustomIcon(color) {
         return L.divIcon({
             className: 'custom-hero-icon',
@@ -299,110 +332,87 @@ if (wsData) {
             iconAnchor: [6, 6]
         });
     }
+    // 3. LAYER BENDUNGAN
+    var bendunganDataDB = <?= json_encode($bendungan_db) ?>;
+    if (bendunganDataDB) {
+        bendunganDataDB.forEach(function(p) {
+            var latlng = [parseFloat(p.lat), parseFloat(p.lng)];
+            var marker = L.marker(latlng, { 
+                icon: createCustomIcon('#ef4444') 
+            }).addTo(heroMap);
 
-    // 3. LAYER BENDUNGAN (DAM) - Warna Merah
-   // --- 3. LAYER BENDUNGAN (DINAMIS DARI DATABASE) ---
-var bendunganDataDB = <?= json_encode($bendungan_db) ?>;
-
-if (bendunganDataDB) {
-    bendunganDataDB.forEach(function(p) {
-        var latlng = [parseFloat(p.lat), parseFloat(p.lng)];
-        
-        // Membuat marker dengan ikon merah
-        var marker = L.marker(latlng, { 
-            icon: createCustomIcon('#ef4444') 
-        }).addTo(heroMap);
-
-        // Efek Zoom In saat diklik
-        marker.on('click', function(e) {
-            heroMap.flyTo(e.latlng, 16, {
-                animate: true,
-                duration: 1.5
-            });
-        });
-
-        // Konten Popup Modern dengan Integrasi Data Manual Petugas
-        var popupContent = `
-            <div class="w-80 overflow-hidden rounded-xl bg-white shadow-2xl">
-                <div class="bg-darkblue px-4 py-3 text-white">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[9px] font-bold uppercase tracking-widest text-brandyellow">Monitoring Bendungan</span>
-                        <span class="rounded-md bg-white/10 px-2 py-0.5 text-[9px] font-mono italic">ID: ${p.id_pos}</span>
-                    </div>
-                    <h4 class="mt-1 text-base font-black uppercase tracking-tight">${p.nama_pos}</h4>
-                </div>
-                
-                <div class="p-4 bg-slate-50/50 space-y-4">
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="bg-white p-2 rounded-lg border border-blue-100 shadow-sm text-center">
-                            <p class="text-[8px] uppercase text-blue-500 font-bold">TMA (Manual)</p>
-                            <p class="text-sm font-black text-darkblue">${p.tma_manual || '0.00'} <span class="text-[9px] font-normal">m</span></p>
-                        </div>
-                        <div class="bg-white p-2 rounded-lg border border-blue-100 shadow-sm text-center">
-                            <p class="text-[8px] uppercase text-blue-500 font-bold">Hujan (Manual)</p>
-                            <p class="text-sm font-black text-darkblue">${p.curah_hujan_manual || '0'} <span class="text-[9px] font-normal">mm</span></p>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-3 gap-2 py-2 border-b border-slate-200 text-center">
-                        <div>
-                            <p class="text-[8px] uppercase text-slate-400 font-bold">Inflow</p>
-                            <p class="text-[11px] font-black text-darkblue">${p.inflow || '0'} <span class="text-[8px] font-normal">m³/s</span></p>
-                        </div>
-                        <div class="border-x border-slate-200">
-                            <p class="text-[8px] uppercase text-slate-400 font-bold">Outflow</p>
-                            <p class="text-[11px] font-black text-darkblue">${p.total_outflow || '0'} <span class="text-[8px] font-normal">m³/s</span></p>
-                        </div>
-                        <div>
-                            <p class="text-[8px] uppercase text-slate-400 font-bold">Volume</p>
-                            <p class="text-[11px] font-black text-darkblue">${p.volume || '0'} <span class="text-[8px] font-normal">jt.m³</span></p>
-                        </div>
-                    </div>
-
-                    <div class="text-[10px] space-y-1">
-                        <div class="flex justify-between items-center">
-                            <span class="text-slate-500 italic">Update Terakhir:</span>
-                            <span class="font-bold text-slate-700">${p.tgl_manual || p.tgl_bendungan || '-'}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="px-4 py-3 bg-white border-t border-slate-100">
-                    <a href="<?= base_url('Dashboard/detail_pos/') ?>${p.id_pos}" 
-                       class="flex items-center justify-center gap-2 w-full py-2 bg-darkblue text-white rounded-lg text-[11px] font-bold hover:bg-brandyellow hover:text-darkblue transition-all">
-                        BUKA DATABASE RIWAYAT
-                    </a>
-                </div>
-            </div>`;
-
-        marker.bindPopup(popupContent, { 
-            maxWidth: 320, 
-            minWidth: 320, 
-            autoPan: false, 
-            className: 'custom-leaflet-popup', 
-            offset: [0, -5] 
-        });
-
-        marker.bindTooltip(p.nama_pos, { 
-            direction: 'top', 
-            offset: [0, -10] 
-        });
-    });
-}
-    // 4. LAYER BENDUNG IRIGASI (WEIR) - Warna Cyan/Biru Muda
-    var bendungIrigasiData = <?= $bendung_geojson ?>;
-    if (bendungIrigasiData) {
-        L.geoJSON(bendungIrigasiData, {
-            pointToLayer: function (feature, latlng) {
-                return L.marker(latlng, { icon: createCustomIcon('#06b6d4') }); // Cyan color
-            },
-            onEachFeature: function (feature, layer) {
-                layer.on('click', function(e) {
-                heroMap.flyTo(e.latlng, 15, { // Bendung biasanya lebih kecil, zoom lebih dalam (15)
+            marker.on('click', function(e) {
+                heroMap.flyTo(e.latlng, 16, {
                     animate: true,
                     duration: 1.5
                 });
             });
+
+            var popupContent = `
+                <div class="w-80 overflow-hidden rounded-xl bg-white shadow-2xl">
+                    <div class="bg-darkblue px-4 py-3 text-white">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[9px] font-bold uppercase tracking-widest text-brandyellow">Monitoring Bendungan</span>
+                            <span class="rounded-md bg-white/10 px-2 py-0.5 text-[9px] font-mono italic">ID: ${p.id_pos}</span>
+                        </div>
+                        <h4 class="mt-1 text-base font-black uppercase tracking-tight">${p.nama_pos}</h4>
+                    </div>
+                    <div class="p-4 bg-slate-50/50 space-y-4">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="bg-white p-2 rounded-lg border border-blue-100 shadow-sm text-center">
+                                <p class="text-[8px] uppercase text-blue-500 font-bold">TMA (Manual)</p>
+                                <p class="text-sm font-black text-darkblue">${p.tma_manual || '0.00'} <span class="text-[9px] font-normal">m</span></p>
+                            </div>
+                            <div class="bg-white p-2 rounded-lg border border-blue-100 shadow-sm text-center">
+                                <p class="text-[8px] uppercase text-blue-500 font-bold">Hujan (Manual)</p>
+                                <p class="text-sm font-black text-darkblue">${p.curah_hujan_manual || '0'} <span class="text-[9px] font-normal">mm</span></p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 py-2 border-b border-slate-200 text-center">
+                            <div>
+                                <p class="text-[8px] uppercase text-slate-400 font-bold">Inflow</p>
+                                <p class="text-[11px] font-black text-darkblue">${p.inflow || '0'} <span class="text-[8px] font-normal">m³/s</span></p>
+                            </div>
+                            <div class="border-x border-slate-200">
+                                <p class="text-[8px] uppercase text-slate-400 font-bold">Outflow</p>
+                                <p class="text-[11px] font-black text-darkblue">${p.total_outflow || '0'} <span class="text-[8px] font-normal">m³/s</span></p>
+                            </div>
+                            <div>
+                                <p class="text-[8px] uppercase text-slate-400 font-bold">Volume</p>
+                                <p class="text-[11px] font-black text-darkblue">${p.volume || '0'} <span class="text-[8px] font-normal">jt.m³</span></p>
+                            </div>
+                        </div>
+                        <div class="text-[10px] space-y-1">
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-500 italic">Update Terakhir:</span>
+                                <span class="font-bold text-slate-700">${p.tgl_manual || p.tgl_bendungan || '-'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-4 py-3 bg-white border-t border-slate-100">
+                        <a href="<?= base_url('Dashboard/detail_pos/') ?>${p.id_pos}" 
+                           class="flex items-center justify-center gap-2 w-full py-2 bg-darkblue text-white rounded-lg text-[11px] font-bold hover:bg-brandyellow hover:text-darkblue transition-all">
+                            BUKA DATABASE RIWAYAT
+                        </a>
+                    </div>
+                </div>`;
+
+            marker.bindPopup(popupContent, { maxWidth: 320, minWidth: 320, autoPan: false, className: 'custom-leaflet-popup', offset: [0, -5] });
+            marker.bindTooltip(p.nama_pos, { direction: 'top', offset: [0, -10] });
+        });
+    }
+
+    // 4. LAYER BENDUNG IRIGASI
+    var bendungIrigasiData = <?= $bendung_geojson ?>;
+    if (bendungIrigasiData) {
+        L.geoJSON(bendungIrigasiData, {
+            pointToLayer: function (feature, latlng) {
+                return L.marker(latlng, { icon: createCustomIcon('#06b6d4') });
+            },
+            onEachFeature: function (feature, layer) {
+                layer.on('click', function(e) {
+                    heroMap.flyTo(e.latlng, 15, { animate: true, duration: 1.5 });
+                });
                 var p = feature.properties;
                 var popupContent = `
                     <div class="w-80 overflow-hidden rounded-xl bg-white shadow-2xl border border-cyan-100">
@@ -435,15 +445,31 @@ if (bendunganDataDB) {
                                 </div>
                             </div>
                         </div>
-                        <div class="px-4 py-3 bg-white border-t border-slate-100">
-                            <div class="text-[9px] text-center text-slate-400 font-medium">Kewenangan: ${p['Kewenangan']}</div>
-                        </div>
                     </div>`;
                 layer.bindPopup(popupContent, { maxWidth: 300, minWidth: 300, autoPan: false, className: 'custom-leaflet-popup', offset: [0, -5] });
                 layer.bindTooltip("Bendung: " + p['Nama Bendung'], { direction: 'top', offset: [0, -10] });
             }
         }).addTo(heroMap);
     }
-});
 
+    var baseMaps = {
+        "<span class='ml-2 text-slate-600 font-medium'>Peta Dasar</span>": osm,
+        "<span class='ml-2 text-slate-600 font-medium'>Citra Satelit</span>": satellite
+    };
+
+    var overlayMaps = {
+        "<div class='flex items-center p-1'><div class='w-2 h-2 rounded-full bg-red-500 mr-3'></div><span class='text-[10px] font-black uppercase text-slate-700'>Infrastruktur</span></div>": layerInfrastruktur,
+        "<div class='flex items-center p-1'><div class='w-2 h-2 rounded-full bg-amber-500 mr-3'></div><span class='text-[10px] font-black uppercase text-slate-700'>Hidrologi</span></div>": layerHidrologi,
+        "<div class='flex items-center p-1'><div class='w-2 h-2 rounded-full bg-emerald-500 mr-3'></div><span class='text-[10px] font-black uppercase text-slate-700'>Alat Berat</span></div>": layerAlatBerat
+    };
+
+    var layerControl = L.control.layers(baseMaps, overlayMaps, { 
+        collapsed: false, 
+        position: 'topright' 
+    }).addTo(heroMap);
+
+    // Tambahkan Default Active Layer
+    layerInfrastruktur.addTo(heroMap);
+});
 </script>
+
