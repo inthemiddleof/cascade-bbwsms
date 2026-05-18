@@ -48,7 +48,7 @@ class Dashboard extends CI_Controller {
     public function index() {
         $this->_sync_telemetri();
     
-        // 1. Data TMA & Curah Hujan Terbaru untuk Dashboard
+        // 1. DATA UNTUK STATUS HEADER (PDA & PCH Terbaru)
         $latest_tma = $this->db->select('t.*, m.nama_pos, m.siaga1, m.siaga2, m.siaga3')
                                ->from('data_telemetri t')
                                ->join('master_pos m', 't.id_pos = m.id_pos')
@@ -61,40 +61,27 @@ class Dashboard extends CI_Controller {
                                 ->where('m.tipe_pos', 'PCH')
                                 ->order_by('t.received_at', 'DESC')->limit(1)->get()->row_array();
     
-        // 2. Status Siaga
-        $status_bendungan = "NORMAL";
-        if (!empty($latest_tma)) {
-            $lvl = (float)$latest_tma['wlevel'];
-            if ($lvl >= (float)$latest_tma['siaga1'] && (float)$latest_tma['siaga1'] > 0) $status_bendungan = "BAHAYA";
-            elseif ($lvl >= (float)$latest_tma['siaga2'] && (float)$latest_tma['siaga2'] > 0) $status_bendungan = "SIAGA";
-            elseif ($lvl >= (float)$latest_tma['siaga3'] && (float)$latest_tma['siaga3'] > 0) $status_bendungan = "WASPADA";
-        }
-    
-        // 3. Koordinat Bendungan (Data Statis untuk Overlay)
-        $koordinat_bendungan = [
-            ['nama' => 'Bendungan Batutegi', 'lat' => -5.255509, 'lng' => 104.778750],
-            ['nama' => 'Bendungan Sekampung', 'lat' => -5.333278, 'lng' => 104.918360],
-            ['nama' => 'Bendungan Way Rarem', 'lat' => -4.927468, 'lng' => 104.786946],
-            ['nama' => 'Bendungan Way Jepara', 'lat' => -5.211567, 'lng' => 105.672737],
-            ['nama' => 'Bendungan Marga Tiga', 'lat' => -5.207558, 'lng' => 105.487426],
-        ];
-    
-        foreach ($koordinat_bendungan as &$bend) {
-            $res = $this->db->select('t.wlevel, t.rain, t.received_at')
-                            ->from('data_telemetri t')
-                            ->join('master_pos m', 't.id_pos = m.id_pos')
-                            ->where('m.nama_pos LIKE', '%' . str_replace('Bendungan ', '', $bend['nama']) . '%')
-                            ->order_by('t.received_at', 'DESC')->limit(1)->get()->row_array();
-            
-            $bend['wlevel'] = $res['wlevel'] ?? '0.00';
-            $bend['rain'] = $res['rain'] ?? '0.00';
-            $bend['last_update'] = isset($res['received_at']) ? date('H:i', strtotime($res['received_at'])) : '-';
-        }
-    
-        // 4. MEMBACA FILE GEOJSON (Wilayah Sungai, Inventaris Bendungan, & Bendung Irigasi)
+        // 2. QUERY INTEGRASI DATA MANUAL PETUGAS (Untuk Marker Bendungan di Peta)
+        // Kita ambil data Master Pos yang is_bendungan = 1, lalu join ke data_manual & data_bendungan terbaru
+        $this->db->select('
+            m.id_pos, m.nama_pos, m.lat, m.lng, m.nwl, m.siaga1, m.siaga2, m.siaga3,
+            dm.rain as curah_hujan_manual, 
+            dm.wlevel as tma_manual, 
+            dm.tanggal_input as tgl_manual,
+            db.elevasi, db.volume, db.inflow, db.total_outflow, db.tanggal_input as tgl_bendungan
+        ');
+        $this->db->from('master_pos m');
+        // Join data harian manual terbaru
+        $this->db->join('(SELECT id_pos, rain, wlevel, tanggal_input FROM data_manual WHERE id_manual IN (SELECT MAX(id_manual) FROM data_manual GROUP BY id_pos)) dm', 'm.id_pos = dm.id_pos', 'left');
+        // Join parameter teknis bendungan terbaru
+        $this->db->join('(SELECT id_pos, elevasi, volume, inflow, total_outflow, tanggal_input FROM data_bendungan WHERE id_bendungan IN (SELECT MAX(id_bendungan) FROM data_bendungan GROUP BY id_pos)) db', 'm.id_pos = db.id_pos', 'left');
+        $this->db->where('m.is_bendungan', 1);
+        $bendungan_db = $this->db->get()->result_array();
+
+        // 3. MEMBACA SEMUA FILE GEOJSON (Untuk Batas Wilayah & Titik Statis)
         $path_ws = APPPATH . 'views/pages/WS_di_Prov Lampung.geojson';
         $path_inv_bendungan = APPPATH . 'views/pages/inventaris_bendungan.geojson';
-        $path_bendung = APPPATH . 'views/pages/bendung_irigasi.geojson'; // Lokasi file Bendung Irigasi
+        $path_bendung = APPPATH . 'views/pages/bendung_irigasi.geojson';
         $path_das = APPPATH . 'views/pages/DAS_di_Lampung.geojson';
 
         $ws_geojson_data = file_exists($path_ws) ? file_get_contents($path_ws) : "null";
@@ -102,25 +89,25 @@ class Dashboard extends CI_Controller {
         $bendung_geojson_data = file_exists($path_bendung) ? file_get_contents($path_bendung) : "null";
         $das_geojson_data = file_exists($path_das) ? file_get_contents($path_das) : "null";
 
-        // 5. Menyusun Data ke View
+        // 4. MENYUSUN DATA UNTUK VIEW
         $data = [
             'app_name'          => "Hydrosmart",
             'title'             => "BBWS MESUJI SEKAMPUNG",
-            'map_data'          => $koordinat_bendungan,
+            'bendungan_db'      => $bendungan_db, // Data dinamis dari database (Manual Petugas)
             'ws_geojson'        => $ws_geojson_data,
             'bendungan_geojson' => $bendungan_geojson_data,
-            'bendung_geojson'   => $bendung_geojson_data, // Data baru untuk Bendung Irigasi
+            'bendung_geojson'   => $bendung_geojson_data,
             'das_geojson'       => $das_geojson_data,
             'dam_status'        => [
                 'nama'   => !empty($latest_tma['nama_pos']) ? $latest_tma['nama_pos'] : 'Pos Belum Tersedia',
                 'level'  => number_format($latest_tma['wlevel'] ?? 0, 2),
-                'status' => $status_bendungan,
+                'status' => "NORMAL",
                 'trend'  => "Tren Muka Air: " . (!empty($latest_tma['status']) ? $latest_tma['status'] : 'Stabil')
             ],
             'weather_data'      => [
                 'kondisi'  => (!empty($latest_rain['rain']) && $latest_rain['rain'] > 0) ? 'Hujan' : 'Cerah Berawan',
                 'curah'    => $latest_rain['rain'] ?? '0',
-                'prediksi' => 'Terakhir Update: ' . (!empty($latest_rain['received_at']) ? date('H:i:s', strtotime($latest_rain['received_at'])) : date('H:i:s'))
+                'prediksi' => 'Update: ' . (!empty($latest_rain['received_at']) ? date('H:i:s', strtotime($latest_rain['received_at'])) : date('H:i:s'))
             ]
         ];
     

@@ -108,7 +108,7 @@
                         Peta
                     </a>
 
-                    <a href="<?= base_url('Login') ?>" class="px-4 py-1.5 bg-darkblue text-white text-xs rounded-lg hover:bg-brandyellow hover:text-darkblue transition-all duration-300">
+                    <a href="<?= base_url('Auth') ?>" class="px-4 py-1.5 bg-darkblue text-white text-xs rounded-lg hover:bg-brandyellow hover:text-darkblue transition-all duration-300">
                         Login
                     </a>
                 </div>

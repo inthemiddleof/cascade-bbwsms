@@ -81,14 +81,16 @@
         </div>
 
         <?php 
-            function getBgIntensity($val) {
-                if (!is_numeric($val) || $val <= 0) return 'bg-slate-50 text-slate-400';
-                if ($val > 0 && $val <= 20) return 'bg-emerald-500 text-white';
-                if ($val > 20 && $val <= 50) return 'bg-yellow-400 text-slate-800';
-                if ($val > 50 && $val <= 100) return 'bg-orange-500 text-white';
-                if ($val > 100 && $val <= 150) return 'bg-red-500 text-white';
-                if ($val > 150) return 'bg-purple-600 text-white';
-                return 'bg-slate-50 text-slate-400';
+            if (!function_exists('getBgIntensity')) {
+                function getBgIntensity($val) {
+                    if (!is_numeric($val) || $val <= 0) return 'bg-slate-50 text-slate-400';
+                    if ($val > 0 && $val <= 20) return 'bg-emerald-500 text-white';
+                    if ($val > 20 && $val <= 50) return 'bg-yellow-400 text-slate-800';
+                    if ($val > 50 && $val <= 100) return 'bg-orange-500 text-white';
+                    if ($val > 100 && $val <= 150) return 'bg-red-500 text-white';
+                    if ($val > 150) return 'bg-purple-600 text-white';
+                    return 'bg-slate-50 text-slate-400';
+                }
             }
         ?>
 
@@ -107,20 +109,20 @@
             </div>
 
             <div class="overflow-x-auto overflow-y-auto max-h-[600px] table-container relative">
-                <table class="w-full text-[11px] text-left border-collapse min-w-[950px]" id="rainTable">
+                <table class="w-full text-[11px] text-left border-collapse min-w-[1100px]" id="rainTable">
                     <thead class="text-darkblue font-bold uppercase text-center sticky top-0 z-20 shadow-sm">
                         <tr>
                             <th rowspan="2" class="p-4 border-b border-r border-slate-300 bg-slate-100 w-12">No</th>
                             <th rowspan="2" class="p-4 border-b border-r border-slate-300 bg-slate-100 min-w-[280px] text-left">Nama Pos / Stasiun</th>
-                            <th colspan="4" class="p-3 border-b border-r border-slate-300 bg-blue-100">Waktu Pengamatan (WIB)</th>
-                            <th rowspan="2" class="p-4 border-b border-r border-slate-300 bg-slate-100 w-24">Total (mm)</th>
-                            <th rowspan="2" class="p-4 border-b border-slate-300 bg-slate-100 w-24">Manual (mm)</th>
+                            <th colspan="4" class="p-3 border-b border-r border-slate-300 bg-blue-100">Waktu Pengamatan Telemetri (WIB)</th>
+                            <th rowspan="2" class="p-4 border-b border-r border-slate-300 bg-blue-200 w-24">Total API (mm)</th>
+                            <th rowspan="2" class="p-4 border-b border-r border-slate-300 bg-emerald-100 w-24">Manual (mm)</th>
                         </tr>
                         <tr class="text-[10px]">
-                            <th class="p-2 border-b border-r border-slate-300 bg-blue-50">00.00 - 06.00</th>
-                            <th class="p-2 border-b border-r border-slate-300 bg-blue-50">06.01 - 12.00</th>
-                            <th class="p-2 border-b border-r border-slate-300 bg-blue-50">12.01 - 18.00</th>
-                            <th class="p-2 border-b border-r border-slate-300 bg-blue-50">18.01 - 23.59</th>
+                            <th class="p-2 border-b border-r border-slate-300 bg-blue-50">00.00-06.00</th>
+                            <th class="p-2 border-b border-r border-slate-300 bg-blue-50">06.01-12.00</th>
+                            <th class="p-2 border-b border-r border-slate-300 bg-blue-50">12.01-18.00</th>
+                            <th class="p-2 border-b border-r border-slate-300 bg-blue-50">18.01-23.59</th>
                         </tr>
                     </thead>
                     <tbody class="text-slate-800">
@@ -130,11 +132,14 @@
                             <td class="p-3 border-r border-slate-100 text-center text-slate-400"><?= $row['no'] ?></td>
                             <td class="p-3 border-r border-slate-100">
                                 <span class="font-bold text-darkblue uppercase tracking-tighter"><?= $row['pos'] ?></span>
-                                <?php if($row['waktu'] != '--:--'): ?>
-                                    <span class="block text-[9px] text-slate-400 font-medium italic mt-0.5">Update: <?= $row['waktu'] ?> WIB</span>
-                                <?php else: ?>
-                                    <span class="block text-[9px] text-red-400 font-medium italic mt-0.5">Tidak ada data</span>
-                                <?php endif; ?>
+                                <div class="flex flex-col gap-0.5 mt-0.5">
+                                    <?php if($row['waktu'] != '--:--'): ?>
+                                        <span class="text-[8px] text-blue-500 font-medium italic">API: <?= $row['waktu'] ?> WIB</span>
+                                    <?php endif; ?>
+                                    <?php if($row['manual_time'] != '--:--'): ?>
+                                        <span class="text-[8px] text-emerald-600 font-medium italic">Manual: <?= $row['manual_time'] ?> WIB</span>
+                                    <?php endif; ?>
+                                </div>
                             </td>
                             
                             <td class="p-3 border-r border-slate-100 text-center font-semibold text-slate-800"><?= number_format($row['w1'], 1) ?></td>
@@ -146,9 +151,11 @@
                                 <?= number_format($row['total'], 1) ?>
                             </td>
                             
-                            <td class="p-3 text-center font-black <?= getBgIntensity($row['manual']) ?>">
-                                <?= is_numeric($row['manual']) ? number_format($row['manual'], 1) : $row['manual'] ?>
+                            <td class="p-3 border-r border-slate-100 text-center font-black <?= getBgIntensity($row['manual_rain']) ?>">
+                                <?= ($row['manual_rain'] !== null) ? number_format($row['manual_rain'], 1) : '-' ?>
                             </td>
+
+                           
                         </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -159,47 +166,26 @@
 </main>
 
 <style>
-    .table-container::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-    }
-    .table-container::-webkit-scrollbar-track {
-        background: #f1f5f9;
-        border-radius: 4px;
-    }
-    .table-container::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 4px;
-    }
-    .table-container::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
-    }
-
-    .col-highlight {
-        background-color: rgba(239, 246, 255, 0.7) !important;
-    }
+    .table-container::-webkit-scrollbar { width: 8px; height: 8px; }
+    .table-container::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+    .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .table-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    .col-highlight { background-color: rgba(239, 246, 255, 0.7) !important; }
 </style>
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        
         const searchInput = document.getElementById("searchPos");
         const tableRows = document.querySelectorAll("#rainTable tbody tr");
 
         if (searchInput) {
             searchInput.addEventListener("input", function() {
                 const searchTerm = this.value.toLowerCase();
-
                 tableRows.forEach(row => {
                     const posNameCell = row.querySelector("td:nth-child(2)"); 
-                    
                     if (posNameCell) {
                         const posName = posNameCell.textContent.toLowerCase();
-                        if (posName.includes(searchTerm)) {
-                            row.style.display = "";
-                        } else {
-                            row.style.display = "none";
-                        }
+                        row.style.display = posName.includes(searchTerm) ? "" : "none";
                     }
                 });
             });
@@ -210,7 +196,7 @@
 
         cells.forEach(cell => {
             cell.addEventListener("mouseenter", function() {
-                if (this.cellIndex > 1 && this.cellIndex < 6) {
+                if (this.cellIndex > 1 && this.cellIndex < 8) {
                     const colIndex = this.cellIndex;
                     const rows = table.querySelectorAll("tr");
                     rows.forEach(row => {
@@ -223,7 +209,7 @@
             });
 
             cell.addEventListener("mouseleave", function() {
-                if (this.cellIndex > 1 && this.cellIndex < 6) {
+                if (this.cellIndex > 1 && this.cellIndex < 8) {
                     const colIndex = this.cellIndex;
                     const rows = table.querySelectorAll("tr");
                     rows.forEach(row => {
