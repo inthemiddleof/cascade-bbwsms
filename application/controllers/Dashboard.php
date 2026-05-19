@@ -89,7 +89,6 @@ class Dashboard extends CI_Controller {
         $bendung_geojson_data = file_exists($path_bendung) ? file_get_contents($path_bendung) : "null";
         $das_geojson_data = file_exists($path_das) ? file_get_contents($path_das) : "null";
 
-        // 4. MENYUSUN DATA UNTUK VIEW
         $data = [
             'app_name'          => "Hydrosmart",
             'title'             => "BBWS MESUJI SEKAMPUNG",
