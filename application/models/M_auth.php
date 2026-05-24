@@ -228,8 +228,32 @@ class M_auth extends CI_Model {
         return $this->db->get()->result();
     }
 
+    public function get_pos_summary_by_petugas($id_user)
+{
+    // Jika session ID kosong, langsung kembalikan array kosong agar query tidak error
+    if (empty($id_user)) {
+        return array();
+    }
+
+    // Menggunakan nama tabel asli 'master_pos' dan kolom 'petugas_id'
+    // Sesuaikan 'tb_telemetri' di bawah dengan nama tabel data telemetri Anda yang sebenarnya (misal: pda_log / t_log)
+    $sql = "SELECT 
+                p.id_pos, 
+                p.nama_pos, 
+                p.tipe_pos, 
+                p.sungai, 
+                COUNT(d.id) as total_data, 
+                MAX(d.waktu) as last_data
+            FROM master_pos p
+            LEFT JOIN tb_telemetri d ON d.id_pos = p.id_pos
+            WHERE p.petugas_id = ?
+            GROUP BY p.id_pos
+            ORDER BY last_data DESC";
+
+    return $this->db->query($sql, array($id_user))->result();
+}
     // ============================================
-    // MANAJEMEN PETUGAS
+    // MANAJEMEN PETUGAS & ADMIN (LAPIS HAK AKSES)
     // ============================================
 
     /**
@@ -246,6 +270,15 @@ class M_auth extends CI_Model {
     }
 
     /**
+     * Get semua user dengan role admin
+     */
+    public function get_all_admin() {
+        $this->db->where('role', 'admin');
+        $this->db->order_by('created_at', 'DESC');
+        return $this->db->get('users')->result();
+    }
+
+    /**
      * Get semua pos untuk dropdown
      */
     public function get_all_pos_for_select() {
@@ -257,19 +290,116 @@ class M_auth extends CI_Model {
     }
 
     /**
-     * Create petugas baru
+     * Get semua bendungan untuk dropdown manajemen admin
+     */
+    public function get_all_bendungan_for_select() {
+        $this->db->select('id_bendungan, nama_pos as nama_bendungan, nomor_pos');
+        $this->db->from('master_pos');
+        $this->db->where('tipe_pos', 'BND'); // Mengambil data khusus bendungan
+        $this->db->order_by('nama_pos', 'ASC');
+        return $this->db->get()->result();
+    }
+
+    /**
+     * Create petugas / admin baru
+     */
+    public function create_user($data) {
+        $this->db->insert('users', $data);
+        return $this->db->insert_id();
+    }
+
+    /**
+     * Create petugas baru (Fungsi Asli Anda)
      */
     public function create_petugas($data) {
         return $this->db->insert('users', $data);
     }
 
     /**
-     * Update status petugas (aktif/nonaktif)
+     * Update status petugas / admin (aktif/nonaktif)
+     */
+    public function update_status_user($id_user, $status) {
+        return $this->db->where('id_user', $id_user)
+                        ->update('users', ['status' => $status]);
+    }
+
+    /**
+     * Update status petugas (Fungsi Asli Anda)
      */
     public function update_status_petugas($id_user, $status) {
         return $this->db->where('id_user', $id_user)
                         ->where('role', 'petugas')
                         ->update('users', ['status' => $status]);
+    }
+
+    // ============================================
+    // REKAYASA RELASI MULTI ACCESS (PIVOT TABLE)
+    // ============================================
+
+    /**
+     * Mengambil daftar ID Pos yang ditugaskan kepada seorang Admin
+     */
+    public function get_admin_pos_ids($id_user) {
+        $this->db->select('id_pos');
+        $this->db->where('id_user', $id_user);
+        $res = $this->db->get('user_pos')->result_array();
+        
+        $ids = [];
+        foreach ($res as $row) {
+            $ids[] = (int)$row['id_pos'];
+        }
+        return $ids;
+    }
+
+    /**
+     * Mengambil daftar ID Bendungan yang ditugaskan kepada seorang Admin
+     */
+    public function get_admin_bendungan_ids($id_user) {
+        $this->db->select('id_bendungan');
+        $this->db->where('id_user', $id_user);
+        $res = $this->db->get('user_bendungan')->result_array();
+        
+        $ids = [];
+        foreach ($res as $row) {
+            $ids[] = (int)$row['id_bendungan'];
+        }
+        return $ids;
+    }
+
+    /**
+     * Sinkronisasi penugasan banyak Pos ke Admin
+     */
+    public function sync_admin_pos($id_user, $pos_ids) {
+        $this->db->where('id_user', $id_user)->delete('user_pos');
+        
+        if (!empty($pos_ids) && is_array($pos_ids)) {
+            $data_insert = [];
+            foreach ($pos_ids as $id_pos) {
+                $data_insert[] = [
+                    'id_user' => $id_user,
+                    'id_pos'  => $id_pos
+                ];
+            }
+            $this->db->insert_batch('user_pos', $data_insert);
+        }
+    }
+
+    /**
+     * Sinkronisasi penugasan banyak Bendungan ke Admin
+     */
+    public function sync_admin_bendungan($id_user, $bendungan_ids) {
+        $this->db->where('id_user', $id_user)->delete('user_bendungan');
+        
+        if (!empty($bendungan_ids) && is_array($bendungan_ids)) {
+            $data_insert = [];
+            foreach ($bendungan_ids as $id_bend) {
+                $data_insert[] = [
+                    'id_user'      => $id_user,
+                    'id_bendungan' => $id_bend
+                ];
+            }
+            $this->db->insert_batch('user_bendungan', $data_insert);
+        }
     }
 
     // ============================================

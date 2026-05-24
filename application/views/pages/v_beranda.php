@@ -1,6 +1,5 @@
 <header class="relative w-full h-screen min-h-[600px] overflow-hidden">
     <div id="hero-map" class="absolute top-0 left-0 w-full h-full z-0"></div>
-    
     <div class="absolute bottom-0 left-0 w-full h-[2px] bg-gray-200 z-[5]"></div>
 </header>
 
@@ -35,7 +34,6 @@
             </div>
 
             <div class="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-6">
-                
                 <div class="group p-8 bg-white rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-2 transition-all duration-500">
                     <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-darkblue group-hover:text-white transition-colors duration-500">
                         <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
@@ -43,7 +41,6 @@
                     <h3 class="text-lg font-bold text-darkblue mb-3">Monitoring Riil</h3>
                     <p class="text-sm text-slate-500 font-light leading-relaxed">Pantau data TMA dan curah hujan dari puluhan stasiun otomatis (ARR/AWLR) secara langsung.</p>
                 </div>
-
                 <div class="group p-8 bg-white rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-2 transition-all duration-500 md:mt-8">
                     <div class="w-14 h-14 bg-yellow-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-brandyellow transition-colors duration-500">
                         <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
@@ -51,7 +48,6 @@
                     <h3 class="text-lg font-bold text-darkblue mb-3">Analisis Cepat</h3>
                     <p class="text-sm text-slate-500 font-light leading-relaxed">Sistem cerdas yang mengolah data mentah menjadi informasi grafik dan tren yang mudah dipahami pengambil kebijakan.</p>
                 </div>
-
                 <div class="group p-8 bg-white rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-2 transition-all duration-500">
                     <div class="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-darkblue group-hover:text-white transition-colors duration-500">
                         <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
@@ -59,7 +55,6 @@
                     <h3 class="text-lg font-bold text-darkblue mb-3">Peta Interaktif</h3>
                     <p class="text-sm text-slate-500 font-light leading-relaxed">Visualisasi sebaran pos curah hujan dan pos duga air dalam satu peta interaktif.</p>
                 </div>
-
                 <div class="group p-8 bg-white rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-2 transition-all duration-500 md:mt-8">
                     <div class="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-red-500 group-hover:text-white transition-colors duration-500">
                         <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
@@ -67,12 +62,10 @@
                     <h3 class="text-lg font-bold text-darkblue mb-3">Peringatan Dini</h3>
                     <p class="text-sm text-slate-500 font-light leading-relaxed">Notifikasi otomatis saat parameter hidrologi melewati ambang batas normal demi keselamatan publik.</p>
                 </div>
-
             </div>
         </div>
     </div>
 </section>
-
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -80,27 +73,39 @@
 <style>
     /* Style Label untuk Wilayah Sungai */
     .ws-label {
-        background: rgba(10, 42, 74, 0.8);
+        background: rgba(10, 42, 74, 0.85);
         border: 1px solid #feb700;
         color: white;
-        font-weight: bold;
+        font-weight: 600;
         font-size: 10px;
-        padding: 2px 6px;
-        border-radius: 4px;
+        padding: 3px 8px;
+        border-radius: 6px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-    /* Marker Animasi */
+    
+    /* DAS Label Custom */
+    .das-label {
+        background: rgba(211, 84, 0, 0.8); 
+        border: 1px solid #ffffff;
+        color: white;
+        font-size: 9px;
+        padding: 2px 5px;
+        border-radius: 3px;
+    }
+
+    /* Marker Animasi Pin Core */
     .marker-pin-hero {
         width: 12px;
         height: 12px;
         border-radius: 50%;
-        background: #feb700;
         border: 2px solid white;
         box-shadow: 0 0 10px rgba(0,0,0,0.5);
     }
+    
+    /* Efek Gelombang Magnet / Pulse */
     .marker-pulse-hero {
         width: 24px;
         height: 24px;
-        background: rgba(254, 183, 0, 0.4);
         border-radius: 50%;
         position: absolute;
         margin: -6px 0 0 -6px;
@@ -110,7 +115,8 @@
         0% { transform: scale(1); opacity: 1; }
         100% { transform: scale(3); opacity: 0; }
     }
-    /* Menghilangkan padding default Leaflet agar desain Tailwind full-width */
+
+    /* Modifikasi Kontainer Popup Kustom */
     .custom-leaflet-popup .leaflet-popup-content-wrapper {
         padding: 0 !important;
         overflow: hidden;
@@ -154,26 +160,6 @@
         margin-bottom: 20px;
     }
 
-    .ws-label {
-        background: rgba(10, 42, 74, 0.85);
-        border: 1px solid #feb700;
-        color: white;
-        font-weight: 600;
-        font-size: 10px;
-        padding: 3px 8px;
-        border-radius: 6px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-
-    .das-label {
-    background: rgba(211, 84, 0, 0.8); 
-    border: 1px solid #ffffff;
-    color: white;
-    font-size: 9px;
-    padding: 2px 5px;
-    border-radius: 3px;
-    }
-
     path.leaflet-interactive:focus {
         outline: none;
     }
@@ -185,12 +171,13 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. Initialize the map
+    // 1. Initialize the Map Tile & Container
     var osm = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
-    attribution: '© OpenStreetMap contributors © CARTO',
-    subdomains: 'abcd',
-    maxZoom: 20
-});
+        attribution: '© OpenStreetMap contributors © CARTO',
+        subdomains: 'abcd',
+        maxZoom: 20
+    });
+    
     var heroMap = L.map('hero-map', {
         zoomControl: true,
         dragging: true,      
@@ -199,26 +186,21 @@ document.addEventListener('DOMContentLoaded', function() {
         boxZoom: true,
         touchZoom: true,
         layers: [osm],
-        minZoom: 8 // Mencegah zoom out terlalu jauh agar mask tidak terlihat kotaknya
+        minZoom: 8 
     }).setView([-5.3971, 105.2668], 9);
 
-    var satellite = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', { // 's' saja untuk satelit murni tanpa label
-    subdomains:['mt0','mt1','mt2','mt3'],
-    attribution: '© Google Maps Satelit'
-});
+    var satellite = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', { 
+        subdomains: ['mt0','mt1','mt2','mt3'],
+        attribution: '© Google Maps Satelit'
+    });
 
-    var baseMaps = {
-        "Peta Standar": osm,
-        "Satelit (Google)": satellite
-    };
-    L.control.layers(baseMaps).addTo(heroMap);
-
+    // Layer Group Definition
     var layerInfrastruktur = L.layerGroup(); 
     var layerHidrologi = L.layerGroup();     
     var layerAlatBerat = L.layerGroup();     
     var permanentLayers = L.layerGroup().addTo(heroMap);
 
-    // --- FUNGSI MASKING (MODIFIKASI BARU) ---
+    // --- FUNGSI MASKING ---
     function createMask(geojsonData) {
         var outerBoundary = [
             [[-90, -180], [-90, 180], [90, 180], [90, -180], [-90, -180]]
@@ -247,37 +229,37 @@ document.addEventListener('DOMContentLoaded', function() {
         return L.polygon(outerBoundary, {
             color: 'none',
             weight: 0,
-            fillColor: '#f1f5f9', // Warna slate-50 sesuai background section Anda
+            fillColor: '#f1f5f9', 
             fillOpacity: 1,
             interactive: false
         });
     }
 
+    // Load DAS Poligon ke Peta
     var dasData = <?= $das_geojson ?>;
-if (dasData) {
-    L.geoJSON(dasData, {
-        style: {
-            fillColor: "#6366f1", // Warna Ungu Indigo (Tailwind style)
-            weight: 5,          // Ketebalan garis aliran
-            opacity: 0.8,         // Transparansi garis
-            color: '#4338ca',     // Warna garis tepi ungu yang lebih gelap
-            fillOpacity: 0.3      // Transparansi isi poligon
-        },
-        onEachFeature: function (feature, layer) {
-            if (feature.properties && feature.properties.NAMA_DAS) {
-                layer.bindTooltip("DAS: " + feature.properties.NAMA_DAS, {
-                    sticky: true,
-                    className: 'das-label'
-                });
+    if (dasData) {
+        L.geoJSON(dasData, {
+            style: {
+                fillColor: "#6366f1", 
+                weight: 5,          
+                opacity: 0.8,         
+                color: '#4338ca',     
+                fillOpacity: 0.3      
+            },
+            onEachFeature: function (feature, layer) {
+                if (feature.properties && feature.properties.NAMA_DAS) {
+                    layer.bindTooltip("DAS: " + feature.properties.NAMA_DAS, {
+                        sticky: true,
+                        className: 'das-label'
+                    });
+                }
             }
-        }
-    }).addTo(heroMap);
-}
+        }).addTo(heroMap);
+    }
 
     // 2. Load Data WS (Wilayah Sungai) dengan MASKING
     var wsData = <?= $ws_geojson ?>; 
     if (wsData) {
-        // Tambahkan Masker agar menutupi luar Lampung
         var maskLayer = createMask(wsData);
         maskLayer.addTo(heroMap);
 
@@ -319,33 +301,31 @@ if (dasData) {
             }
         }).addTo(heroMap);
 
-        // Batasi geser peta agar tidak keluar jauh dari Lampung
         heroMap.setMaxBounds(wsLayer.getBounds().pad(0.5));
     }
 
+    // Generator Ikon Dinamis
     function createCustomIcon(color) {
         return L.divIcon({
             className: 'custom-hero-icon',
             html: `<div class="marker-pulse-hero" style="background: ${color}66"></div>
-                   <div class="marker-pin-hero" style="background:${color}; border: 2px solid white;"></div>`,
+                   <div class="marker-pin-hero" style="background:${color};"></div>`,
             iconSize: [12, 12],
             iconAnchor: [6, 6]
         });
     }
-    // 3. LAYER BENDUNGAN
+
+    // 3. LAYER BENDUNGAN (Masuk ke layerInfrastruktur)
     var bendunganDataDB = <?= json_encode($bendungan_db) ?>;
     if (bendunganDataDB) {
         bendunganDataDB.forEach(function(p) {
             var latlng = [parseFloat(p.lat), parseFloat(p.lng)];
             var marker = L.marker(latlng, { 
                 icon: createCustomIcon('#ef4444') 
-            }).addTo(heroMap);
+            }).addTo(layerInfrastruktur); // Dimasukkan ke layer group
 
             marker.on('click', function(e) {
-                heroMap.flyTo(e.latlng, 16, {
-                    animate: true,
-                    duration: 1.5
-                });
+                heroMap.flyTo(e.latlng, 16, { animate: true, duration: 1.5 });
             });
 
             var popupContent = `
@@ -390,10 +370,7 @@ if (dasData) {
                         </div>
                     </div>
                     <div class="px-4 py-3 bg-white border-t border-slate-100">
-                        <a href="<?= base_url('Dashboard/detail_pos/') ?>${p.id_pos}" 
-                           class="flex items-center justify-center gap-2 w-full py-2 bg-darkblue text-white rounded-lg text-[11px] font-bold hover:bg-brandyellow hover:text-darkblue transition-all">
-                            BUKA DATABASE RIWAYAT
-                        </a>
+                        <a href="<?= base_url('Dashboard/detail_pos/') ?>${p.id_pos}" class="flex items-center justify-center gap-2 w-full py-2 bg-darkblue text-white rounded-lg text-[11px] font-bold hover:bg-brandyellow hover:text-darkblue transition-all">BUKA DATABASE RIWAYAT</a>
                     </div>
                 </div>`;
 
@@ -402,7 +379,7 @@ if (dasData) {
         });
     }
 
-    // 4. LAYER BENDUNG IRIGASI
+    // 4. LAYER BENDUNG IRIGASI (Masuk ke layerInfrastruktur)
     var bendungIrigasiData = <?= $bendung_geojson ?>;
     if (bendungIrigasiData) {
         L.geoJSON(bendungIrigasiData, {
@@ -449,9 +426,111 @@ if (dasData) {
                 layer.bindPopup(popupContent, { maxWidth: 300, minWidth: 300, autoPan: false, className: 'custom-leaflet-popup', offset: [0, -5] });
                 layer.bindTooltip("Bendung: " + p['Nama Bendung'], { direction: 'top', offset: [0, -10] });
             }
-        }).addTo(heroMap);
+        }).addTo(layerInfrastruktur); // Dimasukkan ke layer group
     }
 
+
+    // ==========================================
+    // 5. IMPLEMENTASI BARU: LAYER HIDROLOGI
+    // ==========================================
+
+    // A. LOAD POS CURAH HUJAN (PCH / ARR)
+    var pchDataDB = <?= isset($pch_db) ? json_encode($pch_db) : '[]' ?>;
+    if (pchDataDB && pchDataDB.length > 0) {
+        pchDataDB.forEach(function(p) {
+            if (p.lat && p.lng) {
+                var latlng = [parseFloat(p.lat), parseFloat(p.lng)];
+                // Warna Kuning Amber untuk Pos Curah Hujan
+                var marker = L.marker(latlng, { icon: createCustomIcon('#00BFFF') }).addTo(layerHidrologi);
+
+                marker.on('click', function(e) {
+                    heroMap.flyTo(e.latlng, 15, { animate: true, duration: 1.5 });
+                });
+
+                var popupContent = `
+                    <div class="w-80 overflow-hidden rounded-xl bg-white shadow-2xl border border-amber-100">
+                        <div class="bg-amber-500 px-4 py-3 text-white">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[9px] font-bold uppercase tracking-widest text-white/90">Stasiun Curah Hujan (ARR)</span>
+                                <span class="rounded-md bg-black/10 px-2 py-0.5 text-[9px] font-mono italic">ID: ${p.id_pos}</span>
+                            </div>
+                            <h4 class="mt-1 text-base font-black uppercase tracking-tight">${p.nama_pos}</h4>
+                        </div>
+                        <div class="p-4 bg-amber-50/20 space-y-3">
+                            <div class="bg-white p-3 rounded-lg border border-amber-100 text-center shadow-sm">
+                                <p class="text-[9px] uppercase text-amber-600 font-bold tracking-wider">Curah Hujan Hari Ini</p>
+                                <p class="text-2xl font-black text-slate-800 mt-0.5">${p.ch_hari_ini || '0.00'} <span class="text-xs font-normal text-slate-500">mm</span></p>
+                            </div>
+                            <div class="text-[11px] space-y-1.5 pt-1">
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Status Stasiun:</span>
+                                    <span class="font-bold text-emerald-600">Aktif</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Update Terakhir:</span>
+                                    <span class="font-medium text-slate-700">${p.tgl_terakhir || '-'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-4 py-2.5 bg-white border-t border-slate-100">
+                            <a href="<?= base_url('Dashboard/detail_pch/') ?>${p.id_pos}" class="flex items-center justify-center w-full py-2 bg-slate-800 text-white rounded-lg text-[10px] font-bold hover:bg-amber-500 hover:text-white transition-all uppercase tracking-wider">Buka Grafik Historis</a>
+                        </div>
+                    </div>`;
+                marker.bindPopup(popupContent, { maxWidth: 320, minWidth: 320, autoPan: false, className: 'custom-leaflet-popup', offset: [0, -5] });
+                marker.bindTooltip("PCH: " + p.nama_pos, { direction: 'top', offset: [0, -10] });
+            }
+        });
+    }
+
+    // B. LOAD POS DUGA AIR (PDA / AWLR / TMA)
+    var pdaDataDB = <?= isset($pda_db) ? json_encode($pda_db) : '[]' ?>;
+    if (pdaDataDB && pdaDataDB.length > 0) {
+        pdaDataDB.forEach(function(p) {
+            if (p.lat && p.lng) {
+                var latlng = [parseFloat(p.lat), parseFloat(p.lng)];
+                // Warna Biru Indigo untuk Pos Duga Air / Tinggi Muka Air
+                var marker = L.marker(latlng, { icon: createCustomIcon('#0000FF') }).addTo(layerHidrologi);
+
+                marker.on('click', function(e) {
+                    heroMap.flyTo(e.latlng, 15, { animate: true, duration: 1.5 });
+                });
+
+                var popupContent = `
+                    <div class="w-80 overflow-hidden rounded-xl bg-white shadow-2xl border border-blue-100">
+                        <div class="bg-blue-600 px-4 py-3 text-white">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[9px] font-bold uppercase tracking-widest text-white/90">Stasiun Duga Air (AWLR)</span>
+                                <span class="rounded-md bg-black/10 px-2 py-0.5 text-[9px] font-mono italic">ID: ${p.id_pos}</span>
+                            </div>
+                            <h4 class="mt-1 text-base font-black uppercase tracking-tight">${p.nama_pos}</h4>
+                        </div>
+                        <div class="p-4 bg-blue-50/20 space-y-3">
+                            <div class="bg-white p-3 rounded-lg border border-blue-100 text-center shadow-sm">
+                                <p class="text-[9px] uppercase text-blue-600 font-bold tracking-wider">Tinggi Muka Air (TMA)</p>
+                                <p class="text-2xl font-black text-slate-800 mt-0.5">${p.tma_sekarang || '0.00'} <span class="text-xs font-normal text-slate-500">m</span></p>
+                            </div>
+                            <div class="text-[11px] space-y-1.5 pt-1">
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Status Siaga:</span>
+                                    <span class="font-bold text-emerald-600">${p.status_siaga || 'Normal'}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Update Terakhir:</span>
+                                    <span class="font-medium text-slate-700">${p.tgl_terakhir || '-'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-4 py-2.5 bg-white border-t border-slate-100">
+                            <a href="<?= base_url('Dashboard/detail_pda/') ?>${p.id_pos}" class="flex items-center justify-center w-full py-2 bg-slate-800 text-white rounded-lg text-[10px] font-bold hover:bg-blue-600 hover:text-white transition-all uppercase tracking-wider">Buka Grafik Historis</a>
+                        </div>
+                    </div>`;
+                marker.bindPopup(popupContent, { maxWidth: 320, minWidth: 320, autoPan: false, className: 'custom-leaflet-popup', offset: [0, -5] });
+                marker.bindTooltip("PDA: " + p.nama_pos, { direction: 'top', offset: [0, -10] });
+            }
+        });
+    }
+
+    // 6. LAYER CONTROL SETUP
     var baseMaps = {
         "<span class='ml-2 text-slate-600 font-medium'>Peta Dasar</span>": osm,
         "<span class='ml-2 text-slate-600 font-medium'>Citra Satelit</span>": satellite
@@ -468,8 +547,8 @@ if (dasData) {
         position: 'topright' 
     }).addTo(heroMap);
 
-    // Tambahkan Default Active Layer
+    // Aktifkan default layer saat peta pertama kali dibuka
     layerInfrastruktur.addTo(heroMap);
+    layerHidrologi.addTo(heroMap); // PCH & PDA langsung tampil otomatis
 });
 </script>
-

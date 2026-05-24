@@ -1,27 +1,48 @@
 <div class="mb-6">
-    <h1 class="text-2xl font-bold text-slate-800">Input Laporan</h1>
-    <p class="text-slate-500 text-sm mt-1">Pos: <span class="font-bold text-darkblue"><?= $pos->nama_pos ?> (<?= $pos->tipe_pos ?>)</span></p>
+    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Pilih Pos untuk Input:</label>
+    <select class="w-full px-4 py-3 border-2 border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow bg-white font-medium" 
+            onchange="window.location.href='<?= base_url('admin/tambah_data_pos?id_pos=') ?>' + this.value">
+        <?php foreach($list_pos as $lp): ?>
+            <option value="<?= $lp->id_pos ?>" <?= (isset($pos) && $pos->id_pos == $lp->id_pos) ? 'selected' : '' ?>>
+                <?= $lp->nama_pos ?> (Tipe: <?= $lp->tipe_pos ?>)
+            </option>
+        <?php endforeach; ?>
+    </select>
+</div>
+
+<div class="mb-6">
+    <?php if(isset($pos)): ?>
+        <h3 class="text-xl font-black text-slate-800">Input Laporan - <?= $pos->nama_pos ?></h3>
+        <p class="text-xs text-slate-500 uppercase tracking-wider font-semibold">Tipe: <?= $pos->tipe_pos ?></p>
+        <input type="hidden" name="id_pos" value="<?= $pos->id_pos ?>">
+    <?php else: ?>
+        <div class="p-4 bg-amber-50 text-amber-700 rounded-xl text-sm italic">
+            Silakan pilih pos terlebih dahulu untuk memulai input data.
+        </div>
+    <?php endif; ?>
 </div>
 
 <?php if($this->session->flashdata('success')): ?>
-<div class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl mb-4 text-sm flex items-center gap-2">
-    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-    <?= $this->session->flashdata('success') ?>
-</div>
-<?php endif; ?>
-<?php if($this->session->flashdata('error')): ?>
-<div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm flex items-center gap-2">
-    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-    <?= $this->session->flashdata('error') ?>
-</div>
+    <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl mb-4 text-sm flex items-center gap-2">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <?= $this->session->flashdata('success') ?>
+    </div>
 <?php endif; ?>
 
-<div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 mb-5 flex flex-wrap items-center gap-3">
-    <div class="flex items-center gap-2">
-        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
-        <span class="text-sm font-bold text-slate-600 uppercase tracking-wider">Tanggal Pengukuran</span>
+<?php if($this->session->flashdata('error')): ?>
+    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm flex items-center gap-2">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <?= $this->session->flashdata('error') ?>
     </div>
-    <input type="date" value="<?= $tanggal ?>" onchange="window.location='<?= base_url('petugas/input') ?>?pos=<?= $id_pos_active ?>&tanggal='+this.value" class="px-4 py-2.5 border-2 border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white font-medium">
+<?php endif; ?>
+
+<div class="mb-4">
+    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Tanggal Pengukuran</label>
+    <input type="date" 
+           name="tanggal" 
+           value="<?= isset($tanggal) ? $tanggal : date('Y-m-d') ?>" 
+           onchange="window.location.href='<?= base_url('admin/tambah_data_pos?id_pos=' . ($pos->id_pos ?? '') . '&tanggal=') ?>' + this.value" 
+           class="px-4 py-2.5 border-2 border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white font-medium">
 </div>
 
 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-5">
@@ -41,11 +62,11 @@
         </div>
     </div>
     
-    <form action="<?= base_url('petugas/simpan') ?>" method="POST" class="p-5">
+    <form action="<?= base_url('admin/simpan_data_pos') ?>" method="POST" class="p-5">
         <input type="hidden" name="<?= $this->security->get_csrf_token_name() ?>" value="<?= $this->security->get_csrf_hash() ?>">
-        <input type="hidden" name="tanggal" value="<?= $tanggal ?>">
         
-        <input type="hidden" name="id_pos" value="<?= $id_pos_active ?>">
+        <input type="hidden" name="id_pos" value="<?= $pos->id_pos ?>">
+        <input type="hidden" name="tanggal_input" value="<?= $tanggal ?>">
         
         <div class="space-y-5">
             <div class="border border-slate-200 rounded-xl p-4">
@@ -56,7 +77,7 @@
                 </p>
                 <div>
                     <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Nilai Curah Hujan (mm)</label>
-                    <input type="number" step="any" name="rain" required class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white" placeholder="Masukkan nilai curah hujan dalam mm">
+                    <input type="number" step="any" name="curah_hujan" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white" placeholder="Masukkan nilai curah hujan dalam mm" required>
                 </div>
                 <?php else: ?>
                 <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
@@ -65,7 +86,7 @@
                 </p>
                 <div>
                     <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Nilai TMA (m)</label>
-                    <input type="number" step="any" name="wlevel" required class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white" placeholder="Masukkan nilai TMA dalam meter">
+                    <input type="number" step="any" name="tma" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white" placeholder="Masukkan nilai TMA dalam meter" required>
                 </div>
                 <?php endif; ?>
             </div>
@@ -98,7 +119,7 @@
                 <tr>
                     <th class="px-5 py-3 text-left font-bold w-10">#</th>
                     <th class="px-5 py-3 text-left font-bold">Jam Input</th>
-                    <th class="px-5 py-3 text-left font-bold"><?= $pos->tipe_pos == 'PCH' ? 'Nilai Curah Hujan (mm)' : 'Nilai TMA (m)' ?></th>
+                    <th class="px-5 py-3 text-left font-bold">Nilai Pengukuran (<?= $pos->tipe_pos == 'PCH' ? 'mm' : 'M' ?>)</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-50">
@@ -111,11 +132,11 @@
                             <span class="font-semibold text-darkblue"><?= date('H:i', strtotime($d->created_at)) ?> WIB</span>
                         </div>
                     </td>
-                    <td class="px-5 py-3.5">
+                    <<td class="px-5 py-3.5">
                         <?php if($pos->tipe_pos == 'PCH'): ?>
                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-100 text-blue-600">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
-                                <?= $d->rain !== null ? $d->rain.' mm' : '-' ?>
+                                <?= $d->rain !== null ? $d->rain.' mm' : '0 mm' ?>
                             </span>
                         <?php else: ?>
                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-green-100 text-green-600">

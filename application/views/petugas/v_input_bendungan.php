@@ -1,10 +1,8 @@
-<!-- Header -->
 <div class="mb-6">
     <h1 class="text-2xl font-bold text-slate-800">Input Laporan Bendungan</h1>
     <p class="text-slate-500 text-sm mt-1">Pos: <span class="font-bold text-darkblue"><?= $pos->nama_pos ?></span> · <?= date('d M Y', strtotime($tanggal)) ?></p>
 </div>
 
-<!-- Alert -->
 <?php if($this->session->flashdata('success')): ?>
 <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl mb-4 text-sm flex items-center gap-2">
     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -18,7 +16,6 @@
 </div>
 <?php endif; ?>
 
-<!-- Pilih Tanggal -->
 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 mb-5 flex flex-wrap items-center gap-3">
     <div class="flex items-center gap-2">
         <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
@@ -31,11 +28,10 @@
     <input type="hidden" name="<?= $this->security->get_csrf_token_name() ?>" value="<?= $this->security->get_csrf_hash() ?>">
     <input type="hidden" name="tanggal" value="<?= $tanggal ?>">
     
+    <input type="hidden" name="id_pos" value="<?= $id_pos_active ?>">
+    
     <div class="space-y-5">
         
-        <!-- ============================================ -->
-        <!-- CARD 1: Data Tetap Bendungan -->
-        <!-- ============================================ -->
         <div class="bg-white rounded-2xl border-2 border-amber-200 shadow-sm overflow-hidden">
             <div class="px-5 py-4 border-b border-amber-200 bg-amber-50">
                 <div class="flex items-center gap-3">
@@ -69,9 +65,6 @@
             </div>
         </div>
 
-        <!-- ============================================ -->
-        <!-- CARD 2: Data Pengukuran Harian -->
-        <!-- ============================================ -->
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <div class="px-5 py-4 border-b border-slate-200 bg-darkblue">
                 <div class="flex items-center gap-3">
@@ -86,7 +79,6 @@
             </div>
             <div class="p-5 space-y-5">
                 
-                <!-- Sub: Hidrologi Dasar -->
                 <div class="border border-slate-200 rounded-xl p-4">
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
                         <span class="w-1.5 h-4 bg-blue-500 rounded-full"></span>
@@ -104,7 +96,6 @@
                     </div>
                 </div>
 
-                <!-- Sub: Parameter Utama -->
                 <div class="border border-slate-200 rounded-xl p-4">
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
                         <span class="w-1.5 h-4 bg-purple-500 rounded-full"></span>
@@ -130,7 +121,6 @@
                     </div>
                 </div>
 
-                <!-- Sub: Outflow & Status Operasional -->
                 <div class="border border-slate-200 rounded-xl p-4">
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
                         <span class="w-1.5 h-4 bg-teal-500 rounded-full"></span>
@@ -172,7 +162,6 @@
                     </div>
                 </div>
 
-                <!-- Sub: Data Rembesan -->
                 <div class="border border-slate-200 rounded-xl p-4">
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
                         <span class="w-1.5 h-4 bg-indigo-500 rounded-full"></span>
@@ -211,13 +200,11 @@
                     </div>
                 </div>
 
-                <!-- Keterangan -->
                 <div>
                     <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Keterangan</label>
                     <textarea name="keterangan" rows="2" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white resize-none" placeholder="Tambahkan keterangan jika diperlukan..."></textarea>
                 </div>
                 
-                <!-- Info Jam -->
                 <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-center gap-2">
                     <svg class="w-5 h-5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     <p class="text-xs text-blue-700">Jam input akan tercatat otomatis: <b class="text-blue-900"><?= date('H:i') ?> WIB</b></p>
@@ -225,7 +212,6 @@
             </div>
         </div>
 
-        <!-- Submit Button -->
         <button type="submit" class="w-full bg-brandyellow hover:bg-yellow-400 text-darkblue font-bold py-4 rounded-2xl text-sm transition-all shadow-lg shadow-brandyellow/20 active:scale-[0.98] flex items-center justify-center gap-2">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             Simpan Data Bendungan

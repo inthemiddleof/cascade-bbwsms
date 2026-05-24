@@ -1,15 +1,26 @@
-<!-- Welcome Header -->
-<div class="mb-6">
-    <h1 class="text-2xl font-bold text-slate-800">Dashboard</h1>
-    <p class="text-slate-500 text-sm mt-1">Selamat datang, <span class="font-semibold text-darkblue"><?= $admin_name ?></span>. Berikut ringkasan sistem monitoring hari ini.</p>
+<div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+    <div>
+        <h1 class="text-2xl font-bold text-slate-800">Dashboard</h1>
+        <p class="text-slate-500 text-sm mt-1">Selamat datang, <span class="font-semibold text-darkblue"><?= $admin_name ?></span>. Berikut ringkasan sistem monitoring hari ini.</p>
+    </div>
+    
+    <div>
+        <?php if ($this->session->userdata('role') === 'superadmin'): ?>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-red-50 text-red-600 border border-red-200 uppercase tracking-wider shadow-sm">
+                <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                Akses: Super Admin (Se-Lampung)
+            </span>
+        <?php else: ?>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-50 text-blue-600 border border-blue-200 uppercase tracking-wider shadow-sm">
+                <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                Akses: Admin Wilayah Kerja
+            </span>
+        <?php endif; ?>
+    </div>
 </div>
 
-<!-- ============================================ -->
-<!-- ROW 1: 4 Statistik Utama -->
-<!-- ============================================ -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
     
-    <!-- Total Pos Monitoring -->
     <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-all group">
         <div class="flex items-center justify-between mb-4">
             <div class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
@@ -18,7 +29,9 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
             </div>
-            <span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2.5 py-1 rounded-full">Total</span>
+            <span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2.5 py-1 rounded-full">
+                <?= ($this->session->userdata('role') === 'superadmin') ? 'Global' : 'Terfilter' ?>
+            </span>
         </div>
         <p class="text-3xl font-black text-darkblue mb-1"><?= $total_pos ?></p>
         <p class="text-xs text-slate-500">Total Pos Monitoring</p>
@@ -34,7 +47,6 @@
         </div>
     </div>
 
-    <!-- Total Petugas Terdaftar -->
     <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-all group">
         <div class="flex items-center justify-between mb-4">
             <div class="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
@@ -54,7 +66,6 @@
         </div>
     </div>
 
-    <!-- Pos Online -->
     <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-all group">
         <div class="flex items-center justify-between mb-4">
             <div class="w-11 h-11 rounded-xl bg-green-50 flex items-center justify-center group-hover:bg-green-100 transition-colors">
@@ -74,7 +85,6 @@
         </div>
     </div>
 
-    <!-- Record Data Telemetri -->
     <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-all group">
         <div class="flex items-center justify-between mb-4">
             <div class="w-11 h-11 rounded-xl bg-purple-50 flex items-center justify-center group-hover:bg-purple-100 transition-colors">
@@ -103,34 +113,38 @@
     </div>
 </div>
 
-<!-- ============================================ -->
-<!-- ROW 2: Tabel Ringkasan Pos Terbaru -->
-<!-- ============================================ -->
 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
     <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
         <h3 class="font-bold text-darkblue text-sm uppercase tracking-wider flex items-center gap-2">
             <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-            Pos dengan Data Terbaru
+            
+            <?php if ($this->session->userdata('role') === 'superadmin'): ?>
+                Semua Wilayah Pos Monitoring Se-Lampung
+            <?php else: ?>
+                Pos Tanggung Jawab Wilayah Anda (Terbatas <?= count($pos_tanggung_jawab) ?> Pos)
+            <?php endif; ?>
         </h3>
         <a href="<?= base_url('admin/kelola_pos') ?>" class="text-[10px] text-brandyellow font-bold hover:underline">Lihat Semua Pos</a>
     </div>
     
     <div class="overflow-x-auto">
-        <?php $pos_summary = $this->M_auth->get_pos_summary(); ?>
+        <?php 
+        // Penentu data array loop: Superadmin melihat seluruhnya ($pos_list), Admin wilayah dibatasi ($pos_tanggung_jawab)
+        $display_pos = ($this->session->userdata('role') === 'superadmin') ? $pos_list : $pos_tanggung_jawab;
+        ?>
         <table class="w-full text-xs">
             <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider">
                 <tr>
                     <th class="px-5 py-3 text-left font-bold">Nama Pos</th>
                     <th class="px-5 py-3 text-center font-bold w-16">Tipe</th>
                     <th class="px-5 py-3 text-left font-bold">Sungai</th>
-                    <th class="px-5 py-3 text-left font-bold">Petugas</th>
                     <th class="px-5 py-3 text-center font-bold w-24">Total Data</th>
                     <th class="px-5 py-3 text-center font-bold w-28">Data Terakhir</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-50">
-                <?php if(!empty($pos_summary)): 
-                    foreach($pos_summary as $ps): 
+                <?php if(!empty($display_pos)): 
+                    foreach($display_pos as $ps): 
                 ?>
                 <tr class="hover:bg-slate-50/50 transition-colors">
                     <td class="px-5 py-3">
@@ -141,21 +155,9 @@
                             <?= $ps->tipe_pos ?>
                         </span>
                     </td>
-                    <td class="px-5 py-3 text-slate-500"><?= $ps->sungai ?: '<span class="text-slate-300">-</span>' ?></td>
-                    <td class="px-5 py-3">
-                        <?php if(!empty($ps->petugas_nama)): ?>
-                            <div class="flex items-center gap-1.5">
-                                <div class="w-5 h-5 rounded-full bg-brandyellow/20 flex items-center justify-center">
-                                    <span class="text-darkblue font-bold text-[7px]"><?= strtoupper(substr($ps->petugas_nama, 0, 2)) ?></span>
-                                </div>
-                                <span class="text-darkblue font-semibold text-[11px]"><?= $ps->petugas_nama ?></span>
-                            </div>
-                        <?php else: ?>
-                            <span class="text-orange-400 text-[10px] bg-orange-50 px-2 py-0.5 rounded-full">Belum ada</span>
-                        <?php endif; ?>
-                    </td>
+                    <td class="px-5 py-3 text-slate-500"><?= isset($ps->sungai) ? $ps->sungai : '<span class="text-slate-300">-</span>' ?></td>
                     <td class="px-5 py-3 text-center">
-                        <span class="text-sm font-bold text-darkblue"><?= number_format($ps->total_data, 0, ',', '.') ?></span>
+                        <span class="text-sm font-bold text-darkblue"><?= isset($ps->total_data) ? number_format($ps->total_data, 0, ',', '.') : '0' ?></span>
                     </td>
                     <td class="px-5 py-3 text-center">
                         <?php if(!empty($ps->last_data)): ?>
@@ -163,17 +165,22 @@
                                 <p class="text-[10px] text-slate-600 font-medium"><?= date('d M Y', strtotime($ps->last_data)) ?></p>
                                 <p class="text-[9px] text-slate-400"><?= date('H:i', strtotime($ps->last_data)) ?> WIB</p>
                             </div>
+                        <?php elseif(!empty($ps->received_at)): ?>
+                            <div>
+                                <p class="text-[10px] text-slate-600 font-medium"><?= date('d M Y', strtotime($ps->received_at)) ?></p>
+                                <p class="text-[9px] text-slate-400"><?= date('H:i', strtotime($ps->received_at)) ?> WIB</p>
+                            </div>
                         <?php else: ?>
-                            <span class="text-[10px] text-slate-300 italic">Belum ada</span>
+                            <span class="text-[10px] text-slate-300 italic">Belum ada data</span>
                         <?php endif; ?>
                     </td>
                 </tr>
                 <?php endforeach; else: ?>
                 <tr>
-                    <td colspan="6" class="px-5 py-10 text-center text-slate-400">
+                    <td colspan="5" class="px-5 py-10 text-center text-slate-400">
                         <div class="flex flex-col items-center gap-2">
                             <svg class="w-10 h-10 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
-                            <p class="text-slate-400">Belum ada data telemetri</p>
+                            <p class="text-slate-400">Belum ada pos yang terkait dengan hak kendali akun Anda.</p>
                         </div>
                     </td>
                 </tr>
