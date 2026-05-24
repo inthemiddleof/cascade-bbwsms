@@ -46,6 +46,7 @@ class Dashboard extends CI_Controller {
     }
 
     public function index() {
+        // Ambil data telemetri terbaru dari API sdatelemetry
         $this->_sync_telemetri();
     
         // 1. DATA UNTUK STATUS HEADER (PDA & PCH Terbaru)
@@ -61,8 +62,7 @@ class Dashboard extends CI_Controller {
                                 ->where('m.tipe_pos', 'PCH')
                                 ->order_by('t.received_at', 'DESC')->limit(1)->get()->row_array();
     
-        // 2. QUERY INTEGRASI DATA MANUAL PETUGAS (Untuk Marker Bendungan di Peta)
-        // Kita ambil data Master Pos yang is_bendungan = 1, lalu join ke data_manual & data_bendungan terbaru
+        // 2. QUERY DATA BENDUNGAN (Manual Petugas)
         $this->db->select('
             m.id_pos, m.nama_pos, m.lat, m.lng, m.nwl, m.siaga1, m.siaga2, m.siaga3,
             dm.rain as curah_hujan_manual, 
@@ -71,14 +71,36 @@ class Dashboard extends CI_Controller {
             db.elevasi, db.volume, db.inflow, db.total_outflow, db.tanggal_input as tgl_bendungan
         ');
         $this->db->from('master_pos m');
-        // Join data harian manual terbaru
         $this->db->join('(SELECT id_pos, rain, wlevel, tanggal_input FROM data_manual WHERE id_manual IN (SELECT MAX(id_manual) FROM data_manual GROUP BY id_pos)) dm', 'm.id_pos = dm.id_pos', 'left');
-        // Join parameter teknis bendungan terbaru
         $this->db->join('(SELECT id_pos, elevasi, volume, inflow, total_outflow, tanggal_input FROM data_bendungan WHERE id_bendungan IN (SELECT MAX(id_bendungan) FROM data_bendungan GROUP BY id_pos)) db', 'm.id_pos = db.id_pos', 'left');
         $this->db->where('m.is_bendungan', 1);
         $bendungan_db = $this->db->get()->result_array();
 
-        // 3. MEMBACA SEMUA FILE GEOJSON (Untuk Batas Wilayah & Titik Statis)
+
+        // =========================================================================
+        // TAMBAHAN KODE BARU: QUERY REAL-TIME TELEMETRI POS HIDROLOGI (PCH & PDA)
+        // =========================================================================
+        $subquery_max_time = "(SELECT MAX(received_at) FROM data_telemetri WHERE id_pos = m.id_pos)";
+
+        // A. Mengambil Seluruh Pos Curah Hujan (PCH / ARR)
+        $this->db->select('m.id_pos, m.nama_pos, m.lat as lat, m.lng as lng, t.rain as ch_hari_ini, t.received_at as tgl_terakhir');
+        $this->db->from('master_pos m');
+        $this->db->join('data_telemetri t', "t.id_pos = m.id_pos AND t.received_at = $subquery_max_time", 'left');
+        $this->db->where('m.tipe_pos', 'PCH');
+        $this->db->where('m.is_bendungan', 0); // Memastikan tidak tumpang tindih dengan pos bendungan
+        $pch_db = $this->db->get()->result_array();
+
+        // B. Mengambil Seluruh Pos Duga Air / Tinggi Muka Air (PDA / AWLR)
+        $this->db->select('m.id_pos, m.nama_pos, m.lat as lat, m.lng as lng, t.wlevel as tma_sekarang, t.status as status_siaga, t.received_at as tgl_terakhir');
+        $this->db->from('master_pos m');
+        $this->db->join('data_telemetri t', "t.id_pos = m.id_pos AND t.received_at = $subquery_max_time", 'left');
+        $this->db->where('m.tipe_pos', 'PDA');
+        $this->db->where('m.is_bendungan', 0);
+        $pda_db = $this->db->get()->result_array();
+        // =========================================================================
+
+
+        // 3. MEMBACA SEMUA FILE GEOJSON
         $path_ws = APPPATH . 'views/pages/WS_di_Prov Lampung.geojson';
         $path_inv_bendungan = APPPATH . 'views/pages/inventaris_bendungan.geojson';
         $path_bendung = APPPATH . 'views/pages/bendung_irigasi.geojson';
@@ -89,11 +111,13 @@ class Dashboard extends CI_Controller {
         $bendung_geojson_data = file_exists($path_bendung) ? file_get_contents($path_bendung) : "null";
         $das_geojson_data = file_exists($path_das) ? file_get_contents($path_das) : "null";
 
-        // 4. MENYUSUN DATA UNTUK VIEW
+        // Satukan semua objek data ke array pengiriman view
         $data = [
             'app_name'          => "Hydrosmart",
             'title'             => "BBWS MESUJI SEKAMPUNG",
-            'bendungan_db'      => $bendungan_db, // Data dinamis dari database (Manual Petugas)
+            'bendungan_db'      => $bendungan_db,
+            'pch_db'            => $pch_db, // Dikirim ke v_beranda
+            'pda_db'            => $pda_db, // Dikirim ke v_beranda
             'ws_geojson'        => $ws_geojson_data,
             'bendungan_geojson' => $bendungan_geojson_data,
             'bendung_geojson'   => $bendung_geojson_data,

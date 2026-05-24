@@ -59,21 +59,14 @@
         <nav class="flex-1 overflow-y-auto sidebar-scroll py-4 px-3">
             <p class="px-3 mb-3 text-[9px] font-bold text-blue-300/40 uppercase tracking-[0.2em]">Menu Petugas</p>
             
-            <div class="space-y-1">
-                <a href="<?= base_url('petugas') ?>" class="menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm <?= ($current_url == 'petugas' || $current_url == 'petugas/index') ? 'menu-active' : 'text-slate-300 font-medium' ?>">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zm0 9.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zm0 9.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
-                    <span>Dashboard</span>
-                </a>
+            
                 
                 <a href="<?= base_url('petugas/input') ?>" class="menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm <?= ($current_url == 'petugas/input') ? 'menu-active' : 'text-slate-300 font-medium' ?>">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"/></svg>
                     <span>Input Laporan</span>
                 </a>
                 
-                <a href="<?= base_url('petugas/kelola') ?>" class="menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm <?= ($current_url == 'petugas/kelola') ? 'menu-active' : 'text-slate-300 font-medium' ?>">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    <span>Kelola Laporan</span>
-                </a>
+             
             </div>
         </nav>
 

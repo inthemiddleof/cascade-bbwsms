@@ -1,11 +1,9 @@
 <main class="min-h-screen bg-slate-50 flex items-center justify-center pt-28 pb-16 px-4">
-    
+
     <div class="w-full max-w-md">
         
-        <!-- Card Login -->
         <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
             
-            <!-- Header Card -->
             <div class="bg-darkblue px-6 py-5">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-brandyellow/20 flex items-center justify-center">
@@ -20,10 +18,8 @@
                 </div>
             </div>
             
-            <!-- Body Card -->
             <div class="p-6">
                 
-                <!-- Alert Error -->
                 <?php if($this->session->flashdata('error')): ?>
                 <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-5 text-sm flex items-start gap-3">
                     <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -33,7 +29,6 @@
                 </div>
                 <?php endif; ?>
                 
-                <!-- Alert Success -->
                 <?php if($this->session->flashdata('success')): ?>
                 <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-5 text-sm flex items-start gap-3">
                     <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -43,10 +38,8 @@
                 </div>
                 <?php endif; ?>
 
-                <!-- Form Login -->
                 <?= form_open('auth/do_login', ['class' => 'space-y-5', 'autocomplete' => 'off']) ?>
                     
-                    <!-- Username -->
                     <div>
                         <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
                             Username
@@ -65,7 +58,6 @@
                         </div>
                     </div>
 
-                    <!-- Password -->
                     <div>
                         <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
                             Password
@@ -93,7 +85,6 @@
                         </div>
                     </div>
 
-                    <!-- Remember Me -->
                     <div class="flex items-center justify-between text-sm">
                         <label class="flex items-center gap-2 cursor-pointer">
                             <input type="checkbox" name="remember" value="1"
@@ -102,7 +93,6 @@
                         </label>
                     </div>
 
-                    <!-- Submit Button -->
                     <button type="submit" 
                             class="w-full bg-brandyellow hover:bg-yellow-400 text-darkblue font-bold py-3 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-brandyellow focus:ring-offset-2">
                         <span class="flex items-center justify-center gap-2">
@@ -116,7 +106,6 @@
                 <?= form_close() ?>
             </div>
             
-            <!-- Footer Card -->
             <div class="bg-slate-50 px-6 py-4 border-t border-slate-100">
                 <p class="text-center text-xs text-slate-500">
                     &copy; <?= date('Y') ?> <span class="font-semibold text-darkblue">BBWS Mesuji Sekampung</span>

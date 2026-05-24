@@ -5,15 +5,17 @@ function fmtNilai($val, $dec = 3) {
 }
 ?>
 
-<!-- Header -->
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
     <div>
         <h1 class="text-2xl font-bold text-slate-800">Kelola Laporan Bendungan</h1>
-        <p class="text-slate-500 text-sm mt-1">Pos: <span class="font-bold text-darkblue"><?= $pos->nama_pos ?></span></p>
+        <p class="text-slate-500 text-sm mt-1">
+            Bendungan: <span class="font-bold text-slate-700 mr-3"><?= $pos->nama_pos ?></span> 
+            <span class="text-slate-300">|</span> 
+            <span class="ml-2">ID Pos: <span class="font-semibold text-darkblue"><?= $pos->id_pos ?></span></span>
+        </p>
     </div>
 </div>
 
-<!-- Alert Messages -->
 <?php if($this->session->flashdata('success')): ?>
 <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl mb-4 text-sm flex items-center gap-2">
     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -27,20 +29,47 @@ function fmtNilai($val, $dec = 3) {
 </div>
 <?php endif; ?>
 
-<!-- Filter Bulan -->
-<div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 mb-4 flex flex-col sm:flex-row gap-3">
-    <div class="flex items-center gap-2">
-        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
-        <span class="text-sm font-bold text-slate-600 uppercase tracking-wider">Bulan:</span>
-    </div>
-    <input type="month" value="<?= $bulan ?>" onchange="window.location='<?= base_url('petugas/kelola') ?>?bulan='+this.value" class="px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-slate-50 font-medium">
-    <span class="text-[10px] text-slate-400 flex items-center">Menampilkan <b class="mx-1"><?= count($data_list) ?></b> data</span>
+<div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-4">
+    <form method="GET" action="<?= base_url('admin/kelola_bendungan') ?>" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
+        
+        <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-2">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                Pilih Bendungan:
+            </label>
+            <select name="pos" onchange="this.form.submit()" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-slate-50 font-medium text-slate-700">
+                <?php if(!empty($list_pos)): ?>
+                    <?php foreach($list_pos as $lp): ?>
+                        <option value="<?= $lp->id_pos ?>" <?= ($lp->id_pos == $pos->id_pos) ? 'selected' : '' ?>>
+                            <?= $lp->nama_pos ?> (<?= $lp->nomor_pos ?>)
+                        </option>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <option value="">Tidak ada otoritas bendungan</option>
+                <?php endif; ?>
+            </select>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-2">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
+                Periode Bulan:
+            </label>
+            <input type="month" name="bulan" value="<?= $bulan ?>" onchange="this.form.submit()" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-slate-50 font-medium text-slate-700">
+        </div>
+
+        <div class="text-slate-400 flex items-center pb-3 lg:justify-end">
+            <span class="text-xs bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg font-medium">
+                Menampilkan <b class="text-darkblue mx-0.5"><?= count($data_list) ?></b> baris record
+            </span>
+        </div>
+
+    </form>
 </div>
 
-<!-- Tabel Data -->
 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
     <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-        <h3 class="font-bold text-darkblue text-sm uppercase tracking-wider">Daftar Laporan Bendungan</h3>
+        <h3 class="font-bold text-darkblue text-sm uppercase tracking-wider">Daftar Laporan Laju Bendungan</h3>
         <span class="text-[10px] text-slate-400 font-bold"><?= count($data_list) ?> DATA</span>
     </div>
     
@@ -63,7 +92,6 @@ function fmtNilai($val, $dec = 3) {
             </thead>
             <tbody class="divide-y divide-slate-50">
                 <?php if(!empty($data_list)): $no = 1; foreach($data_list as $d): 
-                    // Ambil data rain & elevasi dari data_manual terkait
                     $manual = $this->db->where('id_pos', $d->id_pos)
                                        ->where('tanggal_input', $d->tanggal_input)
                                        ->where('created_at', $d->created_at)
@@ -73,7 +101,6 @@ function fmtNilai($val, $dec = 3) {
                 <tr class="hover:bg-slate-50/50 transition-colors">
                     <td class="px-4 py-3.5 text-slate-400"><?= $no++ ?></td>
                     
-                    <!-- Tanggal -->
                     <td class="px-4 py-3.5">
                         <div class="min-w-0">
                             <p class="font-semibold text-darkblue"><?= date('d M Y', strtotime($d->tanggal_input)) ?></p>
@@ -81,7 +108,6 @@ function fmtNilai($val, $dec = 3) {
                         </div>
                     </td>
                     
-                    <!-- Curah Hujan -->
                     <td class="px-4 py-3.5">
                         <?php if($manual && $manual->rain !== null): ?>
                             <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-100 text-blue-600">
@@ -93,34 +119,28 @@ function fmtNilai($val, $dec = 3) {
                         <?php endif; ?>
                     </td>
                     
-                    <!-- Elevasi / TMA -->
                     <td class="px-4 py-3.5">
                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-green-100 text-green-600">
                             <?= fmtNilai($d->elevasi, 2) ?> m
                         </span>
                     </td>
                     
-                    <!-- Volume -->
                     <td class="px-4 py-3.5">
                         <span class="font-bold text-darkblue text-[11px]"><?= fmtNilai($d->volume, 3) ?> <span class="text-[9px] text-slate-400">jt.m³</span></span>
                     </td>
                     
-                    <!-- Luas Genangan -->
                     <td class="px-4 py-3.5">
                         <span class="font-bold text-darkblue text-[11px]"><?= fmtNilai($d->luas, 3) ?> <span class="text-[9px] text-slate-400">km²</span></span>
                     </td>
                     
-                    <!-- Inflow -->
                     <td class="px-4 py-3.5">
                         <span class="font-bold text-green-600 text-[11px]"><?= fmtNilai($d->inflow, 3) ?> <span class="text-[9px] text-slate-400">m³/s</span></span>
                     </td>
                     
-                    <!-- Total Outflow -->
                     <td class="px-4 py-3.5">
                         <span class="font-bold text-orange-600 text-[11px]"><?= fmtNilai($d->total_outflow, 3) ?> <span class="text-[9px] text-slate-400">m³/s</span></span>
                     </td>
                     
-                    <!-- PLTA -->
                     <td class="px-4 py-3.5 text-center">
                         <?php if($d->plta_status): ?>
                         <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold <?= $d->plta_status == 'on' ? 'bg-green-100 text-green-600' : ($d->plta_status == 'off' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600') ?>">
@@ -132,7 +152,6 @@ function fmtNilai($val, $dec = 3) {
                         <?php endif; ?>
                     </td>
                     
-                    <!-- Irigasi -->
                     <td class="px-4 py-3.5 text-center">
                         <?php if($d->irigasi_status): ?>
                         <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold <?= $d->irigasi_status == 'on' ? 'bg-green-100 text-green-600' : ($d->irigasi_status == 'off' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600') ?>">
@@ -144,7 +163,6 @@ function fmtNilai($val, $dec = 3) {
                         <?php endif; ?>
                     </td>
                     
-                    <!-- Aksi -->
                     <td class="px-4 py-3.5">
                         <div class="flex items-center justify-center gap-1">
                             <button onclick="openModalEdit(
@@ -156,7 +174,7 @@ function fmtNilai($val, $dec = 3) {
                             )" class="p-2 rounded-lg bg-slate-100 text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-colors" title="Edit">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                             </button>
-                            <a href="<?= base_url('petugas/hapus_bendungan/'.$d->id_bendungan) ?>" onclick="return confirm('Hapus data ini?')" class="p-2 rounded-lg bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors" title="Hapus">
+                            <a href="<?= base_url('admin/hapus_bendungan/'.$d->id_bendungan.'?pos='.$pos->id_pos) ?>" onclick="return confirm('Hapus data ini?')" class="p-2 rounded-lg bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors" title="Hapus">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                             </a>
                         </div>
@@ -171,7 +189,6 @@ function fmtNilai($val, $dec = 3) {
                             </div>
                             <div>
                                 <p class="text-slate-400 font-semibold">Belum ada data untuk bulan ini</p>
-                                <p class="text-slate-300 text-[11px] mt-1">Gunakan menu Input Laporan untuk menambahkan data</p>
                             </div>
                         </div>
                     </td>
@@ -182,21 +199,21 @@ function fmtNilai($val, $dec = 3) {
     </div>
 </div>
 
-<!-- Modal Edit -->
 <div id="modalEdit" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div class="sticky top-0 bg-white z-10 flex items-center justify-between p-5 border-b border-slate-100 rounded-t-2xl">
             <div>
                 <h3 class="font-bold text-darkblue text-lg">Edit Data Bendungan</h3>
-                <p class="text-xs text-slate-400 mt-0.5">Perbarui data laporan bendungan</p>
+                <p class="text-xs text-slate-400 mt-0.5">Lokasi: <span class="font-bold text-slate-600"><?= $pos->nama_pos ?></span> (Mode Admin)</p>
             </div>
             <button onclick="closeModalEdit()" class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-500 transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
-        <?= form_open('petugas/update_bendungan', ['class' => 'p-5 space-y-4']) ?>
+        <?= form_open('admin/update_bendungan', ['class' => 'p-5 space-y-4']) ?>
             <input type="hidden" name="<?= $this->security->get_csrf_token_name() ?>" value="<?= $this->security->get_csrf_hash() ?>">
             <input type="hidden" name="id_bendungan" id="edit_b_id">
+            <input type="hidden" name="id_pos" value="<?= $pos->id_pos ?>">
             
             <div>
                 <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Tanggal <span class="text-red-500">*</span></label>

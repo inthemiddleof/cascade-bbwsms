@@ -16,13 +16,13 @@ class Auth extends CI_Controller {
      * Halaman Login
      */
     public function index() {
-        // Jika sudah login, redirect ke dashboard
+        // Jika sudah login, redirect sesuai hak akses lapis 3
         if ($this->session->userdata('logged_in')) {
-            $role = $this->session->userdata('role');
-            if ($role == 'admin') {
+            $role = strtolower($this->session->userdata('role'));
+            if ($role == 'superadmin' || $role == 'admin') {
                 redirect('admin');
             } else {
-                redirect('dashboard');
+                redirect('petugas');
             }
         }
         
@@ -83,7 +83,6 @@ class Auth extends CI_Controller {
         
         if (!$password_valid) {
             // Jika password tidak valid, coba cek apakah password masih plain text (untuk migrasi)
-            // Ini hanya untuk debugging, hapus setelah production!
             if ($password === $user->password) {
                 // Password masih plain text, update ke hash
                 $new_hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
@@ -99,12 +98,15 @@ class Auth extends CI_Controller {
             }
         }
         
-        // Login sukses
+        // Memastikan string role dibaca sebagai huruf kecil (lowercase) dan bersih dari spasi
+        $fixed_role = strtolower(trim($user->role));
+        
+        // Login sukses, bangun data session
         $session_data = [
             'user_id'      => $user->id_user,
             'username'     => $user->username,
             'nama_lengkap' => $user->nama_lengkap,
-            'role'         => $user->role,
+            'role'         => $fixed_role, // Menyimpan 'super_admin', 'admin', atau 'petugas'
             'id_pos'       => $user->id_pos,
             'logged_in'    => TRUE,
             'last_activity'=> time()
@@ -116,8 +118,8 @@ class Auth extends CI_Controller {
         $this->db->where('id_user', $user->id_user)
                  ->update('users', ['last_login' => date('Y-m-d H:i:s')]);
         
-        // Redirect sesuai role
-        if ($user->role == 'admin') {
+        // Redirect dinamis lapis 3 berdasarkan role baru
+        if ($fixed_role == 'super_admin' || $fixed_role == 'admin') {
             redirect('admin');
         } else {
             redirect('petugas');

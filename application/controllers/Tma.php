@@ -130,7 +130,7 @@ class Tma extends CI_Controller {
             ];
         }
 
-        // Sorting: Pos Aktif ke atas
+    
         usort($pencatatan_tma, function($a, $b) {
             $a_aktif = ($a['waktu'] !== '--:--' || $a['manual_time'] !== '--:--') ? 1 : 0;
             $b_aktif = ($b['waktu'] !== '--:--' || $b['manual_time'] !== '--:--') ? 1 : 0;
