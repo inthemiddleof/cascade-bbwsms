@@ -1,43 +1,20 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Admin extends CI_Controller {
+class Superadmin extends CI_Controller {
 
     public function __construct() {
         parent::__construct();
         $this->load->library(['session', 'form_validation']);
-        $this->load->model('M_admin');
+        $this->load->model('M_superadmin');
         $this->load->helper(['url', 'form']);
         $this->load->database();
         date_default_timezone_set('Asia/Jakarta');
         
-        // Cek login
-        if (!$this->session->userdata('logged_in')) {
-            redirect('auth');
-        }
-        
-        // Cek role
-        if ($this->session->userdata('role') !== 'admin') {
-            show_error('Akses Ditolak. Anda bukan Admin Wilayah.', 403);
-        }
+        if (!$this->session->userdata('logged_in')) redirect('auth');
+        if ($this->session->userdata('role') !== 'superadmin') show_error('Akses Ditolak.', 403);
     }
 
-    // ==========================================
-    // HELPER: Ambil ID pos yang diizinkan
-    // ==========================================
-    private function _get_allowed_pos_ids() {
-        $id_user = $this->session->userdata('user_id') ?: $this->session->userdata('id_user');
-        $user = $this->db->select('id_pos')->where('id_user', $id_user)->get('users')->row();
-        
-        if (!empty($user->id_pos)) {
-            return array_map('trim', explode(',', $user->id_pos));
-        }
-        return [0];
-    }
-
-    // ==========================================
-    // HELPER: Render view dengan layout
-    // ==========================================
     private function _render($view, $data) {
         $data['content'] = $this->load->view($view, $data, TRUE);
         $this->load->view('layout/v_superadmin_layout', $data);
@@ -47,67 +24,87 @@ class Admin extends CI_Controller {
     // DASHBOARD
     // ==========================================
     public function index() {
-        $allowed_pos = $this->_get_allowed_pos_ids();
-        $data = $this->M_admin->get_dashboard_data($allowed_pos);
+        $data = $this->M_superadmin->get_dashboard_data();
         $data['admin_name'] = $this->session->userdata('nama_lengkap');
-        $this->_render('admin/v_dashboard', $data);
+        $this->_render('superadmin/v_dashboard', $data);
     }
 
     // ==========================================
-    // KELOLA PETUGAS
+    // KELOLA POS
     // ==========================================
-    public function kelola_petugas() {
-        $data = $this->M_admin->get_petugas_data($this->_get_allowed_pos_ids());
+    public function kelola_pos() {
+        $data = $this->M_superadmin->get_pos_data();
         $data['admin_name'] = $this->session->userdata('nama_lengkap');
-        $this->_render('admin/v_kelola_petugas', $data);
+        $this->_render('superadmin/v_kelola_pos', $data);
     }
 
-    public function tambah_petugas() {
-        $result = $this->M_admin->insert_petugas(
-            $this->input->post(), 
-            $this->_get_allowed_pos_ids()
-        );
+    public function tambah_pos() {
+        $result = $this->M_superadmin->insert_pos($this->input->post());
         $this->session->set_flashdata($result['status'], $result['message']);
-        redirect('admin/kelola_petugas');
+        redirect('superadmin/kelola_pos');
     }
 
-    public function edit_petugas() {
-        $result = $this->M_admin->update_petugas(
-            $this->input->post(), 
-            $this->_get_allowed_pos_ids()
-        );
+    public function edit_pos() {
+        $result = $this->M_superadmin->update_pos($this->input->post());
         $this->session->set_flashdata($result['status'], $result['message']);
-        redirect('admin/kelola_petugas');
+        redirect('superadmin/kelola_pos');
     }
 
-    public function hapus_petugas($id) {
-        $result = $this->M_admin->delete_petugas($id);
+    public function hapus_pos($id) {
+        $result = $this->M_superadmin->delete_pos($id);
         $this->session->set_flashdata($result['status'], $result['message']);
-        redirect('admin/kelola_petugas');
+        redirect('superadmin/kelola_pos');
     }
 
-    public function nonaktifkan_petugas($id) {
-        $this->M_admin->set_status($id, 'nonaktif');
-        $this->session->set_flashdata('success', 'Petugas dinonaktifkan.');
-        redirect('admin/kelola_petugas');
+    // ==========================================
+    // KELOLA ADMIN
+    // ==========================================
+    public function kelola_admin() {
+        $data = $this->M_superadmin->get_admin_data();
+        $data['admin_name'] = $this->session->userdata('nama_lengkap');
+        $this->_render('superadmin/v_kelola_admin', $data);
     }
 
-    public function aktifkan_petugas($id) {
-        $this->M_admin->set_status($id, 'aktif');
-        $this->session->set_flashdata('success', 'Petugas diaktifkan.');
-        redirect('admin/kelola_petugas');
+    public function tambah_admin() {
+        $result = $this->M_superadmin->insert_admin($this->input->post());
+        $this->session->set_flashdata($result['status'], $result['message']);
+        redirect('superadmin/kelola_admin');
+    }
+
+    public function edit_admin() {
+        $result = $this->M_superadmin->update_admin($this->input->post());
+        $this->session->set_flashdata($result['status'], $result['message']);
+        redirect('superadmin/kelola_admin');
+    }
+
+    public function hapus_admin($id) {
+        $result = $this->M_superadmin->delete_admin($id);
+        $this->session->set_flashdata($result['status'], $result['message']);
+        redirect('superadmin/kelola_admin');
+    }
+
+    public function nonaktifkan_admin($id) {
+        $this->M_superadmin->set_admin_status($id, 'nonaktif');
+        $this->session->set_flashdata('success', 'Admin dinonaktifkan.');
+        redirect('superadmin/kelola_admin');
+    }
+
+    public function aktifkan_admin($id) {
+        $this->M_superadmin->set_admin_status($id, 'aktif');
+        $this->session->set_flashdata('success', 'Admin diaktifkan.');
+        redirect('superadmin/kelola_admin');
     }
 
     // ==========================================
     // KELOLA MANUAL
     // ==========================================
     public function kelola_manual() {
-        $allowed_pos = $this->_get_allowed_pos_ids();
+        $this->load->model('M_admin');
         
         $data = $this->M_admin->get_manual_data(
             $this->input->get('pos'), 
             $this->input->get('bulan') ?: date('Y-m'),
-            $allowed_pos
+            null // Superadmin bisa akses semua pos
         );
         
         $data['admin_name'] = $this->session->userdata('nama_lengkap');
@@ -175,111 +172,102 @@ class Admin extends CI_Controller {
             }
         }
         
-        $this->_render('admin/v_kelola_manual', $data);
+        $this->_render('superadmin/v_kelola_manual', $data);
     }
 
     // ==========================================
     // SIMPAN DATA
     // ==========================================
     public function simpan_data_pos() {
+        $this->load->model('M_admin');
         $user_id = $this->session->userdata('user_id') ?: $this->session->userdata('id_user');
         $result = $this->M_admin->insert_manual_pos(
             $this->input->post(),
             $user_id,
-            $this->_get_allowed_pos_ids()
+            null
         );
         $this->session->set_flashdata($result['status'], $result['message']);
-        
-        $pos_id = $this->input->post('id_pos');
-        $bulan = date('Y-m', strtotime($this->input->post('tanggal_input')));
-        redirect('admin/kelola_manual?pos=' . $pos_id . '&bulan=' . $bulan);
+        redirect('superadmin/kelola_manual?pos=' . $this->input->post('id_pos') . '&bulan=' . date('Y-m', strtotime($this->input->post('tanggal_input'))));
     }
 
     public function simpan_bendungan() {
+        $this->load->model('M_admin');
         $user_id = $this->session->userdata('user_id') ?: $this->session->userdata('id_user');
         $result = $this->M_admin->insert_manual_bendungan(
             $this->input->post(),
             $user_id,
-            $this->_get_allowed_pos_ids()
+            null
         );
         $this->session->set_flashdata($result['status'], $result['message']);
-        
-        $pos_id = $this->input->post('id_pos');
-        $bulan = date('Y-m', strtotime($this->input->post('tanggal_input')));
-        redirect('admin/kelola_manual?pos=' . $pos_id . '&bulan=' . $bulan);
+        redirect('superadmin/kelola_manual?pos=' . $this->input->post('id_pos') . '&bulan=' . date('Y-m', strtotime($this->input->post('tanggal_input'))));
     }
 
     // ==========================================
     // SIMPAN BENDUNG (BARU)
     // ==========================================
     public function simpan_bendung() {
+        $this->load->model('M_admin');
         $user_id = $this->session->userdata('user_id') ?: $this->session->userdata('id_user');
         $result = $this->M_admin->insert_manual_bendung(
             $this->input->post(),
             $user_id,
-            $this->_get_allowed_pos_ids()
+            null
         );
         $this->session->set_flashdata($result['status'], $result['message']);
-        
-        $pos_id = $this->input->post('id_pos');
-        $bulan = date('Y-m', strtotime($this->input->post('tanggal_input')));
-        redirect('admin/kelola_manual?pos=' . $pos_id . '&bulan=' . $bulan);
+        redirect('superadmin/kelola_manual?pos=' . $this->input->post('id_pos') . '&bulan=' . date('Y-m', strtotime($this->input->post('tanggal_input'))));
     }
 
     // ==========================================
     // UPDATE DATA
     // ==========================================
     public function update_manual() {
+        $this->load->model('M_admin');
         $result = $this->M_admin->update_manual_pos($this->input->post());
         $this->session->set_flashdata($result['status'], $result['message']);
-        
-        $pos_id = $this->input->post('id_pos');
-        $bulan = date('Y-m', strtotime($this->input->post('tanggal')));
-        redirect('admin/kelola_manual?pos=' . $pos_id . '&bulan=' . $bulan);
+        redirect('superadmin/kelola_manual?pos=' . $this->input->post('id_pos') . '&bulan=' . date('Y-m', strtotime($this->input->post('tanggal'))));
     }
 
     public function update_bendungan() {
+        $this->load->model('M_admin');
         $result = $this->M_admin->update_manual_bendungan($this->input->post());
         $this->session->set_flashdata($result['status'], $result['message']);
-        
-        $pos_id = $this->input->post('id_pos');
-        $bulan = date('Y-m', strtotime($this->input->post('tanggal')));
-        redirect('admin/kelola_manual?pos=' . $pos_id . '&bulan=' . $bulan);
+        redirect('superadmin/kelola_manual?pos=' . $this->input->post('id_pos') . '&bulan=' . date('Y-m', strtotime($this->input->post('tanggal'))));
     }
 
     // ==========================================
     // UPDATE BENDUNG (BARU)
     // ==========================================
     public function update_bendung() {
+        $this->load->model('M_admin');
         $result = $this->M_admin->update_manual_bendung($this->input->post());
         $this->session->set_flashdata($result['status'], $result['message']);
-        
-        $pos_id = $this->input->post('id_pos');
-        $bulan = date('Y-m', strtotime($this->input->post('tanggal')));
-        redirect('admin/kelola_manual?pos=' . $pos_id . '&bulan=' . $bulan);
+        redirect('superadmin/kelola_manual?pos=' . $this->input->post('id_pos') . '&bulan=' . date('Y-m', strtotime($this->input->post('tanggal'))));
     }
 
     // ==========================================
     // HAPUS DATA
     // ==========================================
     public function hapus_manual($id) {
-        $result = $this->M_admin->delete_manual_pos($id, $this->_get_allowed_pos_ids());
+        $this->load->model('M_admin');
+        $result = $this->M_admin->delete_manual_pos($id, null);
         $this->session->set_flashdata($result['status'], $result['message']);
-        redirect('admin/kelola_manual?pos=' . $this->input->get('pos'));
+        redirect('superadmin/kelola_manual?pos=' . $this->input->get('pos'));
     }
 
     public function hapus_bendungan($id) {
+        $this->load->model('M_admin');
         $result = $this->M_admin->delete_manual_bendungan($id);
         $this->session->set_flashdata($result['status'], $result['message']);
-        redirect('admin/kelola_manual?pos=' . $this->input->get('pos'));
+        redirect('superadmin/kelola_manual?pos=' . $this->input->get('pos'));
     }
 
     // ==========================================
     // HAPUS BENDUNG (BARU)
     // ==========================================
     public function hapus_bendung($id) {
+        $this->load->model('M_admin');
         $result = $this->M_admin->delete_manual_bendung($id);
         $this->session->set_flashdata($result['status'], $result['message']);
-        redirect('admin/kelola_manual?pos=' . $this->input->get('pos'));
+        redirect('superadmin/kelola_manual?pos=' . $this->input->get('pos'));
     }
 }

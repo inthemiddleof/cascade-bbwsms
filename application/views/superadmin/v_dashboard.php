@@ -3,9 +3,9 @@
         <h1 class="text-xl md:text-2xl font-bold text-slate-800">Dashboard</h1>
         <p class="text-slate-500 text-sm mt-1">Selamat datang, <span class="font-semibold text-darkblue"><?= htmlspecialchars($admin_name) ?></span>. Berikut ringkasan sistem monitoring hari ini.</p>
     </div>
-    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-200 uppercase tracking-wider">
-        <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-        Admin Wilayah
+    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold bg-red-50 text-red-600 border border-red-200 uppercase tracking-wider">
+        <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+        Super Admin
     </span>
 </div>
 
@@ -19,7 +19,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
             </div>
-            <span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Wilayah</span>
+            <span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Global</span>
         </div>
         <p class="text-2xl font-black text-darkblue mb-1"><?= $total_pos ?></p>
         <p class="text-xs text-slate-500">Total Pos Monitoring</p>
@@ -74,7 +74,7 @@
 
 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
     <div class="px-5 py-4 border-b border-slate-100">
-        <h3 class="font-bold text-darkblue text-sm uppercase tracking-wider">Pos Tanggung Jawab Wilayah (<?= count($pos_tanggung_jawab) ?> Pos)</h3>
+        <h3 class="font-bold text-darkblue text-sm uppercase tracking-wider">Semua Pos Monitoring</h3>
     </div>
     <div class="overflow-auto max-h-[360px]">
         <table class="w-full text-sm min-w-[400px]">
@@ -87,7 +87,7 @@
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
-                <?php if(!empty($pos_tanggung_jawab)): foreach($pos_tanggung_jawab as $ps): ?>
+                <?php if(!empty($pos_list)): foreach($pos_list as $ps): ?>
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td class="px-5 py-3"><p class="font-semibold text-darkblue text-xs"><?= htmlspecialchars($ps->nama_pos) ?></p></td>
                     <td class="px-5 py-3 text-center">
@@ -105,7 +105,7 @@
                     </td>
                 </tr>
                 <?php endforeach; else: ?>
-                <tr><td colspan="4" class="px-5 py-12 text-center text-slate-400">Belum ada pos terkait</td></tr>
+                <tr><td colspan="4" class="px-5 py-12 text-center text-slate-400">Belum ada pos</td></tr>
                 <?php endif; ?>
             </tbody>
         </table>

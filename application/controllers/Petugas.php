@@ -5,239 +5,285 @@ class Petugas extends CI_Controller {
 
     public function __construct() {
         parent::__construct();
-        $this->load->library('session');
+        $this->load->library(['session', 'form_validation']);
         $this->load->model('M_petugas');
         $this->load->helper(['url', 'form']);
+        $this->load->database();
         date_default_timezone_set('Asia/Jakarta');
         
-        if (!$this->session->userdata('logged_in')) redirect('auth');
+        if (!$this->session->userdata('logged_in')) {
+            redirect('auth');
+        }
         
-        // Proteksi: Controller ini khusus untuk role petugas dalam menginput data hidrologi
-        $role = $this->session->userdata('role');
-        if ($role !== 'petugas') {
-            show_error('Akses Ditolak: Halaman ini khusus untuk Petugas Lapangan.', 403);
+        if ($this->session->userdata('role') !== 'petugas') {
+            show_error('Akses Ditolak. Anda bukan Petugas Lapangan.', 403);
         }
     }
 
-    // ============================================
-    // 1. BYPASS DIRECT KE HALAMAN INPUT
-    // ============================================
+    private function _get_assigned_pos_ids() {
+        $raw = $this->session->userdata('id_pos');
+        if (empty($raw)) return [];
+        return strpos($raw, ',') !== false 
+            ? array_map('trim', explode(',', $raw)) 
+            : [trim($raw)];
+    }
+
+    private function _validate_pos($id_pos) {
+        return in_array((string)$id_pos, $this->_get_assigned_pos_ids());
+    }
+
+    private function _parse_float($value) {
+        return ($value === '' || $value === null) ? null : (float)$value;
+    }
+
+    private function _render($view, $data) {
+        $data['content'] = $this->load->view($view, $data, TRUE);
+        $this->load->view('layout/v_petugas_layout', $data);
+    }
+
     public function index() {
         redirect('petugas/input');
     }
 
-    // ============================================
-    // 2. FORM INPUT LAPORAN (Manual / Bendungan)
-    // ============================================
+    // ==========================================
+    // FORM INPUT
+    // ==========================================
     public function input() {
-        $raw_id_pos = $this->session->userdata('id_pos');
-        
-        // Pecah string id_pos dari session menjadi array (antisipasi multi-pos/wilayah)
-        $assigned_pos_ids = !empty($raw_id_pos) ? array_map('trim', explode(',', $raw_id_pos)) : [];
-        
-        if (empty($assigned_pos_ids)) {
-            show_error('Akun Anda belum dikaitkan dengan pos infrastruktur manapun. Silakan hubungi Admin.', 403);
-            return;
+        $assigned = $this->_get_assigned_pos_ids();
+        if (empty($assigned)) {
+            show_error('Anda belum dikaitkan dengan pos manapun.', 403);
         }
 
-        // Cek pos mana yang sedang aktif dipilih via URL ?pos= , jika tidak ada fallback ke pos pertama
-        $id_pos_active = $this->input->get('pos', TRUE);
-        if (empty($id_pos_active) || !in_array($id_pos_active, $assigned_pos_ids)) {
-            $id_pos_active = $assigned_pos_ids[0];
+        $id_pos_active = $this->input->get('pos');
+        if (empty($id_pos_active) || !$this->_validate_pos($id_pos_active)) {
+            $id_pos_active = $assigned[0];
         }
 
         $pos = $this->M_petugas->get_pos($id_pos_active);
+        if (!$pos) {
+            show_error('Data pos tidak ditemukan.', 404);
+        }
+
         $tanggal = $this->input->get('tanggal') ?: date('Y-m-d');
-        
-        // Ambil data detail semua pos yang diampu petugas ini untuk navigasi/dropdown pindah pos di view
-        $this->db->where_in('id_pos', $assigned_pos_ids);
-        $daftar_pos_petugas = $this->db->get('master_pos')->result();
+        $daftar_pos = $this->M_petugas->get_pos_by_ids($assigned);
 
         $data = [
-            'app_name'           => 'CASCADE',
-            'title'              => 'Form Input Data Hidrologi',
+            'app_name'           => 'HydroSmart',
+            'title'              => 'Form Input',
             'petugas_name'       => $this->session->userdata('nama_lengkap'),
             'pos'                => $pos,
             'tanggal'            => $tanggal,
-            'daftar_pos_petugas' => $daftar_pos_petugas,
+            'daftar_pos_petugas' => $daftar_pos,
             'id_pos_active'      => $id_pos_active
         ];
-        
-        if ($pos && $pos->is_bendungan == 1) {
+
+        // ==========================================
+        // Tentukan view berdasarkan tipe pos
+        // ==========================================
+        if ($pos->is_bendung == 1) {
+            // View input bendung
+            $data['data_list'] = $this->M_petugas->get_bendung_by_tanggal($id_pos_active, $tanggal);
+            $data['content'] = $this->load->view('petugas/v_input_bendung', $data, TRUE);
+        } elseif ($pos->is_bendungan == 1) {
+            // View input bendungan
             $data['content'] = $this->load->view('petugas/v_input_bendungan', $data, TRUE);
         } else {
+            // View input pos biasa (PCH/PDA)
             $data['data_list'] = $this->M_petugas->get_by_tanggal($id_pos_active, $tanggal);
             $data['content'] = $this->load->view('petugas/v_input_manual', $data, TRUE);
         }
-        
+
         $this->load->view('layout/v_petugas_layout', $data);
     }
 
+    // ==========================================
+    // SIMPAN DATA POS BIASA
+    // ==========================================
     public function simpan() {
-        $id_user = $this->session->userdata('id_user') ?: $this->session->userdata('user_id'); 
-        $id_pos = $this->input->post('id_pos', TRUE); 
+        $id_pos  = $this->input->post('id_pos');
         $tanggal = $this->input->post('tanggal');
-        $rain = $this->input->post('rain');
-        $wlevel = $this->input->post('wlevel');
         
-        // Keamanan Lapis 1: Pastikan pos yang di-submit benar-benar milik petugas yang login via session
-        $raw_id_pos = $this->session->userdata('id_pos');
-        $assigned_pos_ids = !empty($raw_id_pos) ? array_map('trim', explode(',', $raw_id_pos)) : [];
-        if (!in_array((string)$id_pos, array_map('strval', $assigned_pos_ids))) {
-            show_error('Akses Terblokir: Anda tidak memiliki otoritas input di pos ini.', 403);
-            return;
+        if (!$this->_validate_pos($id_pos)) {
+            show_error('Akses Terblokir!', 403);
         }
 
-        if (empty($tanggal) || ($rain === '' && $wlevel === '')) {
-            $this->session->set_flashdata('error', 'Tanggal dan minimal satu nilai parameter harus diisi.');
-            redirect('petugas/input?pos=' . $id_pos);
+        $this->form_validation->set_rules('tanggal', 'Tanggal', 'required');
+        
+        $pos = $this->M_petugas->get_pos($id_pos);
+        if ($pos->tipe_pos == 'PCH') {
+            $this->form_validation->set_rules('rain', 'Curah Hujan', 'required|numeric|greater_than_equal_to[0]');
+        } else {
+            $this->form_validation->set_rules('wlevel', 'TMA', 'required|numeric|greater_than_equal_to[0]');
         }
-        
+
+        if ($this->form_validation->run() == FALSE) {
+            $this->session->set_flashdata('error', validation_errors());
+            redirect('petugas/input?pos=' . $id_pos . '&tanggal=' . $tanggal);
+        }
+
         $this->M_petugas->insert([
-            'id_pos' => $id_pos, 
-            'id_user' => $id_user, 
+            'id_pos'        => $id_pos,
+            'id_user'       => $this->session->userdata('user_id') ?: $this->session->userdata('id_user'),
             'tanggal_input' => $tanggal,
-            'rain' => ($rain !== '' && $rain !== null) ? (float)$rain : null,
-            'wlevel' => ($wlevel !== '' && $wlevel !== null) ? (float)$wlevel : null,
-            'created_at' => date('Y-m-d H:i:s')
+            'rain'          => $this->_parse_float($this->input->post('rain')),
+            'wlevel'        => $this->_parse_float($this->input->post('wlevel')),
+            'keterangan'    => $this->input->post('keterangan') ?: null,
         ]);
-        
-        $this->session->set_flashdata('success', 'Data hidrologi berhasil disimpan!');
+
+        $this->session->set_flashdata('success', 'Data berhasil disimpan!');
         redirect('petugas/input?pos=' . $id_pos . '&tanggal=' . $tanggal);
     }
 
+    // ==========================================
+    // SIMPAN DATA BENDUNGAN
+    // ==========================================
     public function simpan_bendungan() {
-        $id_user = $this->session->userdata('user_id') ?: $this->session->userdata('id_user'); 
-        $id_pos = $this->input->post('id_pos', TRUE);
+        $id_pos  = $this->input->post('id_pos');
         $tanggal = $this->input->post('tanggal');
+        
+        if (!$this->_validate_pos($id_pos)) {
+            show_error('Akses Terblokir!', 403);
+        }
+
+        $user_id = $this->session->userdata('user_id') ?: $this->session->userdata('id_user');
+
+        // Update data tetap bendungan di master_pos (jika diisi)
+        $nwl = $this->input->post('nwl');
+        if ($nwl !== null && $nwl !== '') {
+            $this->db->where('id_pos', $id_pos)->update('master_pos', [
+                'nwl'        => $this->_parse_float($nwl),
+                'nwl_volume' => $this->_parse_float($this->input->post('nwl_volume')),
+                'nwl_luas'   => $this->_parse_float($this->input->post('nwl_luas')),
+            ]);
+        }
+
+        // Insert ke data_bendungan
+        $this->M_petugas->insert_bendungan([
+            'id_pos'                => $id_pos,
+            'id_user'               => $user_id,
+            'tanggal_input'         => $tanggal,
+            'nwl'                   => $this->_parse_float($nwl),
+            'nwl_volume'            => $this->_parse_float($this->input->post('nwl_volume')),
+            'nwl_luas'              => $this->_parse_float($this->input->post('nwl_luas')),
+            'rain'                  => $this->_parse_float($this->input->post('rain')),
+            'elevasi'               => $this->_parse_float($this->input->post('elevasi')),
+            'volume'                => $this->_parse_float($this->input->post('volume')),
+            'luas'                  => $this->_parse_float($this->input->post('luas')),
+            'inflow'                => $this->_parse_float($this->input->post('inflow')),
+            'pltm'                  => $this->_parse_float($this->input->post('pltm')),
+            'spillway'              => $this->_parse_float($this->input->post('spillway')),
+            'total_outflow'         => $this->_parse_float($this->input->post('total_outflow')),
+            'plta_status'           => $this->input->post('plta_status') ?: null,
+            'irigasi_status'        => $this->input->post('irigasi_status') ?: null,
+            'tail_water'            => $this->input->post('tail_water') ?: null,
+            'rembesan_vnotch_h'     => $this->_parse_float($this->input->post('rembesan_vnotch_h')),
+            'rembesan_vnotch_q'     => $this->_parse_float($this->input->post('rembesan_vnotch_q')),
+            'rembesan_pump_pit_l_h' => $this->_parse_float($this->input->post('rembesan_pump_pit_l_h')),
+            'rembesan_pump_pit_l_q' => $this->_parse_float($this->input->post('rembesan_pump_pit_l_q')),
+            'rembesan_pump_pit_r_h' => $this->_parse_float($this->input->post('rembesan_pump_pit_r_h')),
+            'rembesan_pump_pit_r_q' => $this->_parse_float($this->input->post('rembesan_pump_pit_r_q')),
+            'keterangan'            => $this->input->post('keterangan') ?: null,
+        ]);
+
+        // Juga insert ke data_manual jika rain/elevasi diisi
         $rain = $this->input->post('rain');
         $elevasi = $this->input->post('elevasi');
-        
-        // Keamanan Lapis 1: Pastikan pos bendungan masuk dalam cakupan tugas
-        $raw_id_pos = $this->session->userdata('id_pos');
-        $assigned_pos_ids = !empty($raw_id_pos) ? array_map('trim', explode(',', $raw_id_pos)) : [];
-        
-        if (!in_array((string)$id_pos, array_map('strval', $assigned_pos_ids))) {
-            show_error('Akses Terblokir: Anda tidak memiliki otoritas input di bendungan ini.', 403);
-            return;
-        }
-
-        $nwl = $this->input->post('nwl');
-        $nwl_volume = $this->input->post('nwl_volume');
-        $nwl_luas = $this->input->post('nwl_luas');
-        
-        // Update parameter NWL master bendungan jika ada modifikasi baru
-        if ($nwl !== null || $nwl_volume !== null || $nwl_luas !== null) {
-            $this->db->where('id_pos', $id_pos)->update('master_pos', [
-                'nwl' => $nwl ?: null,
-                'nwl_volume' => $nwl_volume ?: null,
-                'nwl_luas' => $nwl_luas ?: null,
-            ]);
-        }
-        
-        // Insert ke tabel utama hidrologi
         if (($rain !== '' && $rain !== null) || ($elevasi !== '' && $elevasi !== null)) {
             $this->M_petugas->insert([
-                'id_pos' => $id_pos, 
-                'id_user' => $id_user, 
+                'id_pos'        => $id_pos,
+                'id_user'       => $user_id,
                 'tanggal_input' => $tanggal,
-                'rain' => ($rain !== '' && $rain !== null) ? (float)$rain : null,
-                'wlevel' => ($elevasi !== '' && $elevasi !== null) ? (float)$elevasi : null,
-                'created_at' => date('Y-m-d H:i:s')
+                'rain'          => $this->_parse_float($rain),
+                'wlevel'        => $this->_parse_float($elevasi),
             ]);
         }
-        
-        // Insert ke tabel operasional bendungan harian
-        $this->M_petugas->insert_bendungan([
-            'id_pos' => $id_pos, 
-            'id_user' => $id_user, 
-            'tanggal_input' => $tanggal,
-            'nwl' => $nwl ?: null, 
-            'elevasi' => $elevasi ?: null,
-            'volume' => $this->input->post('volume') ?: null,
-            'luas' => $this->input->post('luas') ?: null,
-            'inflow' => $this->input->post('inflow') ?: null,
-            'pltm' => $this->input->post('pltm') ?: null,
-            'spillway' => $this->input->post('spillway') ?: null,
-            'total_outflow' => $this->input->post('total_outflow') ?: null,
-            'plta_status' => $this->input->post('plta_status') ?: null,
-            'irigasi_status' => $this->input->post('irigasi_status') ?: null,
-            'tail_water' => $this->input->post('tail_water') ?: null,
-            'rembesan_vnotch_h' => $this->input->post('rembesan_vnotch_h') ?: null,
-            'rembesan_vnotch_q' => $this->input->post('rembesan_vnotch_q') ?: null,
-            'rembesan_pump_pit_l_h' => $this->input->post('rembesan_pump_pit_l_h') ?: null,
-            'rembesan_pump_pit_l_q' => $this->input->post('rembesan_pump_pit_l_q') ?: null,
-            'rembesan_pump_pit_r_h' => $this->input->post('rembesan_pump_pit_r_h') ?: null,
-            'rembesan_pump_pit_r_q' => $this->input->post('rembesan_pump_pit_r_q') ?: null,
-            'keterangan' => $this->input->post('keterangan') ?: null,
-            'created_at' => date('Y-m-d H:i:s')
-        ]);
-        
-        $this->session->set_flashdata('success', 'Data operasional bendungan berhasil disimpan!');
+
+        $this->session->set_flashdata('success', 'Data bendungan berhasil disimpan!');
         redirect('petugas/input?pos=' . $id_pos . '&tanggal=' . $tanggal);
     }
 
-    // ============================================
-    // 3. KELOLA LAPORAN (Hanya Menampilkan Data / Read-Only)
-    // ============================================
-    public function kelola() {
-        $raw_id_pos = $this->session->userdata('id_pos');
-        $assigned_pos_ids = !empty($raw_id_pos) ? array_map('trim', explode(',', $raw_id_pos)) : [];
+    // ==========================================
+    // SIMPAN DATA BENDUNG (BARU)
+    // ==========================================
+    public function simpan_bendung() {
+        $id_pos  = $this->input->post('id_pos');
+        $tanggal = $this->input->post('tanggal');
         
-        if (empty($assigned_pos_ids)) {
-            show_error('Akun Anda belum dikaitkan dengan pos manapun.', 403);
-            return;
+        if (!$this->_validate_pos($id_pos)) {
+            show_error('Akses Terblokir!', 403);
         }
 
-        $id_pos_active = $this->input->get('pos', TRUE);
-        if (empty($id_pos_active) || !in_array($id_pos_active, $assigned_pos_ids)) {
-            $id_pos_active = $assigned_pos_ids[0];
+        $user_id = $this->session->userdata('user_id') ?: $this->session->userdata('id_user');
+
+        $this->M_petugas->insert_bendung([
+            'id_pos'        => $id_pos,
+            'id_user'       => $user_id,
+            'tanggal_input' => $tanggal,
+            'rain'          => $this->_parse_float($this->input->post('rain')),
+            'elevasi_mercu' => $this->_parse_float($this->input->post('elevasi_mercu')),
+            'q_total'       => $this->_parse_float($this->input->post('q_total')),
+            'q_fc1'         => $this->_parse_float($this->input->post('q_fc1')),
+            'q_fc2'         => $this->_parse_float($this->input->post('q_fc2')),
+            'q_limpas'      => $this->_parse_float($this->input->post('q_limpas')),
+            'q_spam_kpbu'   => $this->_parse_float($this->input->post('q_spam_kpbu')),
+            'sluice_gate'   => $this->_parse_float($this->input->post('sluice_gate')),
+            'keterangan'    => $this->input->post('keterangan') ?: null,
+        ]);
+
+        $this->session->set_flashdata('success', 'Data bendung berhasil disimpan!');
+        redirect('petugas/input?pos=' . $id_pos . '&tanggal=' . $tanggal);
+    }
+
+    // ==========================================
+    // RIWAYAT DATA (KELOLA) - FILTER PER HARI
+    // ==========================================
+    public function kelola() {
+        $assigned = $this->_get_assigned_pos_ids();
+        if (empty($assigned)) {
+            show_error('Anda belum dikaitkan dengan pos manapun.', 403);
+        }
+
+        $id_pos_active = $this->input->get('pos');
+        if (empty($id_pos_active) || !$this->_validate_pos($id_pos_active)) {
+            $id_pos_active = $assigned[0];
         }
 
         $pos = $this->M_petugas->get_pos($id_pos_active);
-        $bulan = $this->input->get('bulan') ?: date('Y-m');
+        if (!$pos) {
+            show_error('Data pos tidak ditemukan.', 404);
+        }
+
+        // Filter per hari (tanggal lengkap: Y-m-d)
+        $tanggal = $this->input->get('tanggal') ?: date('Y-m-d');
         
-        $this->db->where_in('id_pos', $assigned_pos_ids);
-        $daftar_pos_petugas = $this->db->get('master_pos')->result();
-        
+        $daftar_pos = $this->M_petugas->get_pos_by_ids($assigned);
+
         $data = [
-            'app_name'           => 'CASCADE',
-            'title'              => 'Riwayat Laporan Masuk',
+            'app_name'           => 'HydroSmart',
+            'title'              => 'Riwayat Laporan',
             'petugas_name'       => $this->session->userdata('nama_lengkap'),
             'pos'                => $pos,
-            'bulan'              => $bulan,
-            'daftar_pos_petugas' => $daftar_pos_petugas,
-            'id_pos_active'      => $id_pos_active
+            'tanggal'            => $tanggal,
+            'daftar_pos_petugas' => $daftar_pos,
+            'id_pos_active'      => $id_pos_active,
+            'data_list'          => []
         ];
-        
-        if ($pos && $pos->is_bendungan == 1) {
-            $data['data_list'] = $this->M_petugas->get_bendungan_by_bulan($id_pos_active, $bulan);
-            $data['content'] = $this->load->view('petugas/v_kelola_bendungan', $data, TRUE);
+
+        // ==========================================
+        // Tentukan view berdasarkan tipe pos
+        // ==========================================
+        if ($pos->is_bendung == 1) {
+            // Riwayat bendung
+            $data['data_list'] = $this->M_petugas->get_bendung_by_tanggal($id_pos_active, $tanggal);
+            $this->_render('petugas/v_kelola_bendung', $data);
+        } elseif ($pos->is_bendungan == 1) {
+            // Riwayat bendungan
+            $data['data_list'] = $this->M_petugas->get_bendungan_by_tanggal($id_pos_active, $tanggal);
+            $this->_render('petugas/v_kelola_bendungan', $data);
         } else {
-            $data['data_list'] = $this->M_petugas->get_by_bulan($id_pos_active, $bulan);
-            $data['content'] = $this->load->view('petugas/v_kelola_manual', $data, TRUE);
+            // Riwayat pos biasa
+            $data['data_list'] = $this->M_petugas->get_by_tanggal_with_user($id_pos_active, $tanggal);
+            $this->_render('petugas/v_kelola_manual', $data);
         }
-        
-        $this->load->view('layout/v_petugas_layout', $data);
-    }
-
-    // =========================================================================
-    // LOCK DOWN PROTEKSI: Hak Akses Menghapus & Mengedit Data Dicabut Total
-    // =========================================================================
-    
-    public function update() {
-        show_error('Akses Ditolak: Petugas Lapangan tidak memiliki izin mengubah data log hidrologi. Silakan hubungi Admin Wilayah.', 403);
-    }
-
-    public function hapus($id_manual) {
-        show_error('Akses Ditolak: Petugas Lapangan tidak memiliki izin menghapus data dari sistem. Silakan hubungi Admin Wilayah.', 403);
-    }
-
-    public function update_bendungan() {
-        show_error('Akses Ditolak: Petugas Lapangan tidak memiliki izin mengubah data log operasional bendungan.', 403);
-    }
-
-    public function hapus_bendungan($id_bendungan) {
-        show_error('Akses Ditolak: Petugas Lapangan tidak memiliki izin menghapus data operasional bendungan.', 403);
     }
 }
