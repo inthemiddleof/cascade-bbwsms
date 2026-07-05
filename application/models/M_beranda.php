@@ -8,9 +8,6 @@ class M_beranda extends CI_Model {
         $this->load->database();
     }
 
-    // ==========================================
-    // SYNC TELEMETRI
-    // ==========================================
     public function sync_telemetri() {
         $url = "https://sdatelemetry.com/API_ap_telemetry/datatelemetry2.php?idbbws=12";
         $ctx = stream_context_create(['http' => ['timeout' => 10]]);
@@ -29,11 +26,19 @@ class M_beranda extends CI_Model {
                     $id_pos = $master['id_pos'];
                     $received_at = date('Y-m-d H:i:s', strtotime($row['ReceivedDate'] . ' ' . $row['ReceivedTime']));
 
+                    $rain = (float)$row['Rain'];          // mm (tetap)
+                    $wlevel_cm = (float)$row['WLevel'];    // cm dari API
+                    
+                    // Filter nilai anomali PCH (650 = default sensor error)
+                    if ($row['id_tipe'] == 'PCH' && $wlevel_cm == 650.000) {
+                        $wlevel_cm = 0;
+                    }
+
                     $insert_data = [
                         'id_pos'      => $id_pos,
                         'received_at' => $received_at,
-                        'rain'        => (float)$row['Rain'],
-                        'wlevel'      => (float)$row['WLevel'],
+                        'rain'        => $rain,                // ✅ mm (tetap)
+                        'wlevel'      => cm_to_m($wlevel_cm),  // ✅ cm → m
                         'batt'        => (float)$row['batt'],
                         'status'      => $row['status']
                     ];
@@ -53,15 +58,11 @@ class M_beranda extends CI_Model {
     public function get_bendungan_data() {
         $this->db->select('
             m.id_pos, m.nama_pos, m.lat, m.lng, m.nwl, m.sungai,
-            dm.rain as curah_hujan_manual, 
-            dm.wlevel as tma_manual, 
-            dm.tanggal_input as tgl_manual,
-            db.elevasi, db.volume, db.inflow, db.total_outflow, 
-            db.tanggal_input as tgl_bendungan
+            db.rain, db.elevasi, db.volume, db.inflow, db.total_outflow, 
+            db.tanggal_input as tgl_bendungan, db.created_at
         ');
         $this->db->from('master_pos m');
-        $this->db->join('(SELECT id_pos, rain, wlevel, tanggal_input FROM data_manual WHERE id_manual IN (SELECT MAX(id_manual) FROM data_manual GROUP BY id_pos)) dm', 'm.id_pos = dm.id_pos', 'left');
-        $this->db->join('(SELECT id_pos, elevasi, volume, inflow, total_outflow, tanggal_input FROM data_bendungan WHERE id_bendungan IN (SELECT MAX(id_bendungan) FROM data_bendungan GROUP BY id_pos)) db', 'm.id_pos = db.id_pos', 'left');
+        $this->db->join('(SELECT id_pos, rain, elevasi, volume, inflow, total_outflow, tanggal_input, created_at FROM data_bendungan WHERE id_bendungan IN (SELECT MAX(id_bendungan) FROM data_bendungan GROUP BY id_pos)) db', 'm.id_pos = db.id_pos', 'left');
         $this->db->where('m.is_bendungan', 1);
         $this->db->where('m.is_bendung', 0);
         return $this->db->get()->result_array();

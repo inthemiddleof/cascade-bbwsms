@@ -27,7 +27,6 @@
     <?= $this->session->flashdata('success') ?>
 </div>
 <?php endif; ?>
-
 <?php if($this->session->flashdata('error')): ?>
 <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm flex items-center gap-2" id="alert-error">
     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -61,35 +60,30 @@
                 <div class="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center">
                     <svg class="w-4 h-4 text-brandyellow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z"/></svg>
                 </div>
-                <div>
-                    <h3 class="font-bold text-white text-sm">Data Tetap Bendungan</h3>
-                </div>
+                <div><h3 class="font-bold text-white text-sm">Data Tetap Bendungan</h3></div>
             </div>
             <div class="p-4">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">NWL (Normal Water Level)</label>
+                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">NWL (m)</label>
                         <input type="number" step="any" name="nwl" value="<?= $pos->nwl ?>" min="0"
                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white font-semibold" 
-                               placeholder="0"
-                               oninput="validateMin(this, 0)">
-                        <p class="text-[10px] text-slate-400 mt-1">Satuan: meter</p>
+                               placeholder="0" oninput="validateMin(this, 0)">
+                        <p class="text-[10px] text-slate-400 mt-1">Satuan: meter (m)</p>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Volume NWL</label>
+                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Volume NWL (jt.m³)</label>
                         <input type="number" step="any" name="nwl_volume" value="<?= $pos->nwl_volume ?>" min="0"
                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white font-semibold" 
-                               placeholder="0"
-                               oninput="validateMin(this, 0)">
-                        <p class="text-[10px] text-slate-400 mt-1">Satuan: jt.m³</p>
+                               placeholder="0" oninput="validateMin(this, 0)">
+                        <p class="text-[10px] text-slate-400 mt-1">Satuan: juta meter kubik (jt.m³)</p>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Luas NWL</label>
+                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Luas NWL (km²)</label>
                         <input type="number" step="any" name="nwl_luas" value="<?= $pos->nwl_luas ?>" min="0"
                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white font-semibold" 
-                               placeholder="0"
-                               oninput="validateMin(this, 0)">
-                        <p class="text-[10px] text-slate-400 mt-1">Satuan: km²</p>
+                               placeholder="0" oninput="validateMin(this, 0)">
+                        <p class="text-[10px] text-slate-400 mt-1">Satuan: kilometer persegi (km²)</p>
                     </div>
                 </div>
             </div>
@@ -101,9 +95,7 @@
                 <div class="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center">
                     <svg class="w-4 h-4 text-brandyellow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
                 </div>
-                <div>
-                    <h3 class="font-bold text-white text-sm">Data Pengukuran Harian</h3>
-                </div>
+                <div><h3 class="font-bold text-white text-sm">Data Pengukuran Harian</h3></div>
             </div>
             
             <div class="p-5 space-y-5">
@@ -111,22 +103,22 @@
                 <!-- Hidrologi Dasar -->
                 <div class="border border-slate-200 rounded-xl p-4">
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                        Hidrologi Dasar
+                        <span class="w-1.5 h-4 bg-blue-500 rounded-full"></span>Hidrologi Dasar
                     </p>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Curah Hujan (mm)</label>
                             <input type="number" step="any" name="rain" min="0"
                                    class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white font-semibold" 
-                                   placeholder="0"
-                                   oninput="validateMin(this, 0)">
+                                   placeholder="0" oninput="validateMin(this, 0)">
+                            <p class="text-[10px] text-slate-400 mt-1">Satuan: milimeter (mm)</p>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Elevasi / TMA (m)</label>
+                            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Elevasi / TMA (cm)</label>
                             <input type="number" step="any" name="elevasi" min="0"
                                    class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white font-semibold" 
-                                   placeholder="0"
-                                   oninput="validateMin(this, 0)">
+                                   placeholder="0" oninput="validateMin(this, 0)">
+                            <p class="text-[10px] text-slate-400 mt-1">Satuan: centimeter (cm) - Dikonversi ke meter</p>
                         </div>
                     </div>
                 </div>
@@ -134,36 +126,32 @@
                 <!-- Parameter Utama -->
                 <div class="border border-slate-200 rounded-xl p-4">
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                        Parameter Utama
+                        <span class="w-1.5 h-4 bg-purple-500 rounded-full"></span>Parameter Utama
                     </p>
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         <div>
                             <label class="block text-[10px] font-bold text-slate-500 mb-1.5">Volume (jt.m³)</label>
                             <input type="number" step="any" name="volume" min="0"
                                    class="w-full px-3 py-2.5 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white" 
-                                   placeholder="0"
-                                   oninput="validateMin(this, 0)">
+                                   placeholder="0" oninput="validateMin(this, 0)">
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-slate-500 mb-1.5">Luas Genangan (km²)</label>
                             <input type="number" step="any" name="luas" min="0"
                                    class="w-full px-3 py-2.5 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white" 
-                                   placeholder="0"
-                                   oninput="validateMin(this, 0)">
+                                   placeholder="0" oninput="validateMin(this, 0)">
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-slate-500 mb-1.5">Inflow (m³/s)</label>
                             <input type="number" step="any" name="inflow" min="0"
                                    class="w-full px-3 py-2.5 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white" 
-                                   placeholder="0"
-                                   oninput="validateMin(this, 0)">
+                                   placeholder="0" oninput="validateMin(this, 0)">
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-slate-500 mb-1.5">Total Outflow (m³/s)</label>
                             <input type="number" step="any" name="total_outflow" min="0"
                                    class="w-full px-3 py-2.5 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white" 
-                                   placeholder="0"
-                                   oninput="validateMin(this, 0)">
+                                   placeholder="0" oninput="validateMin(this, 0)">
                         </div>
                     </div>
                 </div>
@@ -171,22 +159,20 @@
                 <!-- Outflow & Status Operasional -->
                 <div class="border border-slate-200 rounded-xl p-4">
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                        Outflow & Status Operasional
+                        <span class="w-1.5 h-4 bg-teal-500 rounded-full"></span>Outflow & Status Operasional
                     </p>
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
                         <div>
                             <label class="block text-[10px] font-bold text-slate-500 mb-1.5">PLTM (m³/s)</label>
                             <input type="number" step="any" name="pltm" min="0"
                                    class="w-full px-3 py-2.5 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white" 
-                                   placeholder="0"
-                                   oninput="validateMin(this, 0)">
+                                   placeholder="0" oninput="validateMin(this, 0)">
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-slate-500 mb-1.5">Spillway (m³/s)</label>
                             <input type="number" step="any" name="spillway" min="0"
                                    class="w-full px-3 py-2.5 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white" 
-                                   placeholder="0"
-                                   oninput="validateMin(this, 0)">
+                                   placeholder="0" oninput="validateMin(this, 0)">
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-slate-500 mb-1.5">Tail Water</label>
@@ -220,7 +206,7 @@
                 <!-- Data Rembesan -->
                 <div class="border border-slate-200 rounded-xl p-4">
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                        Data Rembesan
+                        <span class="w-1.5 h-4 bg-indigo-500 rounded-full"></span>Data Rembesan
                     </p>
                     
                     <div class="mb-3">
@@ -230,15 +216,13 @@
                                 <label class="block text-[9px] text-slate-400 mb-1">h (cm)</label>
                                 <input type="number" step="any" name="rembesan_vnotch_h" min="0"
                                        class="w-full px-3 py-2.5 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white" 
-                                       placeholder="0"
-                                       oninput="validateMin(this, 0)">
+                                       placeholder="0" oninput="validateMin(this, 0)">
                             </div>
                             <div>
                                 <label class="block text-[9px] text-slate-400 mb-1">Q (lt/s)</label>
                                 <input type="number" step="any" name="rembesan_vnotch_q" min="0"
                                        class="w-full px-3 py-2.5 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white" 
-                                       placeholder="0"
-                                       oninput="validateMin(this, 0)">
+                                       placeholder="0" oninput="validateMin(this, 0)">
                             </div>
                         </div>
                     </div>
@@ -251,15 +235,13 @@
                                     <label class="block text-[9px] text-slate-400 mb-1">h (cm)</label>
                                     <input type="number" step="any" name="rembesan_pump_pit_l_h" min="0"
                                            class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white" 
-                                           placeholder="0"
-                                           oninput="validateMin(this, 0)">
+                                           placeholder="0" oninput="validateMin(this, 0)">
                                 </div>
                                 <div>
                                     <label class="block text-[9px] text-slate-400 mb-1">Q (lt/s)</label>
                                     <input type="number" step="any" name="rembesan_pump_pit_l_q" min="0"
                                            class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white" 
-                                           placeholder="0"
-                                           oninput="validateMin(this, 0)">
+                                           placeholder="0" oninput="validateMin(this, 0)">
                                 </div>
                             </div>
                         </div>
@@ -270,15 +252,13 @@
                                     <label class="block text-[9px] text-slate-400 mb-1">h (cm)</label>
                                     <input type="number" step="any" name="rembesan_pump_pit_r_h" min="0"
                                            class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white" 
-                                           placeholder="0"
-                                           oninput="validateMin(this, 0)">
+                                           placeholder="0" oninput="validateMin(this, 0)">
                                 </div>
                                 <div>
                                     <label class="block text-[9px] text-slate-400 mb-1">Q (lt/s)</label>
                                     <input type="number" step="any" name="rembesan_pump_pit_r_q" min="0"
                                            class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white" 
-                                           placeholder="0"
-                                           oninput="validateMin(this, 0)">
+                                           placeholder="0" oninput="validateMin(this, 0)">
                                 </div>
                             </div>
                         </div>
@@ -310,20 +290,10 @@
 </form>
 
 <script>
-    setTimeout(() => {
-        document.getElementById('alert-success')?.style.display = 'none';
-        document.getElementById('alert-error')?.style.display = 'none';
-    }, 5000);
-
-    function validateMin(input, min) {
-        const val = parseFloat(input.value);
-        if (isNaN(val)) return;
-        if (val < min) input.value = min;
-    }
-
+    setTimeout(() => { document.getElementById('alert-success')?.style.display = 'none'; document.getElementById('alert-error')?.style.display = 'none'; }, 5000);
+    function validateMin(input, min) { const val = parseFloat(input.value); if (isNaN(val)) return; if (val < min) input.value = min; }
     function validateForm() {
         if (!confirm('Simpan data bendungan ini?')) return false;
-        
         document.getElementById('btn-text').classList.add('hidden');
         document.getElementById('btn-loading').classList.remove('hidden');
         document.getElementById('submit-btn').disabled = true;

@@ -458,7 +458,7 @@ class M_admin extends CI_Model {
             'id_user'       => $user_id, 
             'tanggal_input' => $post['tanggal_input'], 
             'rain'          => $this->_parse_float($post['rain'] ?? null), 
-            'wlevel'        => $this->_parse_float($post['wlevel'] ?? null), 
+            'wlevel'        => cm_to_m($post['wlevel'] ?? null), 
             'keterangan'    => $post['keterangan'] ?: null, 
             'created_at'    => date('Y-m-d H:i:s')
         ];
@@ -481,7 +481,7 @@ class M_admin extends CI_Model {
             'nwl_volume'              => $this->_parse_float($post['nwl_volume'] ?? null), 
             'nwl_luas'                => $this->_parse_float($post['nwl_luas'] ?? null),
             'rain'                    => $this->_parse_float($post['rain'] ?? null), 
-            'elevasi'                 => $this->_parse_float($post['elevasi'] ?? null), 
+            'elevasi'                 => cm_to_m($post['elevasi'] ?? null), 
             'volume'                  => $this->_parse_float($post['volume'] ?? null), 
             'luas'                    => $this->_parse_float($post['luas'] ?? null),
             'inflow'                  => $this->_parse_float($post['inflow'] ?? null), 
@@ -519,7 +519,7 @@ class M_admin extends CI_Model {
             'id_user'       => $user_id,
             'tanggal_input' => $post['tanggal_input'],
             'rain'          => $this->_parse_float($post['rain'] ?? null),
-            'elevasi_mercu' => $this->_parse_float($post['elevasi_mercu'] ?? null),
+            'elevasi_mercu' => cm_to_m($post['elevasi_mercu'] ?? null),
             'q_total'       => $this->_parse_float($post['q_total'] ?? null),
             'q_fc1'         => $this->_parse_float($post['q_fc1'] ?? null),
             'q_fc2'         => $this->_parse_float($post['q_fc2'] ?? null),
@@ -542,7 +542,7 @@ class M_admin extends CI_Model {
         $data = [
             'tanggal_input' => $post['tanggal'], 
             'rain'          => $this->_parse_float($post['rain'] ?? null), 
-            'wlevel'        => $this->_parse_float($post['wlevel'] ?? null), 
+            'wlevel'        => cm_to_m($post['wlevel'] ?? null), 
             'keterangan'    => $post['keterangan'] ?? null
         ];
         
@@ -558,7 +558,7 @@ class M_admin extends CI_Model {
             'nwl_volume'              => $this->_parse_float($post['nwl_volume'] ?? null), 
             'nwl_luas'                => $this->_parse_float($post['nwl_luas'] ?? null),
             'rain'                    => $this->_parse_float($post['rain'] ?? null), 
-            'elevasi'                 => $this->_parse_float($post['elevasi'] ?? null),
+            'elevasi'                 => cm_to_m($post['elevasi'] ?? null),
             'volume'                  => $this->_parse_float($post['volume'] ?? null), 
             'luas'                    => $this->_parse_float($post['luas'] ?? null),
             'inflow'                  => $this->_parse_float($post['inflow'] ?? null), 
@@ -589,7 +589,7 @@ class M_admin extends CI_Model {
         $data = [
             'tanggal_input' => $post['tanggal'],
             'rain'          => $this->_parse_float($post['rain'] ?? null),
-            'elevasi_mercu' => $this->_parse_float($post['elevasi_mercu'] ?? null),
+            'elevasi_mercu' => cm_to_m($post['elevasi_mercu'] ?? null),
             'q_total'       => $this->_parse_float($post['q_total'] ?? null),
             'q_fc1'         => $this->_parse_float($post['q_fc1'] ?? null),
             'q_fc2'         => $this->_parse_float($post['q_fc2'] ?? null),

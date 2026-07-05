@@ -1,7 +1,8 @@
 <?php 
 function fmtNilai($val, $dec = 3) {
     if ($val === null || $val === '') return '-';
-    return rtrim(rtrim(number_format($val, $dec, '.', ''), '0'), '.');
+    $formatted = rtrim(rtrim(number_format((float)$val, $dec, '.', ''), '0'), '.');
+    return str_replace('.', ',', $formatted);
 }
 $segment = 'petugas';
 ?>
@@ -90,10 +91,10 @@ $segment = 'petugas';
                         <?= !empty($d->nama_user) ? htmlspecialchars($d->nama_user) : '<span class="text-slate-400">-</span>' ?>
                     </td>
                     <td class="px-2 md:px-3 py-2 md:py-3 text-center">
-                        <span class="inline-flex px-2 py-0.5 rounded text-[10px] md:text-xs font-bold bg-blue-50 text-blue-600"><?= $d->rain !== null ? $d->rain.' mm' : '-' ?></span>
+                        <span class="inline-flex px-2 py-0.5 rounded text-[10px] md:text-xs font-bold bg-blue-50 text-blue-600"><?= $d->rain !== null ? fmt_rain($d->rain) : '-' ?></span>
                     </td>
                     <td class="px-2 md:px-3 py-2 md:py-3 text-center">
-                        <span class="inline-flex px-2 py-0.5 rounded text-[10px] md:text-xs font-bold bg-green-50 text-green-600"><?= $d->elevasi !== null ? $d->elevasi.' m' : '-' ?></span>
+                        <span class="inline-flex px-2 py-0.5 rounded text-[10px] md:text-xs font-bold bg-green-50 text-green-600"><?= $d->elevasi !== null ? fmt_tma($d->elevasi) : '-' ?></span>
                     </td>
                     <td class="px-2 md:px-3 py-2 md:py-3 text-center">
                         <span class="text-[10px] md:text-xs font-bold text-blue-600"><?= fmtNilai($d->inflow, 1) ?> m³/s</span>

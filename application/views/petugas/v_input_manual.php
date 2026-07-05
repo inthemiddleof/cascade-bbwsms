@@ -27,7 +27,6 @@
     <?= $this->session->flashdata('success') ?>
 </div>
 <?php endif; ?>
-
 <?php if($this->session->flashdata('error')): ?>
 <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm flex items-center gap-2" id="alert-error">
     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -65,41 +64,37 @@
                     <svg class="w-4 h-4 text-brandyellow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                     <?php endif; ?>
                 </div>
-                <div>
-                    <h3 class="font-bold text-white text-sm">Data Pengukuran Harian</h3>
-                </div>
+                <div><h3 class="font-bold text-white text-sm">Data Pengukuran Harian</h3></div>
             </div>
             
             <div class="p-5 space-y-5">
                 
                 <?php if($pos->tipe_pos == 'PCH'): ?>
-                <!-- Curah Hujan -->
+                <!-- Curah Hujan (mm) -->
                 <div class="border border-slate-200 rounded-xl p-4">
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                        Curah Hujan
+                        <span class="w-1.5 h-4 bg-blue-500 rounded-full"></span>Curah Hujan
                     </p>
                     <div>
                         <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Nilai Curah Hujan (mm)</label>
                         <input type="number" step="any" name="rain" id="input-value" required min="0"
                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white font-semibold" 
-                               placeholder="0"
-                               oninput="validateMin(this, 0)">
+                               placeholder="0" oninput="validateMin(this, 0)">
                         <p class="text-[10px] text-slate-400 mt-1">Satuan: milimeter (mm)</p>
                     </div>
                 </div>
                 <?php else: ?>
-                <!-- TMA -->
+                <!-- TMA (cm → m) -->
                 <div class="border border-slate-200 rounded-xl p-4">
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                        Tinggi Muka Air
+                        <span class="w-1.5 h-4 bg-green-500 rounded-full"></span>Tinggi Muka Air
                     </p>
                     <div>
-                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Nilai TMA (m)</label>
+                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Nilai TMA (cm)</label>
                         <input type="number" step="any" name="wlevel" id="input-value" required min="0"
                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white font-semibold" 
-                               placeholder="0"
-                               oninput="validateMin(this, 0)">
-                        <p class="text-[10px] text-slate-400 mt-1">Satuan: meter (m)</p>
+                               placeholder="0" oninput="validateMin(this, 0)">
+                        <p class="text-[10px] text-slate-400 mt-1">Satuan: centimeter (cm) - Otomatis dikonversi ke meter</p>
                     </div>
                 </div>
                 <?php endif; ?>
@@ -146,9 +141,7 @@
             alert('Nilai harus diisi!');
             return false;
         }
-        
         if (!confirm('Simpan data ini?')) return false;
-        
         document.getElementById('btn-text').classList.add('hidden');
         document.getElementById('btn-loading').classList.remove('hidden');
         document.getElementById('submit-btn').disabled = true;

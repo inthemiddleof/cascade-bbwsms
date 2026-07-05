@@ -2,7 +2,7 @@
 if (!function_exists('safeNumber')) {
     function safeNumber($val, $decimals = 2) {
         if ($val === null || $val === '') return '-';
-        return number_format((float)$val, $decimals);
+        return number_format((float)$val, $decimals, ',', '.');
     }
 }
 ?>

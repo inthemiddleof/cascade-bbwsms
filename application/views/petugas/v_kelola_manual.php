@@ -85,9 +85,9 @@ $segment = 'petugas';
                     </td>
                     <td class="px-2 md:px-3 py-2 md:py-3 text-center">
                         <?php if($pos->tipe_pos == 'PCH'): ?>
-                            <span class="inline-flex px-2 py-0.5 rounded text-[10px] md:text-xs font-bold bg-blue-50 text-blue-600"><?= $d->rain !== null ? $d->rain.' mm' : '-' ?></span>
+                            <span class="inline-flex px-2 py-0.5 rounded text-[10px] md:text-xs font-bold bg-blue-50 text-blue-600"><?= $d->rain !== null ? fmt_rain($d->rain) : '-' ?></span>
                         <?php else: ?>
-                            <span class="inline-flex px-2 py-0.5 rounded text-[10px] md:text-xs font-bold bg-green-50 text-green-600"><?= $d->wlevel !== null ? $d->wlevel.' m' : '-' ?></span>
+                            <span class="inline-flex px-2 py-0.5 rounded text-[10px] md:text-xs font-bold bg-green-50 text-green-600"><?= $d->wlevel !== null ? fmt_tma($d->wlevel) : '-' ?></span>
                         <?php endif; ?>
                     </td>
                 </tr>

@@ -76,12 +76,12 @@
                         <div>
                             <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Curah Hujan (mm)</label>
                             <input type="number" step="any" name="rain" min="0" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white font-semibold" placeholder="0" oninput="validateMin(this, 0)">
-                            <p class="text-[10px] text-slate-400 mt-1">Satuan: milimeter</p>
+                            <p class="text-[10px] text-slate-400 mt-1">Satuan: milimeter (mm)</p>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Elevasi Air thd Mercu (m)</label>
                             <input type="number" step="any" name="elevasi_mercu" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white font-semibold" placeholder="0.00">
-                            <p class="text-[10px] text-slate-400 mt-1">Satuan: meter</p>
+                            <p class="text-[10px] text-slate-400 mt-1">Satuan: centimeter (cm) - Otomatis dikonversi ke meter. Bisa negatif</p>
                         </div>
                     </div>
                 </div>
@@ -139,15 +139,8 @@
         </button>
     </div>
 </form>
-<script>
-    setTimeout(() => {
-        document.getElementById('alert-success')?.style.display = 'none';
-        document.getElementById('alert-error')?.style.display = 'none';
-    }, 5000);
 
-    function validateMin(input, min) {
-        const val = parseFloat(input.value);
-        if (isNaN(val)) return;
-        if (val < min) input.value = min;
-    }
+<script>
+    setTimeout(() => { document.getElementById('alert-success')?.style.display = 'none'; document.getElementById('alert-error')?.style.display = 'none'; }, 5000);
+    function validateMin(input, min) { const val = parseFloat(input.value); if (isNaN(val)) return; if (val < min) input.value = min; }
 </script>

@@ -16,7 +16,7 @@ if (!function_exists('getBgIntensity')) {
 if (!function_exists('safeNumber')) {
     function safeNumber($val, $decimals = 1) {
         if ($val === null || $val === '') return '-';
-        return number_format((float)$val, $decimals);
+        return number_format((float)$val, $decimals, ',', '.');
     }
 }
 ?>
