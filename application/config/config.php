@@ -475,7 +475,10 @@ $config['csrf_exclude_uris'] = array(
     'superadmin/hapus_pengendali_sedimen',
     'superadmin/tambah_irigasi',
     'superadmin/edit_irigasi',
-    'superadmin/hapus_irigasi'
+    'superadmin/hapus_irigasi',
+    'superadmin/export_telemetri_csv',
+    'superadmin/export_telemetri_pdf',
+    'superadmin/edit_telemetri'
 );
 
 /*

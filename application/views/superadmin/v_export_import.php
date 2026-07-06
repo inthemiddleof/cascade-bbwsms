@@ -83,6 +83,7 @@
             
             <div class="mt-4 bg-blue-50 rounded-lg p-3 border border-blue-200">
                 <p class="text-xs text-blue-600">💡 <strong>CSV</strong> dapat dibuka dengan Microsoft Excel atau Google Sheets. <strong>PDF</strong> untuk cetak dokumen.</p>
+                <p class="text-xs text-blue-600 mt-1">📌 CSV menggunakan delimiter <strong>titik koma (;)</strong> agar kompatibel dengan Excel Indonesia.</p>
             </div>
         </div>
 
@@ -113,15 +114,20 @@
                 
                 <div>
                     <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Pilih File CSV</label>
-                    <div class="relative">
-                        <input type="file" name="file_csv" id="file_csv" accept=".csv,.txt" required class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-brandyellow focus:border-transparent file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-brandyellow file:text-darkblue hover:file:bg-yellow-400">
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <input type="file" name="file_csv" id="file_csv" accept=".csv,.txt" required class="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-brandyellow focus:border-transparent file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-brandyellow file:text-darkblue hover:file:bg-yellow-400">
+                        <a href="#" id="btn_download_template" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            Template
+                        </a>
                     </div>
                     <p class="text-xs text-slate-400 mt-1">Format: .csv atau .txt, maksimal 5MB</p>
                 </div>
                 
                 <div class="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
-                    <p class="text-sm text-yellow-700 font-medium mb-2">📌 Cara Import:</p>
+                    <p class="text-sm text-yellow-700 font-medium mb-2">📌 Format File CSV:</p>
                     <ul class="text-xs text-yellow-600 space-y-1 list-disc list-inside">
+                        <li>Gunakan delimiter <strong>titik koma (;)</strong> untuk Excel Indonesia</li>
                         <li>Export data terlebih dahulu untuk mendapatkan template</li>
                         <li>Baris pertama adalah header (nama kolom)</li>
                         <li>Pastikan format data sesuai dengan kolom di database</li>
@@ -183,6 +189,24 @@ function exportData(format) {
     
     window.open(url, '_blank');
 }
+
+// ==========================================
+// DOWNLOAD TEMPLATE
+// ==========================================
+document.addEventListener('DOMContentLoaded', function() {
+    var btnTemplate = document.getElementById('btn_download_template');
+    var importModule = document.getElementById('import_module');
+    
+    btnTemplate.addEventListener('click', function(e) {
+        e.preventDefault();
+        var module = importModule.value;
+        if (!module) {
+            alert('Silakan pilih modul terlebih dahulu!');
+            return;
+        }
+        window.open('<?= base_url('superadmin/download_template_csv?module=') ?>' + encodeURIComponent(module), '_blank');
+    });
+});
 
 // ==========================================
 // PERIODE TOGGLE

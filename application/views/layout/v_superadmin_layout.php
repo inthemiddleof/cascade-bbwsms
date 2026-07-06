@@ -236,6 +236,12 @@
                 <span>Kelola Manual</span>
             </a>
 
+            <!-- Menu Utama -->
+            <a href="<?= base_url('superadmin/kelola_telemetri') ?>" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all <?= (strpos($current_url, 'superadmin/kelola_telemetri') !== false) ? 'bg-darkblue text-white font-bold shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-darkblue' ?>">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25"/></svg>
+                <span>Kelola Telemetri</span>
+            </a>
+
             <?php if ($is_superadmin): ?>
             <!-- Infrastructure Section -->
             <div class="mt-4 mb-2 px-3">
@@ -270,6 +276,11 @@
             <a href="<?= base_url('superadmin/export_import') ?>" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all <?= (strpos($current_url, 'superadmin/export_import') !== false) ? 'bg-darkblue text-white font-bold shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-darkblue' ?>">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 <span>Export & Import</span>
+            </a>
+
+            <a href="<?= base_url('superadmin/export_telemetri') ?>" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all <?= (strpos($current_url, 'superadmin/export_telemetri') !== false) ? 'bg-darkblue text-white font-bold shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-darkblue' ?>">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25"/></svg>
+                <span>Export Telemetri</span>
             </a>
             <?php endif; ?>
         </nav>

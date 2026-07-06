@@ -911,4 +911,108 @@ class M_superadmin extends CI_Model {
             ? $this->_success('Daerah Irigasi berhasil dihapus!') 
             : $this->_error('Gagal menghapus data.');
     }
+
+    // ==========================================
+    // KELOLA TELEMETRI
+    // ==========================================
+    public function get_telemetri_data() {
+        // Ambil pos yang memiliki device_id_telemetry (PCH dan PDA)
+        $telemetri_list = $this->db->select('
+                id_pos,
+                nomor_pos,
+                nama_pos,
+                tipe_pos,
+                sungai,
+                wilayah_sungai,
+                lat,
+                lng,
+                device_id_telemetry,
+                is_bendungan,
+                is_bendung,
+                jenis_aset,
+                nwl,
+                created_at
+            ')
+            ->where('device_id_telemetry IS NOT NULL')
+            ->where('device_id_telemetry !=', '')
+            ->order_by('tipe_pos', 'ASC')
+            ->order_by('nama_pos', 'ASC')
+            ->get('master_pos')
+            ->result();
+        
+        // Ambil data telemetri terakhir untuk setiap pos
+        foreach ($telemetri_list as $pos) {
+            $last_data = $this->db->select('
+                    received_at,
+                    batt,
+                    rain,
+                    wlevel,
+                    status
+                ')
+                ->where('id_pos', $pos->id_pos)
+                ->order_by('received_at', 'DESC')
+                ->limit(1)
+                ->get('data_telemetri')
+                ->row();
+            
+            $pos->last_data = $last_data;
+            
+            // Hitung total data telemetri
+            $pos->total_data = $this->db->where('id_pos', $pos->id_pos)
+                                    ->count_all_results('data_telemetri');
+            
+            // Status online (1 jam terakhir)
+            $is_online = false;
+            if ($last_data && !empty($last_data->received_at)) {
+                $last_time = strtotime($last_data->received_at);
+                $is_online = (time() - $last_time) < 3600; // 1 jam
+            }
+            $pos->is_online = $is_online;
+        }
+        
+        return [
+            'app_name'        => 'HydroSmart',
+            'title'           => 'Kelola Telemetri',
+            'telemetri_list'  => $telemetri_list
+        ];
+    }
+
+    public function update_telemetri($post) {
+        $this->load->library('form_validation');
+        
+        $this->form_validation->set_rules('device_id_telemetry', 'Device ID Telemetry', 'required|trim');
+        $this->form_validation->set_rules('nama_pos', 'Nama Pos', 'required|trim');
+        $this->form_validation->set_rules('tipe_pos', 'Tipe Pos', 'required');
+        
+        if ($this->form_validation->run() == FALSE) {
+            return $this->_error(validation_errors());
+        }
+        
+        $data = [
+            'device_id_telemetry' => $post['device_id_telemetry'],
+            'nama_pos'            => $post['nama_pos'],
+            'tipe_pos'            => $post['tipe_pos'],
+            'nomor_pos'           => $post['nomor_pos'] ?? null,
+            'sungai'              => $post['sungai'] ?? null,
+            'wilayah_sungai'      => $post['wilayah_sungai'] ?? null,
+            'lat'                 => $this->_parse_float($post['lat'] ?? null),
+            'lng'                 => $this->_parse_float($post['lng'] ?? null),
+            'nwl'                 => $this->_parse_float($post['nwl'] ?? null),
+        ];
+        
+        return $this->db->where('id_pos', $post['id_pos'])->update('master_pos', $data) 
+            ? $this->_success('Data telemetri berhasil diperbarui!') 
+            : $this->_error('Gagal memperbarui data.');
+    }
+
+    public function delete_telemetri($id) {
+        // Hapus device_id_telemetry saja, bukan hapus pos
+        $data = [
+            'device_id_telemetry' => null
+        ];
+        
+        return $this->db->where('id_pos', $id)->update('master_pos', $data) 
+            ? $this->_success('Device ID Telemetry berhasil dihapus!') 
+            : $this->_error('Gagal menghapus device ID.');
+    }
 }
