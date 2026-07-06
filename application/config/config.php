@@ -462,7 +462,21 @@ $config['csrf_token_name'] = 'csrf_cascade_token';
 $config['csrf_cookie_name'] = 'csrf_cascade_cookie';
 $config['csrf_expire'] = 7200;
 $config['csrf_regenerate'] = TRUE;
-$config['csrf_exclude_uris'] = array();
+$config['csrf_exclude_uris'] = array(
+    'superadmin/import_csv',
+    'superadmin/tambah_embung',
+    'superadmin/edit_embung',
+    'superadmin/hapus_embung',
+    'superadmin/tambah_pengaman_pantai',
+    'superadmin/edit_pengaman_pantai',
+    'superadmin/hapus_pengaman_pantai',
+    'superadmin/tambah_pengendali_sedimen',
+    'superadmin/edit_pengendali_sedimen',
+    'superadmin/hapus_pengendali_sedimen',
+    'superadmin/tambah_irigasi',
+    'superadmin/edit_irigasi',
+    'superadmin/hapus_irigasi'
+);
 
 /*
 |--------------------------------------------------------------------------

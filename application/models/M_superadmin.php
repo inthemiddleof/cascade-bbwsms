@@ -344,4 +344,571 @@ class M_superadmin extends CI_Model {
         $this->db->where('id_user', $id)->where('role', 'admin')->update('users', ['status' => $status]);
         return $this->_success('Status admin diubah.');
     }
+
+    // ==========================================
+    // KELOLA EMBUNG
+    // ==========================================
+    public function get_embung_data() {
+        // Ambil semua data embung dari master_pos (jenis_aset = 'embung')
+        $embung_list = $this->db->select('
+                id_pos,
+                nomor_pos,
+                nama_pos,
+                tipe_pos,
+                sungai,
+                wilayah_sungai,
+                lat,
+                lng,
+                device_id_telemetry,
+                is_bendungan,
+                is_bendung,
+                jenis_aset,
+                nwl,
+                nwl_volume,
+                nwl_luas,
+                created_at
+            ')
+            ->where('jenis_aset', 'embung')
+            ->order_by('nama_pos', 'ASC')
+            ->get('master_pos')
+            ->result();
+        
+        // Ambil data terakhir dari data_embung untuk setiap embung
+        foreach ($embung_list as $embung) {
+            $last_data = $this->db->select('
+                    rain, elevasi, volume, luas_genangan, 
+                    inflow, outflow, tanggal_input, created_at
+                ')
+                ->where('id_pos', $embung->id_pos)
+                ->order_by('id_embung', 'DESC')
+                ->limit(1)
+                ->get('data_embung')
+                ->row();
+            
+            $embung->last_data = $last_data;
+            
+            // Hitung total data
+            $embung->total_data = $this->db->where('id_pos', $embung->id_pos)
+                                        ->count_all_results('data_embung');
+        }
+        
+        return [
+            'app_name'    => 'HydroSmart',
+            'title'       => 'Kelola Embung',
+            'embung_list' => $embung_list
+        ];
+    }
+
+    public function insert_embung($post) {
+        $this->load->library('form_validation');
+        
+        $this->form_validation->set_rules('nama_pos', 'Nama Embung', 'required|trim');
+        $this->form_validation->set_rules('sungai', 'Sungai', 'required|trim');
+        $this->form_validation->set_rules('wilayah_sungai', 'Wilayah Sungai', 'required|trim');
+        $this->form_validation->set_rules('lat', 'Latitude', 'required|numeric');
+        $this->form_validation->set_rules('lng', 'Longitude', 'required|numeric');
+        
+        if ($this->form_validation->run() == FALSE) {
+            return $this->_error(validation_errors());
+        }
+        
+        $data = [
+            'nomor_pos'         => $post['nomor_pos'] ?? null,
+            'nama_pos'          => $post['nama_pos'],
+            'tipe_pos'          => 'PCH',
+            'sungai'            => $post['sungai'],
+            'wilayah_sungai'    => $post['wilayah_sungai'],
+            'lat'               => $this->_parse_float($post['lat']),
+            'lng'               => $this->_parse_float($post['lng']),
+            'device_id_telemetry' => $post['device_id_telemetry'] ?? null,
+            'is_bendungan'      => 0,
+            'is_bendung'        => 0,
+            'jenis_aset'        => 'embung',
+            'nwl'               => $this->_parse_float($post['nwl'] ?? null),
+            'nwl_volume'        => $this->_parse_float($post['nwl_volume'] ?? null),
+            'nwl_luas'          => $this->_parse_float($post['nwl_luas'] ?? null),
+            'created_at'        => date('Y-m-d H:i:s')
+        ];
+        
+        return $this->db->insert('master_pos', $data) 
+            ? $this->_success('Embung berhasil ditambahkan!') 
+            : $this->_error('Gagal menambahkan embung.');
+    }
+
+    public function update_embung($post) {
+        $this->load->library('form_validation');
+        
+        $this->form_validation->set_rules('nama_pos', 'Nama Embung', 'required|trim');
+        $this->form_validation->set_rules('sungai', 'Sungai', 'required|trim');
+        $this->form_validation->set_rules('wilayah_sungai', 'Wilayah Sungai', 'required|trim');
+        $this->form_validation->set_rules('lat', 'Latitude', 'required|numeric');
+        $this->form_validation->set_rules('lng', 'Longitude', 'required|numeric');
+        
+        if ($this->form_validation->run() == FALSE) {
+            return $this->_error(validation_errors());
+        }
+        
+        $data = [
+            'nomor_pos'         => $post['nomor_pos'] ?? null,
+            'nama_pos'          => $post['nama_pos'],
+            'sungai'            => $post['sungai'],
+            'wilayah_sungai'    => $post['wilayah_sungai'],
+            'lat'               => $this->_parse_float($post['lat']),
+            'lng'               => $this->_parse_float($post['lng']),
+            'device_id_telemetry' => $post['device_id_telemetry'] ?? null,
+            'nwl'               => $this->_parse_float($post['nwl'] ?? null),
+            'nwl_volume'        => $this->_parse_float($post['nwl_volume'] ?? null),
+            'nwl_luas'          => $this->_parse_float($post['nwl_luas'] ?? null),
+        ];
+        
+        return $this->db->where('id_pos', $post['id_pos'])->update('master_pos', $data) 
+            ? $this->_success('Embung berhasil diperbarui!') 
+            : $this->_error('Gagal memperbarui embung.');
+    }
+
+    public function delete_embung($id) {
+        // Cek apakah ada data di data_embung
+        $has_data = $this->db->where('id_pos', $id)->count_all_results('data_embung') > 0;
+        
+        if ($has_data) {
+            return $this->_error('Embung memiliki data pengukuran, tidak bisa dihapus. Hapus data terlebih dahulu.');
+        }
+        
+        return $this->db->where('id_pos', $id)->where('jenis_aset', 'embung')->delete('master_pos') 
+            ? $this->_success('Embung berhasil dihapus!') 
+            : $this->_error('Gagal menghapus embung.');
+    }   
+
+    // ==========================================
+    // KELOLA PENGAMAN PANTAI
+    // ==========================================
+    public function get_pengaman_pantai_data() {
+        $pengaman_list = $this->db->select('
+                id_pengaman,
+                kode_integrasi,
+                nama_aset,
+                jenis_bangunan,
+                sungai,
+                wilayah_sungai,
+                lat_awal,
+                lng_awal,
+                lat_akhir,
+                lng_akhir,
+                panjang,
+                elevasi_puncak,
+                lebar_puncak,
+                kondisi_bangunan,
+                status_operasi,
+                tahun_dibangun,
+                kabupaten_kota,
+                kecamatan,
+                kelurahan,
+                manfaat,
+                keterangan,
+                created_at,
+                updated_at
+            ')
+            ->order_by('nama_aset', 'ASC')
+            ->get('data_pengaman_pantai')
+            ->result();
+        
+        return [
+            'app_name'      => 'HydroSmart',
+            'title'         => 'Kelola Pengaman Pantai',
+            'pengaman_list' => $pengaman_list
+        ];
+    }
+
+    public function insert_pengaman_pantai($post) {
+        $this->load->library('form_validation');
+        
+        $this->form_validation->set_rules('nama_aset', 'Nama Aset', 'required|trim');
+        $this->form_validation->set_rules('jenis_bangunan', 'Jenis Bangunan', 'required|trim');
+        $this->form_validation->set_rules('wilayah_sungai', 'Wilayah Sungai', 'required|trim');
+        
+        if ($this->form_validation->run() == FALSE) {
+            return $this->_error(validation_errors());
+        }
+        
+        $data = [
+            'kode_integrasi'    => $post['kode_integrasi'] ?? null,
+            'nama_aset'         => $post['nama_aset'],
+            'jenis_bangunan'    => $post['jenis_bangunan'],
+            'sungai'            => $post['sungai'] ?? null,
+            'wilayah_sungai'    => $post['wilayah_sungai'],
+            'lat_awal'          => $this->_parse_float($post['lat_awal'] ?? null),
+            'lng_awal'          => $this->_parse_float($post['lng_awal'] ?? null),
+            'lat_akhir'         => $this->_parse_float($post['lat_akhir'] ?? null),
+            'lng_akhir'         => $this->_parse_float($post['lng_akhir'] ?? null),
+            'panjang'           => $this->_parse_float($post['panjang'] ?? null),
+            'elevasi_puncak'    => $this->_parse_float($post['elevasi_puncak'] ?? null),
+            'lebar_puncak'      => $this->_parse_float($post['lebar_puncak'] ?? null),
+            'kondisi_bangunan'  => $post['kondisi_bangunan'] ?? null,
+            'status_operasi'    => $post['status_operasi'] ?? null,
+            'tahun_dibangun'    => !empty($post['tahun_dibangun']) ? $post['tahun_dibangun'] : null,
+            'kabupaten_kota'    => $post['kabupaten_kota'] ?? null,
+            'kecamatan'         => $post['kecamatan'] ?? null,
+            'kelurahan'         => $post['kelurahan'] ?? null,
+            'manfaat'           => $post['manfaat'] ?? null,
+            'keterangan'        => $post['keterangan'] ?? null,
+            'created_at'        => date('Y-m-d H:i:s')
+        ];
+        
+        return $this->db->insert('data_pengaman_pantai', $data) 
+            ? $this->_success('Pengaman Pantai berhasil ditambahkan!') 
+            : $this->_error('Gagal menambahkan data.');
+    }
+
+    public function update_pengaman_pantai($post) {
+        $this->load->library('form_validation');
+        
+        $this->form_validation->set_rules('nama_aset', 'Nama Aset', 'required|trim');
+        $this->form_validation->set_rules('jenis_bangunan', 'Jenis Bangunan', 'required|trim');
+        $this->form_validation->set_rules('wilayah_sungai', 'Wilayah Sungai', 'required|trim');
+        
+        if ($this->form_validation->run() == FALSE) {
+            return $this->_error(validation_errors());
+        }
+        
+        $data = [
+            'kode_integrasi'    => $post['kode_integrasi'] ?? null,
+            'nama_aset'         => $post['nama_aset'],
+            'jenis_bangunan'    => $post['jenis_bangunan'],
+            'sungai'            => $post['sungai'] ?? null,
+            'wilayah_sungai'    => $post['wilayah_sungai'],
+            'lat_awal'          => $this->_parse_float($post['lat_awal'] ?? null),
+            'lng_awal'          => $this->_parse_float($post['lng_awal'] ?? null),
+            'lat_akhir'         => $this->_parse_float($post['lat_akhir'] ?? null),
+            'lng_akhir'         => $this->_parse_float($post['lng_akhir'] ?? null),
+            'panjang'           => $this->_parse_float($post['panjang'] ?? null),
+            'elevasi_puncak'    => $this->_parse_float($post['elevasi_puncak'] ?? null),
+            'lebar_puncak'      => $this->_parse_float($post['lebar_puncak'] ?? null),
+            'kondisi_bangunan'  => $post['kondisi_bangunan'] ?? null,
+            'status_operasi'    => $post['status_operasi'] ?? null,
+            'tahun_dibangun'    => !empty($post['tahun_dibangun']) ? $post['tahun_dibangun'] : null,
+            'kabupaten_kota'    => $post['kabupaten_kota'] ?? null,
+            'kecamatan'         => $post['kecamatan'] ?? null,
+            'kelurahan'         => $post['kelurahan'] ?? null,
+            'manfaat'           => $post['manfaat'] ?? null,
+            'keterangan'        => $post['keterangan'] ?? null
+        ];
+        
+        return $this->db->where('id_pengaman', $post['id_pengaman'])->update('data_pengaman_pantai', $data) 
+            ? $this->_success('Pengaman Pantai berhasil diperbarui!') 
+            : $this->_error('Gagal memperbarui data.');
+    }
+
+    public function delete_pengaman_pantai($id) {
+        return $this->db->where('id_pengaman', $id)->delete('data_pengaman_pantai') 
+            ? $this->_success('Pengaman Pantai berhasil dihapus!') 
+            : $this->_error('Gagal menghapus data.');
+    }
+
+    // ==========================================
+    // KELOLA PENGENDALI SEDIMEN
+    // ==========================================
+    public function get_pengendali_sedimen_data() {
+        $sedimen_list = $this->db->select('
+                id_sedimen,
+                kode_integrasi,
+                nama_aset,
+                jenis_bangunan,
+                sungai,
+                daerah_aliran_sungai,
+                wilayah_sungai,
+                lat,
+                lng,
+                daya_tampung,
+                panjang,
+                lebar,
+                tinggi,
+                kondisi,
+                status_operasi,
+                tahun_dibangun,
+                kabupaten_kota,
+                kecamatan,
+                kelurahan,
+                jenis_material,
+                keterangan,
+                created_at,
+                updated_at
+            ')
+            ->order_by('nama_aset', 'ASC')
+            ->get('data_pengendali_sedimen')
+            ->result();
+        
+        return [
+            'app_name'      => 'HydroSmart',
+            'title'         => 'Kelola Pengendali Sedimen',
+            'sedimen_list'  => $sedimen_list
+        ];
+    }
+
+    public function insert_pengendali_sedimen($post) {
+        $this->load->library('form_validation');
+        
+        $this->form_validation->set_rules('nama_aset', 'Nama Aset', 'required|trim');
+        $this->form_validation->set_rules('jenis_bangunan', 'Jenis Bangunan', 'required|trim');
+        $this->form_validation->set_rules('sungai', 'Sungai', 'required|trim');
+        $this->form_validation->set_rules('wilayah_sungai', 'Wilayah Sungai', 'required|trim');
+        
+        if ($this->form_validation->run() == FALSE) {
+            return $this->_error(validation_errors());
+        }
+        
+        $data = [
+            'kode_integrasi'        => $post['kode_integrasi'] ?? null,
+            'nama_aset'             => $post['nama_aset'],
+            'jenis_bangunan'        => $post['jenis_bangunan'],
+            'sungai'                => $post['sungai'],
+            'daerah_aliran_sungai'  => $post['daerah_aliran_sungai'] ?? null,
+            'wilayah_sungai'        => $post['wilayah_sungai'],
+            'lat'                   => $this->_parse_float($post['lat'] ?? null),
+            'lng'                   => $this->_parse_float($post['lng'] ?? null),
+            'daya_tampung'          => $this->_parse_float($post['daya_tampung'] ?? null),
+            'panjang'               => $this->_parse_float($post['panjang'] ?? null),
+            'lebar'                 => $this->_parse_float($post['lebar'] ?? null),
+            'tinggi'                => $this->_parse_float($post['tinggi'] ?? null),
+            'kondisi'               => $post['kondisi'] ?? null,
+            'status_operasi'        => $post['status_operasi'] ?? null,
+            'tahun_dibangun'        => !empty($post['tahun_dibangun']) ? $post['tahun_dibangun'] : null,
+            'kabupaten_kota'        => $post['kabupaten_kota'] ?? null,
+            'kecamatan'             => $post['kecamatan'] ?? null,
+            'kelurahan'             => $post['kelurahan'] ?? null,
+            'jenis_material'        => $post['jenis_material'] ?? null,
+            'keterangan'            => $post['keterangan'] ?? null,
+            'created_at'            => date('Y-m-d H:i:s')
+        ];
+        
+        return $this->db->insert('data_pengendali_sedimen', $data) 
+            ? $this->_success('Pengendali Sedimen berhasil ditambahkan!') 
+            : $this->_error('Gagal menambahkan data.');
+    }
+
+    public function update_pengendali_sedimen($post) {
+        $this->load->library('form_validation');
+        
+        $this->form_validation->set_rules('nama_aset', 'Nama Aset', 'required|trim');
+        $this->form_validation->set_rules('jenis_bangunan', 'Jenis Bangunan', 'required|trim');
+        $this->form_validation->set_rules('sungai', 'Sungai', 'required|trim');
+        $this->form_validation->set_rules('wilayah_sungai', 'Wilayah Sungai', 'required|trim');
+        
+        if ($this->form_validation->run() == FALSE) {
+            return $this->_error(validation_errors());
+        }
+        
+        $data = [
+            'kode_integrasi'        => $post['kode_integrasi'] ?? null,
+            'nama_aset'             => $post['nama_aset'],
+            'jenis_bangunan'        => $post['jenis_bangunan'],
+            'sungai'                => $post['sungai'],
+            'daerah_aliran_sungai'  => $post['daerah_aliran_sungai'] ?? null,
+            'wilayah_sungai'        => $post['wilayah_sungai'],
+            'lat'                   => $this->_parse_float($post['lat'] ?? null),
+            'lng'                   => $this->_parse_float($post['lng'] ?? null),
+            'daya_tampung'          => $this->_parse_float($post['daya_tampung'] ?? null),
+            'panjang'               => $this->_parse_float($post['panjang'] ?? null),
+            'lebar'                 => $this->_parse_float($post['lebar'] ?? null),
+            'tinggi'                => $this->_parse_float($post['tinggi'] ?? null),
+            'kondisi'               => $post['kondisi'] ?? null,
+            'status_operasi'        => $post['status_operasi'] ?? null,
+            'tahun_dibangun'        => !empty($post['tahun_dibangun']) ? $post['tahun_dibangun'] : null,
+            'kabupaten_kota'        => $post['kabupaten_kota'] ?? null,
+            'kecamatan'             => $post['kecamatan'] ?? null,
+            'kelurahan'             => $post['kelurahan'] ?? null,
+            'jenis_material'        => $post['jenis_material'] ?? null,
+            'keterangan'            => $post['keterangan'] ?? null
+        ];
+        
+        return $this->db->where('id_sedimen', $post['id_sedimen'])->update('data_pengendali_sedimen', $data) 
+            ? $this->_success('Pengendali Sedimen berhasil diperbarui!') 
+            : $this->_error('Gagal memperbarui data.');
+    }
+
+    public function delete_pengendali_sedimen($id) {
+        return $this->db->where('id_sedimen', $id)->delete('data_pengendali_sedimen') 
+            ? $this->_success('Pengendali Sedimen berhasil dihapus!') 
+            : $this->_error('Gagal menghapus data.');
+    }
+
+    // ==========================================
+    // KELOLA DAERAH IRIGASI
+    // ==========================================
+    public function get_irigasi_data() {
+        $irigasi_list = $this->db->select('
+                id_irigasi,
+                kode_integrasi,
+                nama_aset,
+                jenis_daerah_irigasi,
+                kode_identifikasi,
+                status_sumber_data,
+                unit_kerja,
+                wilayah_sungai,
+                daerah_aliran_sungai,
+                kewenangan,
+                lintas_kewenangan,
+                tahun_data,
+                tahun_pembangunan,
+                bangunan_pengambilan,
+                status_pemeliharaan,
+                di_op_kan_oleh,
+                deskripsi_aset,
+                keterangan_tambahan,
+                status_data,
+                status_verifikasi,
+                provinsi,
+                kabupaten_kota,
+                kecamatan,
+                kelurahan,
+                latitude,
+                longitude,
+                keterangan_lokasi,
+                luas_permen,
+                luas_baku,
+                luas_potensial,
+                luas_fungsional,
+                jenis_bangunan_utama,
+                nama_bangunan_utama_bendungan,
+                nama_bangunan_utama_bendung,
+                nama_bangunan_utama_free_intake,
+                sumber_air,
+                luas_tangkapan_hujan,
+                jenis_rawa,
+                fungsi_jaringan_irigasi,
+                created_at,
+                updated_at
+            ')
+            ->order_by('nama_aset', 'ASC')
+            ->get('data_irigasi')
+            ->result();
+        
+        return [
+            'app_name'      => 'HydroSmart',
+            'title'         => 'Kelola Daerah Irigasi',
+            'irigasi_list'  => $irigasi_list
+        ];
+    }
+
+    public function insert_irigasi($post) {
+        $this->load->library('form_validation');
+        
+        $this->form_validation->set_rules('nama_aset', 'Nama Aset', 'required|trim');
+        $this->form_validation->set_rules('jenis_daerah_irigasi', 'Jenis Daerah Irigasi', 'required|trim');
+        $this->form_validation->set_rules('wilayah_sungai', 'Wilayah Sungai', 'required|trim');
+        $this->form_validation->set_rules('daerah_aliran_sungai', 'Daerah Aliran Sungai', 'required|trim');
+        
+        if ($this->form_validation->run() == FALSE) {
+            return $this->_error(validation_errors());
+        }
+        
+        $data = [
+            'kode_integrasi'                => $post['kode_integrasi'] ?? null,
+            'nama_aset'                     => $post['nama_aset'],
+            'jenis_daerah_irigasi'          => $post['jenis_daerah_irigasi'],
+            'kode_identifikasi'             => $post['kode_identifikasi'] ?? null,
+            'status_sumber_data'            => $post['status_sumber_data'] ?? null,
+            'unit_kerja'                    => $post['unit_kerja'] ?? null,
+            'wilayah_sungai'                => $post['wilayah_sungai'],
+            'daerah_aliran_sungai'          => $post['daerah_aliran_sungai'],
+            'kewenangan'                    => $post['kewenangan'] ?? null,
+            'lintas_kewenangan'             => $post['lintas_kewenangan'] ?? null,
+            'tahun_data'                    => $post['tahun_data'] ?? null,
+            'tahun_pembangunan'             => $post['tahun_pembangunan'] ?? null,
+            'bangunan_pengambilan'          => $post['bangunan_pengambilan'] ?? null,
+            'status_pemeliharaan'           => $post['status_pemeliharaan'] ?? null,
+            'di_op_kan_oleh'                => $post['di_op_kan_oleh'] ?? null,
+            'deskripsi_aset'                => $post['deskripsi_aset'] ?? null,
+            'keterangan_tambahan'           => $post['keterangan_tambahan'] ?? null,
+            'status_data'                   => $post['status_data'] ?? null,
+            'status_verifikasi'             => $post['status_verifikasi'] ?? null,
+            'provinsi'                      => $post['provinsi'] ?? null,
+            'kabupaten_kota'                => $post['kabupaten_kota'] ?? null,
+            'kecamatan'                     => $post['kecamatan'] ?? null,
+            'kelurahan'                     => $post['kelurahan'] ?? null,
+            'latitude'                      => $this->_parse_float($post['latitude'] ?? null),
+            'longitude'                     => $this->_parse_float($post['longitude'] ?? null),
+            'keterangan_lokasi'             => $post['keterangan_lokasi'] ?? null,
+            'luas_permen'                   => $this->_parse_float($post['luas_permen'] ?? null),
+            'luas_baku'                     => $this->_parse_float($post['luas_baku'] ?? null),
+            'luas_potensial'                => $this->_parse_float($post['luas_potensial'] ?? null),
+            'luas_fungsional'               => $this->_parse_float($post['luas_fungsional'] ?? null),
+            'jenis_bangunan_utama'          => $post['jenis_bangunan_utama'] ?? null,
+            'nama_bangunan_utama_bendungan' => $post['nama_bangunan_utama_bendungan'] ?? null,
+            'nama_bangunan_utama_bendung'   => $post['nama_bangunan_utama_bendung'] ?? null,
+            'nama_bangunan_utama_free_intake' => $post['nama_bangunan_utama_free_intake'] ?? null,
+            'sumber_air'                    => $post['sumber_air'] ?? null,
+            'luas_tangkapan_hujan'          => $this->_parse_float($post['luas_tangkapan_hujan'] ?? null),
+            'jenis_rawa'                    => $post['jenis_rawa'] ?? null,
+            'fungsi_jaringan_irigasi'       => $post['fungsi_jaringan_irigasi'] ?? null,
+            'created_at'                    => date('Y-m-d H:i:s')
+        ];
+        
+        return $this->db->insert('data_irigasi', $data) 
+            ? $this->_success('Daerah Irigasi berhasil ditambahkan!') 
+            : $this->_error('Gagal menambahkan data.');
+    }
+
+    public function update_irigasi($post) {
+        $this->load->library('form_validation');
+        
+        $this->form_validation->set_rules('nama_aset', 'Nama Aset', 'required|trim');
+        $this->form_validation->set_rules('jenis_daerah_irigasi', 'Jenis Daerah Irigasi', 'required|trim');
+        $this->form_validation->set_rules('wilayah_sungai', 'Wilayah Sungai', 'required|trim');
+        $this->form_validation->set_rules('daerah_aliran_sungai', 'Daerah Aliran Sungai', 'required|trim');
+        
+        if ($this->form_validation->run() == FALSE) {
+            return $this->_error(validation_errors());
+        }
+        
+        $data = [
+            'kode_integrasi'                => $post['kode_integrasi'] ?? null,
+            'nama_aset'                     => $post['nama_aset'],
+            'jenis_daerah_irigasi'          => $post['jenis_daerah_irigasi'],
+            'kode_identifikasi'             => $post['kode_identifikasi'] ?? null,
+            'status_sumber_data'            => $post['status_sumber_data'] ?? null,
+            'unit_kerja'                    => $post['unit_kerja'] ?? null,
+            'wilayah_sungai'                => $post['wilayah_sungai'],
+            'daerah_aliran_sungai'          => $post['daerah_aliran_sungai'],
+            'kewenangan'                    => $post['kewenangan'] ?? null,
+            'lintas_kewenangan'             => $post['lintas_kewenangan'] ?? null,
+            'tahun_data'                    => $post['tahun_data'] ?? null,
+            'tahun_pembangunan'             => $post['tahun_pembangunan'] ?? null,
+            'bangunan_pengambilan'          => $post['bangunan_pengambilan'] ?? null,
+            'status_pemeliharaan'           => $post['status_pemeliharaan'] ?? null,
+            'di_op_kan_oleh'                => $post['di_op_kan_oleh'] ?? null,
+            'deskripsi_aset'                => $post['deskripsi_aset'] ?? null,
+            'keterangan_tambahan'           => $post['keterangan_tambahan'] ?? null,
+            'status_data'                   => $post['status_data'] ?? null,
+            'status_verifikasi'             => $post['status_verifikasi'] ?? null,
+            'provinsi'                      => $post['provinsi'] ?? null,
+            'kabupaten_kota'                => $post['kabupaten_kota'] ?? null,
+            'kecamatan'                     => $post['kecamatan'] ?? null,
+            'kelurahan'                     => $post['kelurahan'] ?? null,
+            'latitude'                      => $this->_parse_float($post['latitude'] ?? null),
+            'longitude'                     => $this->_parse_float($post['longitude'] ?? null),
+            'keterangan_lokasi'             => $post['keterangan_lokasi'] ?? null,
+            'luas_permen'                   => $this->_parse_float($post['luas_permen'] ?? null),
+            'luas_baku'                     => $this->_parse_float($post['luas_baku'] ?? null),
+            'luas_potensial'                => $this->_parse_float($post['luas_potensial'] ?? null),
+            'luas_fungsional'               => $this->_parse_float($post['luas_fungsional'] ?? null),
+            'jenis_bangunan_utama'          => $post['jenis_bangunan_utama'] ?? null,
+            'nama_bangunan_utama_bendungan' => $post['nama_bangunan_utama_bendungan'] ?? null,
+            'nama_bangunan_utama_bendung'   => $post['nama_bangunan_utama_bendung'] ?? null,
+            'nama_bangunan_utama_free_intake' => $post['nama_bangunan_utama_free_intake'] ?? null,
+            'sumber_air'                    => $post['sumber_air'] ?? null,
+            'luas_tangkapan_hujan'          => $this->_parse_float($post['luas_tangkapan_hujan'] ?? null),
+            'jenis_rawa'                    => $post['jenis_rawa'] ?? null,
+            'fungsi_jaringan_irigasi'       => $post['fungsi_jaringan_irigasi'] ?? null
+        ];
+        
+        return $this->db->where('id_irigasi', $post['id_irigasi'])->update('data_irigasi', $data) 
+            ? $this->_success('Daerah Irigasi berhasil diperbarui!') 
+            : $this->_error('Gagal memperbarui data.');
+    }
+
+    public function delete_irigasi($id) {
+        return $this->db->where('id_irigasi', $id)->delete('data_irigasi') 
+            ? $this->_success('Daerah Irigasi berhasil dihapus!') 
+            : $this->_error('Gagal menghapus data.');
+    }
 }
