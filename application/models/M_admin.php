@@ -635,4 +635,107 @@ class M_admin extends CI_Model {
             ? $this->_success('Data bendung dihapus.') 
             : $this->_error('Gagal menghapus.');
     }
+
+    // ==========================================
+// GET DATA BY POS (UNTUK KELOLA MANUAL)
+// ==========================================
+
+/**
+ * Get data manual pos biasa (PCH/PDA) berdasarkan pos dan bulan
+ */
+public function get_manual_data_by_pos($id_pos, $bulan) {
+    $this->db->select('
+        m.id_manual, 
+        m.id_pos, 
+        m.id_user, 
+        m.tanggal_input, 
+        m.rain, 
+        m.wlevel, 
+        m.keterangan, 
+        m.created_at,
+        u.nama_lengkap as nama_petugas
+    ');
+    $this->db->from('data_manual m');
+    $this->db->join('users u', 'm.id_user = u.id_user', 'left');
+    $this->db->where('m.id_pos', $id_pos);
+    // PERBAIKAN: tambahkan operator = 
+    $this->db->where("DATE_FORMAT(m.tanggal_input, '%Y-%m') =", $bulan);
+    $this->db->order_by('m.tanggal_input', 'DESC');
+    $this->db->order_by('m.created_at', 'DESC');
+    return $this->db->get()->result();
+}
+
+/**
+ * Get data bendungan berdasarkan pos dan bulan
+ */
+public function get_bendungan_data_by_pos($id_pos, $bulan) {
+    $this->db->select('
+        d.id_bendungan,
+        d.id_pos,
+        d.id_user,
+        d.tanggal_input,
+        d.nwl,
+        d.nwl_volume,
+        d.nwl_luas,
+        d.rain,
+        d.elevasi,
+        d.volume,
+        d.luas,
+        d.inflow,
+        d.pltm,
+        d.spillway,
+        d.total_outflow,
+        d.plta_status,
+        d.irigasi_status,
+        d.tail_water,
+        d.rembesan_vnotch_h,
+        d.rembesan_vnotch_q,
+        d.rembesan_pump_pit_l_h,
+        d.rembesan_pump_pit_l_q,
+        d.rembesan_pump_pit_r_h,
+        d.rembesan_pump_pit_r_q,
+        d.keterangan,
+        d.created_at,
+        u.nama_lengkap as nama_user
+    ');
+    $this->db->from('data_bendungan d');
+    $this->db->join('users u', 'd.id_user = u.id_user', 'left');
+    $this->db->where('d.id_pos', $id_pos);
+    // PERBAIKAN: tambahkan operator =
+    $this->db->where("DATE_FORMAT(d.tanggal_input, '%Y-%m') =", $bulan);
+    $this->db->order_by('d.tanggal_input', 'DESC');
+    $this->db->order_by('d.created_at', 'DESC');
+    return $this->db->get()->result();
+}
+
+/**
+ * Get data bendung berdasarkan pos dan bulan
+ */
+public function get_bendung_data_by_pos($id_pos, $bulan) {
+    $this->db->select('
+        d.id_bendung,
+        d.id_pos,
+        d.id_user,
+        d.tanggal_input,
+        d.rain,
+        d.elevasi_mercu,
+        d.q_total,
+        d.q_fc1,
+        d.q_fc2,
+        d.q_limpas,
+        d.q_spam_kpbu,
+        d.sluice_gate,
+        d.keterangan,
+        d.created_at,
+        u.nama_lengkap as nama_user
+    ');
+    $this->db->from('data_bendung d');
+    $this->db->join('users u', 'd.id_user = u.id_user', 'left');
+    $this->db->where('d.id_pos', $id_pos);
+    // PERBAIKAN: tambahkan operator =
+    $this->db->where("DATE_FORMAT(d.tanggal_input, '%Y-%m') =", $bulan);
+    $this->db->order_by('d.tanggal_input', 'DESC');
+    $this->db->order_by('d.created_at', 'DESC');
+    return $this->db->get()->result();
+}
 }

@@ -96,84 +96,129 @@ class Superadmin extends CI_Controller {
     }
 
     // ==========================================
-    // KELOLA MANUAL
-    // ==========================================
-    public function kelola_manual() {
-        $this->load->model('M_admin');
-        
-        $data = $this->M_admin->get_manual_data(
-            $this->input->get('pos'), 
-            $this->input->get('bulan') ?: date('Y-m'),
-            null // Superadmin bisa akses semua pos
-        );
-        
-        $data['admin_name'] = $this->session->userdata('nama_lengkap');
-        
-        // Siapkan data untuk JavaScript (fix bug edit)
-        $data['pos_data_js'] = [];
-        $data['bendungan_data_js'] = [];
-        $data['bendung_data_js'] = [];
-        
-        if (!empty($data['pos']) && !empty($data['data_list'])) {
-            if ($data['pos']->is_bendung == 1) {
-                // Data bendung
-                foreach ($data['data_list'] as $d) {
-                    $data['bendung_data_js'][$d->id_bendung] = [
-                        'tanggal'      => $d->tanggal_input,
-                        'rain'         => $d->rain,
-                        'elevasi_mercu'=> $d->elevasi_mercu,
-                        'q_total'      => $d->q_total,
-                        'q_fc1'        => $d->q_fc1,
-                        'q_fc2'        => $d->q_fc2,
-                        'q_limpas'     => $d->q_limpas,
-                        'q_spam_kpbu'  => $d->q_spam_kpbu,
-                        'sluice_gate'  => $d->sluice_gate,
-                        'keterangan'   => $d->keterangan ?? '',
-                    ];
-                }
-            } elseif ($data['pos']->is_bendungan == 1) {
-                // Data bendungan
-                foreach ($data['data_list'] as $d) {
-                    $data['bendungan_data_js'][$d->id_bendungan] = [
-                        'tanggal'        => $d->tanggal_input,
-                        'nwl'            => $d->nwl,
-                        'nwl_volume'     => $d->nwl_volume,
-                        'nwl_luas'       => $d->nwl_luas,
-                        'rain'           => $d->rain,
-                        'elevasi'        => $d->elevasi,
-                        'volume'         => $d->volume,
-                        'luas'           => $d->luas,
-                        'inflow'         => $d->inflow,
-                        'pltm'           => $d->pltm,
-                        'spillway'       => $d->spillway,
-                        'total_outflow'  => $d->total_outflow,
-                        'plta_status'    => $d->plta_status ?? '',
-                        'irigasi_status' => $d->irigasi_status ?? '',
-                        'tail_water'     => $d->tail_water ?? '',
-                        'rvh'            => $d->rembesan_vnotch_h,
-                        'rvq'            => $d->rembesan_vnotch_q,
-                        'rplh'           => $d->rembesan_pump_pit_l_h,
-                        'rplq'           => $d->rembesan_pump_pit_l_q,
-                        'rprh'           => $d->rembesan_pump_pit_r_h,
-                        'rprq'           => $d->rembesan_pump_pit_r_q,
-                        'keterangan'     => $d->keterangan ?? '',
-                    ];
-                }
-            } else {
-                // Data pos biasa
-                foreach ($data['data_list'] as $d) {
-                    $data['pos_data_js'][$d->id_manual] = [
-                        'tanggal'    => $d->tanggal_input,
-                        'rain'       => $d->rain,
-                        'wlevel'     => $d->wlevel,
-                        'keterangan' => $d->keterangan ?? '',
-                    ];
-                }
+// KELOLA MANUAL
+// ==========================================
+public function kelola_manual() {
+    $this->load->model('M_admin');
+    
+    // Ambil ID pos dari parameter GET
+    $id_pos = $this->input->get('pos');
+    $bulan = $this->input->get('bulan') ?: date('Y-m');
+    
+    // 🔥 AMBIL POS LIST UNTUK DROPDOWN - EXCLUDE EMBUNG
+    // Gunakan method get_all_pos_unique yang sudah dimodifikasi
+    $pos_list = $this->M_superadmin->get_all_pos_unique(null);
+    
+    // Jika tidak ada pos yang dipilih, ambil yang pertama (bukan embung)
+    if (empty($id_pos) && !empty($pos_list)) {
+        $id_pos = $pos_list[0]->id_pos;
+    }
+    
+    // Ambil data pos yang dipilih
+    $pos = null;
+    foreach ($pos_list as $p) {
+        if ($p->id_pos == $id_pos) {
+            $pos = $p;
+            break;
+        }
+    }
+    
+    // Jika pos tidak ditemukan, ambil yang pertama
+    if (empty($pos) && !empty($pos_list)) {
+        $pos = $pos_list[0];
+        $id_pos = $pos->id_pos;
+    }
+    
+    // Ambil data manual berdasarkan pos dan bulan
+    $data_list = [];
+    if (!empty($pos)) {
+        if ($pos->is_bendung == 1) {
+            // Ambil data bendung
+            $data_list = $this->M_admin->get_bendung_data_by_pos($id_pos, $bulan);
+        } elseif ($pos->is_bendungan == 1) {
+            // Ambil data bendungan
+            $data_list = $this->M_admin->get_bendungan_data_by_pos($id_pos, $bulan);
+        } else {
+            // Ambil data pos biasa (PCH/PDA)
+            $data_list = $this->M_admin->get_manual_data_by_pos($id_pos, $bulan);
+        }
+    }
+    
+    // Siapkan data untuk view
+    $data = [
+        'app_name' => 'HydroSmart',
+        'title' => 'Kelola Laporan Manual',
+        'admin_name' => $this->session->userdata('nama_lengkap'),
+        'pos' => $pos,
+        'pos_list' => $pos_list, // Sudah filter exclude embung
+        'bulan' => $bulan,
+        'data_list' => $data_list,
+        'pos_data_js' => [],
+        'bendungan_data_js' => [],
+        'bendung_data_js' => [],
+    ];
+    
+    // Siapkan data untuk JavaScript (fix bug edit)
+    if (!empty($pos) && !empty($data_list)) {
+        if ($pos->is_bendung == 1) {
+            // Data bendung
+            foreach ($data_list as $d) {
+                $data['bendung_data_js'][$d->id_bendung] = [
+                    'tanggal'      => $d->tanggal_input,
+                    'rain'         => $d->rain,
+                    'elevasi_mercu'=> $d->elevasi_mercu,
+                    'q_total'      => $d->q_total,
+                    'q_fc1'        => $d->q_fc1,
+                    'q_fc2'        => $d->q_fc2,
+                    'q_limpas'     => $d->q_limpas,
+                    'q_spam_kpbu'  => $d->q_spam_kpbu,
+                    'sluice_gate'  => $d->sluice_gate,
+                    'keterangan'   => $d->keterangan ?? '',
+                ];
+            }
+        } elseif ($pos->is_bendungan == 1) {
+            // Data bendungan
+            foreach ($data_list as $d) {
+                $data['bendungan_data_js'][$d->id_bendungan] = [
+                    'tanggal'        => $d->tanggal_input,
+                    'nwl'            => $d->nwl,
+                    'nwl_volume'     => $d->nwl_volume,
+                    'nwl_luas'       => $d->nwl_luas,
+                    'rain'           => $d->rain,
+                    'elevasi'        => $d->elevasi,
+                    'volume'         => $d->volume,
+                    'luas'           => $d->luas,
+                    'inflow'         => $d->inflow,
+                    'pltm'           => $d->pltm,
+                    'spillway'       => $d->spillway,
+                    'total_outflow'  => $d->total_outflow,
+                    'plta_status'    => $d->plta_status ?? '',
+                    'irigasi_status' => $d->irigasi_status ?? '',
+                    'tail_water'     => $d->tail_water ?? '',
+                    'rvh'            => $d->rembesan_vnotch_h,
+                    'rvq'            => $d->rembesan_vnotch_q,
+                    'rplh'           => $d->rembesan_pump_pit_l_h,
+                    'rplq'           => $d->rembesan_pump_pit_l_q,
+                    'rprh'           => $d->rembesan_pump_pit_r_h,
+                    'rprq'           => $d->rembesan_pump_pit_r_q,
+                    'keterangan'     => $d->keterangan ?? '',
+                ];
+            }
+        } else {
+            // Data pos biasa (PCH/PDA)
+            foreach ($data_list as $d) {
+                $data['pos_data_js'][$d->id_manual] = [
+                    'tanggal'    => $d->tanggal_input,
+                    'rain'       => $d->rain,
+                    'wlevel'     => $d->wlevel,
+                    'keterangan' => $d->keterangan ?? '',
+                ];
             }
         }
-        
-        $this->_render('superadmin/v_kelola_manual', $data);
     }
+    
+    $this->_render('superadmin/v_kelola_manual', $data);
+}
 
     // ==========================================
     // SIMPAN DATA

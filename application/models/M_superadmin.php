@@ -1015,4 +1015,60 @@ class M_superadmin extends CI_Model {
             ? $this->_success('Device ID Telemetry berhasil dihapus!') 
             : $this->_error('Gagal menghapus device ID.');
     }
+    
+    // ==========================================
+    // GET POS LIST UNIQUE UNTUK DROPDOWN
+    // ==========================================
+    /**
+     * Get list pos UNIK untuk dropdown (menghilangkan duplikat)
+     * Khusus untuk PCH dan PDA saja (bukan embung)
+     */
+    public function get_pos_list_unique($allowed_pos = null) {
+        $this->db->select('id_pos, nama_pos, tipe_pos, is_bendungan, is_bendung');
+        $this->db->from('master_pos');
+        
+        // Filter berdasarkan pos yang diizinkan
+        if ($allowed_pos !== null && is_array($allowed_pos) && !empty($allowed_pos)) {
+            $this->db->where_in('id_pos', $allowed_pos);
+        }
+        
+        // KRUSIAL: HANYA ambil pos dengan tipe PCH atau PDA
+        // DAN BUKAN embung
+        $this->db->where('is_bendungan', 0);
+        $this->db->where('is_bendung', 0);
+        $this->db->where_in('tipe_pos', ['PCH', 'PDA']);
+        $this->db->where('jenis_aset !=', 'embung');
+        // Atau: $this->db->where('jenis_aset IS NULL OR jenis_aset != "embung"');
+        
+        // PENTING: GROUP BY untuk menghilangkan duplikat
+        $this->db->group_by('id_pos');
+        $this->db->order_by('nama_pos', 'ASC');
+        
+        $query = $this->db->get();
+        return $query->result();
+    }
+
+    /**
+     * Get list pos UNIK untuk dropdown (termasuk semua tipe kecuali embung)
+     * Digunakan untuk filter di kelola manual
+     */
+    public function get_all_pos_unique($allowed_pos = null) {
+        $this->db->select('id_pos, nama_pos, tipe_pos, is_bendungan, is_bendung');
+        $this->db->from('master_pos');
+        
+        if ($allowed_pos !== null && is_array($allowed_pos) && !empty($allowed_pos)) {
+            $this->db->where_in('id_pos', $allowed_pos);
+        }
+        
+        // 🔥 KRUSIAL: EXCLUDE EMBUNG
+        // Embung tidak boleh muncul di dropdown kelola manual
+        $this->db->where('jenis_aset !=', 'embung');
+        // Atau bisa juga: $this->db->where('jenis_aset IS NULL OR jenis_aset != "embung"');
+        
+        $this->db->group_by('id_pos');
+        $this->db->order_by('nama_pos', 'ASC');
+        
+        $query = $this->db->get();
+        return $query->result();
+    }
 }
