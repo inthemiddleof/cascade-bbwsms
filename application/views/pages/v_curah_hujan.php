@@ -95,20 +95,22 @@ if (!function_exists('safeNumber')) {
             </div>
 
             <div class="overflow-x-auto overflow-y-auto max-h-[600px]">
-                <table class="w-full text-[11px] text-left border-collapse min-w-[1000px]" id="rainTable">
+                <table class="w-full text-[11px] text-left border-collapse min-w-[1100px]" id="rainTable">
                     <thead class="text-darkblue font-bold uppercase text-center sticky top-0 z-20 shadow-sm">
                         <tr>
                             <th rowspan="2" class="p-4 border-b border-r border-slate-300 bg-slate-100 w-12">No</th>
                             <th rowspan="2" class="p-4 border-b border-r border-slate-300 bg-slate-100 min-w-[280px] text-left">Nama Pos / Stasiun</th>
                             <th colspan="4" class="p-3 border-b border-r border-slate-300 bg-blue-100">Waktu Pengamatan Telemetri (WIB)</th>
-                            <th rowspan="2" class="p-4 border-b border-r border-slate-300 bg-blue-200 w-24">Total API (mm)</th>
-                            <th rowspan="2" class="p-4 border-b border-slate-300 bg-emerald-100 w-24">Manual (mm)</th>
+                            <th colspan="3" class="p-3 border-b border-slate-300 bg-emerald-100">Waktu Input Manual (WIB)</th>
                         </tr>
                         <tr class="text-[10px]">
                             <th class="p-2 border-b border-r border-slate-300 bg-blue-50">00.00-06.00</th>
                             <th class="p-2 border-b border-r border-slate-300 bg-blue-50">06.01-12.00</th>
                             <th class="p-2 border-b border-r border-slate-300 bg-blue-50">12.01-18.00</th>
                             <th class="p-2 border-b border-r border-slate-300 bg-blue-50">18.01-23.59</th>
+                            <th class="p-2 border-b border-r border-slate-300 bg-emerald-50">07.00-11.59</th>
+                            <th class="p-2 border-b border-r border-slate-300 bg-emerald-50">12.00-16.59</th>
+                            <th class="p-2 border-b border-slate-300 bg-emerald-50">17.00-06.59</th>
                         </tr>
                     </thead>
                     <tbody class="text-slate-800 text-center">
@@ -119,7 +121,7 @@ if (!function_exists('safeNumber')) {
                                 <span class="font-bold text-darkblue uppercase tracking-tighter"><?= htmlspecialchars($row['pos']) ?></span>
                                 <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1">
                                     <?php if($row['api_waktu']): ?>
-                                        <span class="text-[8px] text-blue-500 font-medium">API: <?= $row['api_waktu'] ?> WIB</span>
+                                        <span class="text-[8px] text-blue-500 font-medium">Telemetri: <?= $row['api_waktu'] ?> WIB</span>
                                     <?php endif; ?>
                                     <?php if($row['manual_time']): ?>
                                         <span class="text-[8px] text-emerald-600 font-medium">Manual: <?= $row['manual_time'] ?> WIB</span>
@@ -129,20 +131,21 @@ if (!function_exists('safeNumber')) {
                                     <?php endif; ?>
                                 </div>
                             </td>
-                            <td class="p-4 border-r border-slate-100 font-semibold <?= $row['w1'] > 0 ? 'text-darkblue' : 'text-slate-400' ?>"><?= safeNumber($row['w1'], 1) ?></td>
-                            <td class="p-4 border-r border-slate-100 font-semibold <?= $row['w2'] > 0 ? 'text-darkblue' : 'text-slate-400' ?>"><?= safeNumber($row['w2'], 1) ?></td>
-                            <td class="p-4 border-r border-slate-100 font-semibold <?= $row['w3'] > 0 ? 'text-darkblue' : 'text-slate-400' ?>"><?= safeNumber($row['w3'], 1) ?></td>
-                            <td class="p-4 border-r border-slate-100 font-semibold <?= $row['w4'] > 0 ? 'text-darkblue' : 'text-slate-400' ?>"><?= safeNumber($row['w4'], 1) ?></td>
-                            <td class="p-4 border-r border-slate-100 font-black text-xs <?= getBgIntensity($row['total']) ?>"><?= safeNumber($row['total'], 1) ?></td>
-                            <td class="p-4 font-black text-xs <?= getBgIntensity($row['manual_rain']) ?>"><?= safeNumber($row['manual_rain'], 1) ?></td>
+                            <td class="p-4 border-r border-slate-100 font-semibold <?= getBgIntensity($row['w1']) ?>"><?= safeNumber($row['w1'], 1) ?></td>
+                            <td class="p-4 border-r border-slate-100 font-semibold <?= getBgIntensity($row['w2']) ?>"><?= safeNumber($row['w2'], 1) ?></td>
+                            <td class="p-4 border-r border-slate-100 font-semibold <?= getBgIntensity($row['w3']) ?>"><?= safeNumber($row['w3'], 1) ?></td>
+                            <td class="p-4 border-r border-slate-100 font-semibold <?= getBgIntensity($row['w4']) ?>"><?= safeNumber($row['w4'], 1) ?></td>
+                            <td class="p-4 border-r border-slate-100 font-semibold <?= getBgIntensity($row['manual_07']) ?>"><?= safeNumber($row['manual_07'], 1) ?></td>
+                            <td class="p-4 border-r border-slate-100 font-semibold <?= getBgIntensity($row['manual_12']) ?>"><?= safeNumber($row['manual_12'], 1) ?></td>
+                            <td class="p-4 font-semibold <?= getBgIntensity($row['manual_17']) ?>"><?= safeNumber($row['manual_17'], 1) ?></td>
                         </tr>
                         <?php endforeach; ?>
                         
                         <?php if(empty($pencatatan)): ?>
                         <tr>
-                            <td colspan="8" class="p-10 text-center text-slate-400">
+                            <td colspan="10" class="p-10 text-center text-slate-400">
                                 <p class="text-sm font-medium">Tidak ada data untuk tanggal ini</p>
-                                <p class="text-xs mt-1">Silakan pilih tanggal lain atau periksa koneksi API</p>
+                                <p class="text-xs mt-1">Silakan pilih tanggal lain atau periksa koneksi telemetri</p>
                             </td>
                         </tr>
                         <?php endif; ?>

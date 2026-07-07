@@ -78,12 +78,11 @@ class M_curah_hujan extends CI_Model {
                 ];
             }
 
-            // Update latest full time
             if ($latest_full_time === null || $f_time > $latest_full_time) {
                 $latest_full_time = $f_time;
             }
 
-            // Ambil data TERAKHIR per slot (bukan akumulasi)
+            // Ambil data TERAKHIR per slot
             if ($f_time >= $slots['w1']['start'] && $f_time <= $slots['w1']['end']) {
                 $telemetri_map[$id]['w1'] = $rain;
                 if ($telemetri_map[$id]['last_time'] === null || $f_time > $telemetri_map[$id]['last_time']) {
@@ -147,6 +146,33 @@ class M_curah_hujan extends CI_Model {
             if ($stat_val > $max_hujan) $max_hujan = $stat_val;
             $total_hujan += $stat_val;
 
+            // ==========================================
+            // Tentukan nilai manual per rentang jam
+            // 07:00-11:59 → manual_07
+            // 12:00-16:59 → manual_12
+            // 17:00-06:59 → manual_17
+            // ==========================================
+            $manual_07 = null;
+            $manual_12 = null;
+            $manual_17 = null;
+            $manual_total = null;
+            $manual_time = null;
+            
+            if ($man) {
+                $hour = (int)date('H', strtotime($man['created_at'] ?? ''));
+                $manual_total = $man['rain'] ?? null;
+                $manual_time = $man['waktu'] ?? null;
+                
+                if ($hour >= 7 && $hour < 12) {
+                    $manual_07 = $man['rain'] ?? null;
+                } elseif ($hour >= 12 && $hour < 17) {
+                    $manual_12 = $man['rain'] ?? null;
+                } else {
+                    // 17:00 - 06:59
+                    $manual_17 = $man['rain'] ?? null;
+                }
+            }
+
             $pencatatan[] = [
                 'id_pos'      => $id,
                 'pos'         => $info['nama'],
@@ -158,8 +184,11 @@ class M_curah_hujan extends CI_Model {
                 'w3'          => $val['w3'],
                 'w4'          => $val['w4'],
                 'total'       => $total_telemetri,
-                'manual_rain' => $man ? $man['rain'] : null,
-                'manual_time' => $man ? $man['waktu'] : null,
+                'manual_07'   => $manual_07,
+                'manual_12'   => $manual_12,
+                'manual_17'   => $manual_17,
+                'manual_rain' => $manual_total,
+                'manual_time' => $manual_time,
                 'petugas'     => $man ? $man['petugas'] : null
             ];
         }

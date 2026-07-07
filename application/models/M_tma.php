@@ -63,9 +63,10 @@ class M_tma extends CI_Model {
                 $id = $mn['id_pos'];
                 if (!isset($manual_map[$id])) {
                     $manual_map[$id] = [
-                        'wlevel'  => (float)$mn['wlevel'],
-                        'waktu'   => date('H:i', strtotime($mn['created_at'])),
-                        'petugas' => $mn['petugas'] ?? '-'
+                        'wlevel'     => (float)$mn['wlevel'],
+                        'waktu'      => date('H:i', strtotime($mn['created_at'])),
+                        'petugas'    => $mn['petugas'] ?? '-',
+                        'created_at' => $mn['created_at']  // ✅ Tambah created_at
                     ];
                 }
             }
@@ -93,12 +94,10 @@ class M_tma extends CI_Model {
                 ];
             }
 
-            // Update latest full time (global)
             if ($latest_full_time === null || $f_time > $latest_full_time) {
                 $latest_full_time = $f_time;
             }
 
-            // Update nilai MAX per slot
             if ($f_time >= $slots['w1']['start'] && $f_time <= $slots['w1']['end']) {
                 $telemetri_map[$id]['w1'] = max($telemetri_map[$id]['w1'], $wlevel);
             } elseif ($f_time >= $slots['w2']['start'] && $f_time <= $slots['w2']['end']) {
@@ -109,7 +108,6 @@ class M_tma extends CI_Model {
                 $telemetri_map[$id]['w4'] = max($telemetri_map[$id]['w4'], $wlevel);
             }
             
-            // Update last_time (waktu terakhir secara global)
             if ($telemetri_map[$id]['last_time'] === null || $f_time > $telemetri_map[$id]['last_time']) {
                 $telemetri_map[$id]['last_time'] = $f_time;
             }
@@ -140,10 +138,7 @@ class M_tma extends CI_Model {
             
             if ($has_tele || $has_manual) $pos_aktif++;
 
-            // ==========================================
             // LAST (M): Ambil dari slot terakhir yang ada data
-            // Prioritas: w4 > w3 > w2 > w1
-            // ==========================================
             $last_from_slot = 0;
             if ($val['w4'] > 0) {
                 $last_from_slot = $val['w4'];
@@ -153,6 +148,29 @@ class M_tma extends CI_Model {
                 $last_from_slot = $val['w2'];
             } elseif ($val['w1'] > 0) {
                 $last_from_slot = $val['w1'];
+            }
+
+            // ==========================================
+            // Tentukan nilai manual per jam (07, 12, 17)
+            // ==========================================
+            $manual_07 = null;
+            $manual_12 = null;
+            $manual_17 = null;
+            $manual_val = null;
+            $manual_time = null;
+            
+            if ($man) {
+                $hour = (int)date('H', strtotime($man['created_at'] ?? ''));
+                $manual_val = $man['wlevel'] ?? null;
+                $manual_time = $man['waktu'] ?? null;
+                
+                if ($hour <= 7) {
+                    $manual_07 = $man['wlevel'] ?? null;
+                } elseif ($hour <= 12) {
+                    $manual_12 = $man['wlevel'] ?? null;
+                } elseif ($hour <= 17) {
+                    $manual_17 = $man['wlevel'] ?? null;
+                }
             }
 
             $pencatatan_tma[] = [
@@ -165,8 +183,11 @@ class M_tma extends CI_Model {
                 'w3'          => $val['w3'],
                 'w4'          => $val['w4'],
                 'last'        => $last_from_slot,
-                'manual_val'  => $man ? $man['wlevel'] : null,
-                'manual_time' => $man ? $man['waktu'] : null,
+                'manual_07'   => $manual_07,      // ✅ Baru
+                'manual_12'   => $manual_12,      // ✅ Baru
+                'manual_17'   => $manual_17,      // ✅ Baru
+                'manual_val'  => $manual_val,
+                'manual_time' => $manual_time,
                 'petugas'     => $man ? $man['petugas'] : '-',
                 'siaga'       => [
                     'siaga1' => $info['siaga1'],
@@ -177,7 +198,6 @@ class M_tma extends CI_Model {
             ];
         }
 
-        // Sort: pos aktif di atas, lalu urut nama
         usort($pencatatan_tma, function($a, $b) {
             $a_aktif = ($a['api_waktu'] || $a['manual_time']) ? 1 : 0;
             $b_aktif = ($b['api_waktu'] || $b['manual_time']) ? 1 : 0;
@@ -185,7 +205,6 @@ class M_tma extends CI_Model {
             return strcmp($a['pos'], $b['pos']);
         });
 
-        // Nomor urut
         $no = 1;
         foreach ($pencatatan_tma as &$row) { 
             $row['no'] = $no++; 
