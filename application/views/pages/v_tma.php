@@ -57,8 +57,8 @@ if (!function_exists('safeNumber')) {
                         <tr>
                             <th rowspan="2" class="p-4 border-b border-r border-slate-300 bg-slate-100 w-12">No</th>
                             <th rowspan="2" class="p-4 border-b border-r border-slate-300 bg-slate-100 min-w-[280px] text-left">Nama Pos / Stasiun</th>
-                            <th colspan="4" class="p-3 border-b border-r border-slate-300 bg-blue-100">Waktu Pengamatan Telemetri (WIB)</th>
-                            <th colspan="3" class="p-3 border-b border-r border-slate-300 bg-emerald-100">Waktu Input Manual (WIB)</th>
+                            <th colspan="4" class="p-3 border-b border-r border-slate-300 bg-blue-100">Waktu Pengamatan Telemetri (m)</th>
+                            <th colspan="3" class="p-3 border-b border-r border-slate-300 bg-emerald-100">Waktu Input Manual (m)</th>
                             <th colspan="4" class="p-3 border-b border-slate-300 bg-orange-100">Siaga (m)</th>
                         </tr>
                         <tr class="text-[10px]">

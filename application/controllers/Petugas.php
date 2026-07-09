@@ -77,9 +77,7 @@ class Petugas extends CI_Controller {
             'id_pos_active'      => $id_pos_active
         ];
 
-        // ==========================================
         // Tentukan view berdasarkan tipe pos
-        // ==========================================
         if ($pos->is_bendung == 1) {
             // View input bendung
             $data['data_list'] = $this->M_petugas->get_bendung_by_tanggal($id_pos_active, $tanggal);
@@ -225,7 +223,7 @@ class Petugas extends CI_Controller {
             'id_user'       => $user_id,
             'tanggal_input' => $tanggal,
             'rain'          => $this->_parse_float($this->input->post('rain')),
-            'elevasi_mercu' => $this->_parse_float($this->input->post('elevasi_mercu')),
+            'elevasi_mercu' => cm_to_m($this->input->post('elevasi_mercu')),
             'q_total'       => $this->_parse_float($this->input->post('q_total')),
             'q_fc1'         => $this->_parse_float($this->input->post('q_fc1')),
             'q_fc2'         => $this->_parse_float($this->input->post('q_fc2')),
@@ -277,9 +275,7 @@ class Petugas extends CI_Controller {
             'data_list'          => []
         ];
 
-        // ==========================================
         // Tentukan view berdasarkan tipe pos
-        // ==========================================
         if ($pos->is_bendung == 1) {
             // Riwayat bendung
             $data['data_list'] = $this->M_petugas->get_bendung_by_tanggal($id_pos_active, $tanggal);
@@ -293,5 +289,111 @@ class Petugas extends CI_Controller {
             $data['data_list'] = $this->M_petugas->get_by_tanggal_with_user($id_pos_active, $tanggal);
             $this->_render('petugas/v_kelola_manual', $data);
         }
+    }
+
+    // ==========================================
+    // RIWAYAT DATA BENDUNG (KHUSUS BENDUNG)
+    // ==========================================
+    public function kelola_bendung() {
+        $assigned = $this->_get_assigned_pos_ids();
+        if (empty($assigned)) {
+            show_error('Anda belum dikaitkan dengan pos manapun.', 403);
+        }
+
+        $id_pos_active = $this->input->get('pos');
+        
+        // Jika tidak ada pos yang dipilih atau tidak valid, cari pos bendung pertama
+        if (empty($id_pos_active) || !$this->_validate_pos($id_pos_active)) {
+            $id_pos_active = null;
+            foreach ($assigned as $id) {
+                $pos_check = $this->M_petugas->get_pos($id);
+                if ($pos_check && $pos_check->is_bendung == 1) {
+                    $id_pos_active = $id;
+                    break;
+                }
+            }
+            if (empty($id_pos_active)) {
+                show_error('Tidak ada pos bendung yang tersedia.', 404);
+            }
+        }
+
+        $pos = $this->M_petugas->get_pos($id_pos_active);
+        if (!$pos) {
+            show_error('Data pos tidak ditemukan.', 404);
+        }
+
+        // Filter per hari (tanggal lengkap: Y-m-d)
+        $tanggal = $this->input->get('tanggal') ?: date('Y-m-d');
+        
+        $daftar_pos = $this->M_petugas->get_pos_by_ids($assigned);
+
+        // Ambil data bendung
+        $data_list = $this->M_petugas->get_bendung_by_tanggal($id_pos_active, $tanggal);
+
+        $data = [
+            'app_name'           => 'HydroSmart',
+            'title'              => 'Riwayat Laporan Bendung',
+            'petugas_name'       => $this->session->userdata('nama_lengkap'),
+            'pos'                => $pos,
+            'tanggal'            => $tanggal,
+            'daftar_pos_petugas' => $daftar_pos,
+            'id_pos_active'      => $id_pos_active,
+            'data_list'          => $data_list
+        ];
+
+        $this->_render('petugas/v_kelola_bendung', $data);
+    }
+
+    // ==========================================
+    // RIWAYAT DATA BENDUNGAN (KHUSUS BENDUNGAN)
+    // ==========================================
+    public function kelola_bendungan() {
+        $assigned = $this->_get_assigned_pos_ids();
+        if (empty($assigned)) {
+            show_error('Anda belum dikaitkan dengan pos manapun.', 403);
+        }
+
+        $id_pos_active = $this->input->get('pos');
+        
+        // Jika tidak ada pos yang dipilih atau tidak valid, cari pos bendungan pertama
+        if (empty($id_pos_active) || !$this->_validate_pos($id_pos_active)) {
+            $id_pos_active = null;
+            foreach ($assigned as $id) {
+                $pos_check = $this->M_petugas->get_pos($id);
+                if ($pos_check && $pos_check->is_bendungan == 1) {
+                    $id_pos_active = $id;
+                    break;
+                }
+            }
+            if (empty($id_pos_active)) {
+                show_error('Tidak ada pos bendungan yang tersedia.', 404);
+            }
+        }
+
+        $pos = $this->M_petugas->get_pos($id_pos_active);
+        if (!$pos) {
+            show_error('Data pos tidak ditemukan.', 404);
+        }
+
+        // Filter per hari (tanggal lengkap: Y-m-d)
+        $tanggal = $this->input->get('tanggal') ?: date('Y-m-d');
+        
+        $daftar_pos = $this->M_petugas->get_pos_by_ids($assigned);
+
+        // Ambil data bendungan
+        $data_list = $this->M_petugas->get_bendungan_by_tanggal($id_pos_active, $tanggal);
+
+        $data = [
+            'app_name'           => 'HydroSmart',
+            'title'              => 'Riwayat Laporan Bendungan',
+            'petugas_name'       => $this->session->userdata('nama_lengkap'),
+            'pos'                => $pos,
+            'tanggal'            => $tanggal,
+            'daftar_pos_petugas' => $daftar_pos,
+            'id_pos_active'      => $id_pos_active,
+            'data_list'          => $data_list
+        ];
+
+        $this->_render('petugas/v_kelola_bendungan', $data);
     }
 }

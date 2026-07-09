@@ -95,9 +95,9 @@
                             <p class="text-[10px] text-slate-400 mt-1">Satuan: milimeter (mm)</p>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Elevasi Air thd Mercu (m)</label>
+                            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Elevasi Air thd Mercu (cm)</label>
                             <input type="number" step="any" name="elevasi_mercu" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white font-semibold" placeholder="0.00">
-                            <p class="text-[10px] text-slate-400 mt-1">Satuan: meter (m)</p>
+                            <p class="text-[10px] text-slate-400 mt-1">Satuan: centimeter (cm)</p>
                         </div>
                     </div>
                 </div>

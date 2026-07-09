@@ -93,6 +93,7 @@ function fmt_nwl($value, $dec = 2) {
 
 /**
  * Format nilai elevasi mercu (m, bisa negatif)
+ * Digunakan untuk tampilan data bendung
  */
 function fmt_mercu($value, $dec = 2) {
     if ($value === null || $value === '') return '-';
@@ -105,4 +106,116 @@ function fmt_mercu($value, $dec = 2) {
 function fmt_sluice($value, $dec = 3) {
     if ($value === null || $value === '') return '-';
     return id_number($value, $dec) . ' m³/dt';
+}
+
+// ==========================================
+// FUNGSI KHUSUS BENDUNG
+// ==========================================
+
+/**
+ * Format nilai Q-Total / debit bendung (m³/dt)
+ */
+function fmt_qtotal($value, $dec = 3) {
+    if ($value === null || $value === '') return '-';
+    return id_number($value, $dec) . ' m³/dt';
+}
+
+/**
+ * Format nilai Q-FC1 (m³/dt)
+ */
+function fmt_qfc1($value, $dec = 3) {
+    if ($value === null || $value === '') return '-';
+    return id_number($value, $dec) . ' m³/dt';
+}
+
+/**
+ * Format nilai Q-FC2 (m³/dt)
+ */
+function fmt_qfc2($value, $dec = 3) {
+    if ($value === null || $value === '') return '-';
+    return id_number($value, $dec) . ' m³/dt';
+}
+
+/**
+ * Format nilai Q-Saluran Induk (m³/dt)
+ */
+function fmt_qsal_induk($value, $dec = 3) {
+    if ($value === null || $value === '') return '-';
+    return id_number($value, $dec) . ' m³/dt';
+}
+
+/**
+ * Format nilai Q-Limpas (m³/dt)
+ */
+function fmt_qlimpas($value, $dec = 3) {
+    if ($value === null || $value === '') return '-';
+    return id_number($value, $dec) . ' m³/dt';
+}
+
+/**
+ * Format nilai Q-Sungai (m³/dt)
+ */
+function fmt_qsungai($value, $dec = 3) {
+    if ($value === null || $value === '') return '-';
+    return id_number($value, $dec) . ' m³/dt';
+}
+
+/**
+ * Format nilai Q-SPAM KPBU (m³/dt)
+ */
+function fmt_qspam($value, $dec = 3) {
+    if ($value === null || $value === '') return '-';
+    return id_number($value, $dec) . ' m³/dt';
+}
+
+/**
+ * Format nilai bukaan pintu (m)
+ */
+function fmt_bukaan($value, $dec = 2) {
+    if ($value === null || $value === '') return '-';
+    return id_number($value, $dec) . ' m';
+}
+
+// ==========================================
+// FUNGSI KHUSUS BENDUNGAN
+// ==========================================
+
+/**
+ * Format nilai volume NWL (jt.m³)
+ */
+function fmt_nwl_volume($value, $dec = 2) {
+    if ($value === null || $value === '') return '-';
+    return id_number($value, $dec) . ' jt.m³';
+}
+
+/**
+ * Format nilai luas NWL (km²)
+ */
+function fmt_nwl_luas($value, $dec = 4) {
+    if ($value === null || $value === '') return '-';
+    return id_number($value, $dec) . ' km²';
+}
+
+/**
+ * Format nilai elevasi puncak (m)
+ */
+function fmt_elevasi_puncak($value, $dec = 2) {
+    if ($value === null || $value === '') return '-';
+    return id_number($value, $dec) . ' m';
+}
+
+/**
+ * Format nilai tinggi embung (m)
+ */
+function fmt_tinggi_embung($value, $dec = 2) {
+    if ($value === null || $value === '') return '-';
+    return id_number($value, $dec) . ' m';
+}
+
+/**
+ * Format nilai panjang tubuh (m)
+ */
+function fmt_panjang_tubuh($value, $dec = 2) {
+    if ($value === null || $value === '') return '-';
+    return id_number($value, $dec) . ' m';
 }
