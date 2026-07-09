@@ -478,7 +478,36 @@ $config['csrf_exclude_uris'] = array(
     'superadmin/hapus_irigasi',
     'superadmin/export_telemetri_csv',
     'superadmin/export_telemetri_pdf',
-    'superadmin/edit_telemetri'
+    'superadmin/edit_telemetri',
+    'admin/export_import',
+    'admin/import_csv',
+    'admin/export_csv',
+    'admin/export_pdf',
+    'admin/download_template_csv',
+    
+    // Kelola Petugas
+    'admin/tambah_petugas',
+    'admin/edit_petugas',
+    'admin/hapus_petugas/*',
+    'admin/nonaktifkan_petugas/*',
+    'admin/aktifkan_petugas/*',
+    
+    // Kelola Manual
+    'admin/simpan_data_pos',
+    'admin/simpan_bendungan',
+    'admin/simpan_bendung',
+    'admin/update_manual',
+    'admin/update_bendungan',
+    'admin/update_bendung',
+    'admin/hapus_manual/*',
+    'admin/hapus_bendungan/*',
+    'admin/hapus_bendung/*',
+    
+    // AJAX Endpoints (GET & POST)
+    'admin/get_bendung_json/*',
+    'admin/get_bendungan_json/*',
+    'admin/get_manual_json/*',
+    
 );
 
 /*

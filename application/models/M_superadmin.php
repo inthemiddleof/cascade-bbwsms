@@ -298,44 +298,101 @@ class M_superadmin extends CI_Model {
         ];
     }
 
-    // ==========================================
-    // KELOLA ADMIN
-    // ==========================================
     public function get_admin_data() {
-        $admin_list = $this->db->where('role', 'admin')
-                               ->order_by('nama_lengkap', 'ASC')
-                               ->get('users')->result();
-                               
-        $pos_list = $this->db->select('id_pos, nama_pos, tipe_pos, is_bendungan, is_bendung')
-                             ->order_by('nama_pos', 'ASC')
-                             ->get('master_pos')->result();
-                             
-        $pos_map = []; 
-        $all_pos = $this->db->select('id_pos, nama_pos, tipe_pos, is_bendungan, is_bendung')->get('master_pos')->result();
-        foreach ($all_pos as $mp) {
-            $pos_map[$mp->id_pos] = $mp;
-        }
-        
-        foreach ($admin_list as $a) {
-            $raw = $a->id_pos ?? ''; 
-            $names = [];
-            if (!empty($raw)) { 
-                foreach (array_map('trim', explode(',', $raw)) as $id) { 
-                    if (isset($pos_map[$id])) {
-                        $names[] = $pos_map[$id]->nama_pos; 
-                    }
-                } 
-            }
-            $a->nama_pos = !empty($names) ? implode(', ', $names) : 'Belum Ditugaskan';
-        }
-        
-        return [
-            'app_name'   => 'HydroSmart', 
-            'title'      => 'Kelola Admin', 
-            'admin_list' => $admin_list, 
-            'pos_list'   => $pos_list
-        ];
+    $admin_list = $this->db->where('role', 'admin')
+                           ->order_by('nama_lengkap', 'ASC')
+                           ->get('users')->result();
+    
+    // ==========================================
+    // 1. Ambil data dari master_pos (PCH, PDA, Bendungan, Bendung, Embung)
+    // ==========================================
+    $pos_from_master = $this->db->select('id_pos, nama_pos, tipe_pos, is_bendungan, is_bendung, jenis_aset, nomor_pos')
+                                ->order_by('nama_pos', 'ASC')
+                                ->get('master_pos')->result();
+    
+    // ==========================================
+    // 2. Ambil data dari data_irigasi
+    // ==========================================
+    $pos_from_irigasi = $this->db->select("
+            id_irigasi as id_pos,
+            nama_aset as nama_pos,
+            'PCH' as tipe_pos,
+            0 as is_bendungan,
+            0 as is_bendung,
+            'irigasi' as jenis_aset,
+            kode_integrasi as nomor_pos
+        ")
+        ->order_by('nama_aset', 'ASC')
+        ->get('data_irigasi')->result();
+    
+    // ==========================================
+    // 3. Ambil data dari data_pengaman_pantai
+    // ==========================================
+    $pos_from_pengaman = $this->db->select("
+            id_pengaman as id_pos,
+            nama_aset as nama_pos,
+            'PCH' as tipe_pos,
+            0 as is_bendungan,
+            0 as is_bendung,
+            'pengaman_pantai' as jenis_aset,
+            kode_integrasi as nomor_pos
+        ")
+        ->order_by('nama_aset', 'ASC')
+        ->get('data_pengaman_pantai')->result();
+    
+    // ==========================================
+    // 4. Ambil data dari data_pengendali_sedimen
+    // ==========================================
+    $pos_from_sedimen = $this->db->select("
+            id_sedimen as id_pos,
+            nama_aset as nama_pos,
+            'PCH' as tipe_pos,
+            0 as is_bendungan,
+            0 as is_bendung,
+            'pengendali_sedimen' as jenis_aset,
+            kode_integrasi as nomor_pos
+        ")
+        ->order_by('nama_aset', 'ASC')
+        ->get('data_pengendali_sedimen')->result();
+    
+    // ==========================================
+    // 5. Gabungkan semua data
+    // ==========================================
+    $pos_list = array_merge($pos_from_master, $pos_from_irigasi, $pos_from_pengaman, $pos_from_sedimen);
+    
+    // Buat map untuk lookup pos
+    $pos_map = [];
+    foreach ($pos_list as $mp) {
+        // Gunakan id_pos sebagai key (pastikan unik)
+        $key = $mp->id_pos . '_' . ($mp->jenis_aset ?? '');
+        $pos_map[$key] = $mp;
     }
+    
+    // Proses admin_list untuk mendapatkan nama pos
+    foreach ($admin_list as $a) {
+        $raw = $a->id_pos ?? ''; 
+        $names = [];
+        if (!empty($raw)) { 
+            foreach (array_map('trim', explode(',', $raw)) as $id) { 
+                // Cari di pos_map
+                foreach ($pos_map as $key => $pos) {
+                    if ($pos->id_pos == $id) {
+                        $names[] = $pos->nama_pos;
+                        break;
+                    }
+                }
+            } 
+        }
+        $a->nama_pos = !empty($names) ? implode(', ', $names) : 'Belum Ditugaskan';
+    }
+    
+    return [
+        'app_name'   => 'HydroSmart', 
+        'title'      => 'Kelola Admin', 
+        'admin_list' => $admin_list, 
+        'pos_list'   => $pos_list
+    ];
+}
 
     public function insert_admin($post) {
         $this->load->library('form_validation');

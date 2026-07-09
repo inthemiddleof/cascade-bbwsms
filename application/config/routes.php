@@ -52,3 +52,9 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 $route['default_controller'] = 'Beranda';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
+// Admin routes untuk export/import
+$route['admin/export_import'] = 'admin/export_import';
+$route['admin/export_csv'] = 'admin/export_csv';
+$route['admin/export_pdf'] = 'admin/export_pdf';
+$route['admin/download_template_csv'] = 'admin/download_template_csv';
+$route['admin/import_csv'] = 'admin/import_csv';

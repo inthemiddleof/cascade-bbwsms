@@ -406,7 +406,7 @@ class M_admin extends CI_Model {
         $this->db->from('data_manual m');
         $this->db->join('users u', 'm.id_user = u.id_user', 'left');
         $this->db->where('m.id_pos', $id_pos);
-        $this->db->where("DATE_FORMAT(m.tanggal_input, '%Y-%m') =", $bulan);
+        $this->db->where("DATE_FORMAT(m.tanggal_input, '%Y-%m')", $bulan);
         $this->db->order_by('m.tanggal_input', 'DESC');
         $this->db->order_by('m.created_at', 'DESC');
         return $this->db->get()->result();
@@ -452,7 +452,7 @@ class M_admin extends CI_Model {
         $this->db->from('data_bendungan d');
         $this->db->join('users u', 'd.id_user = u.id_user', 'left');
         $this->db->where('d.id_pos', $id_pos);
-        $this->db->where("DATE_FORMAT(d.tanggal_input, '%Y-%m') =", $bulan);
+        $this->db->where("DATE_FORMAT(d.tanggal_input, '%Y-%m')", $bulan);
         $this->db->order_by('d.tanggal_input', 'DESC');
         $this->db->order_by('d.created_at', 'DESC');
         return $this->db->get()->result();
@@ -460,6 +460,7 @@ class M_admin extends CI_Model {
 
     /**
      * Get data bendung berdasarkan pos dan bulan (SESUAI STRUKTUR TERBARU)
+     * PERBAIKAN: menggunakan b.tanggal_input (bukan m.tanggal_input)
      */
     public function get_bendung_data_by_pos($id_pos, $bulan) {
         $this->db->select('
@@ -485,7 +486,8 @@ class M_admin extends CI_Model {
         $this->db->from('data_bendung b');
         $this->db->join('users u', 'b.id_user = u.id_user', 'left');
         $this->db->where('b.id_pos', $id_pos);
-        $this->db->where("DATE_FORMAT(b.tanggal_input, '%Y-%m') =", $bulan);
+        // PERBAIKAN: gunakan b.tanggal_input (bukan m.tanggal_input)
+        $this->db->where("DATE_FORMAT(b.tanggal_input, '%Y-%m')", $bulan);
         $this->db->order_by('b.tanggal_input', 'DESC');
         $this->db->order_by('b.created_at', 'DESC');
         return $this->db->get()->result();
@@ -803,5 +805,186 @@ class M_admin extends CI_Model {
         $this->db->where('DATE(d.tanggal_input)', $tanggal);
         $this->db->order_by('d.created_at', 'DESC');
         return $this->db->get()->result();
+    }
+
+    // ==========================================
+    // EXPORT & IMPORT DATA
+    // ==========================================
+
+    /**
+     * Get data untuk export berdasarkan module dan filter
+     */
+    public function get_export_data($module, $allowed_pos, $id_pos = null, $period = 'all', $date = null) {
+        // Filter pos
+        if (!empty($id_pos)) {
+            $this->db->where('id_pos', $id_pos);
+        } else if (!empty($allowed_pos)) {
+            $this->db->where_in('id_pos', $allowed_pos);
+        } else {
+            return [];
+        }
+        
+        // Filter periode
+        if ($period == 'daily' && !empty($date)) {
+            $this->db->where('DATE(tanggal_input)', $date);
+        } else if ($period == 'month' && !empty($date)) {
+            $this->db->where("DATE_FORMAT(tanggal_input, '%Y-%m')", substr($date, 0, 7));
+        }
+        
+        // Ambil data sesuai module
+        switch ($module) {
+            case 'telemetri':
+                return $this->db->get('data_telemetri')->result_array();
+            case 'manual':
+                return $this->db->get('data_manual')->result_array();
+            case 'bendung':
+                return $this->db->get('data_bendung')->result_array();
+            case 'bendungan':
+                return $this->db->get('data_bendungan')->result_array();
+            default:
+                return [];
+        }
+    }
+
+    /**
+     * Get semua data untuk export all modules
+     */
+    public function get_all_export_data($allowed_pos, $id_pos = null, $period = 'all', $date = null) {
+        $result = [];
+        $modules = ['telemetri', 'manual', 'bendung', 'bendungan'];
+        
+        foreach ($modules as $module) {
+            $data = $this->get_export_data($module, $allowed_pos, $id_pos, $period, $date);
+            if (!empty($data)) {
+                $result[$module] = $data;
+            }
+        }
+        
+        return $result;
+    }
+
+    /**
+     * Get template headers berdasarkan module
+     */
+    public function get_template_headers($module) {
+        switch ($module) {
+            case 'telemetri':
+                return ['id_pos', 'received_at', 'bat_lvl', 'bat_volt', 'rain', 'wlevel', 'created_at'];
+            case 'manual':
+                return ['id_pos', 'id_user', 'tanggal_input', 'rain', 'wlevel', 'keterangan'];
+            case 'bendung':
+                return ['id_pos', 'id_user', 'tanggal_input', 'rain', 'elevasi_mercu', 'q_total', 'q_fc1', 'q_fc2', 'q_sal_induk', 'q_limpas', 'q_sungai', 'q_spam_kpbu', 'sluice_gate', 'bukaan_pintu', 'keterangan'];
+            case 'bendungan':
+                return ['id_pos', 'id_user', 'tanggal_input', 'nwl', 'nwl_volume', 'nwl_luas', 'rain', 'elevasi', 'volume', 'luas', 'inflow', 'pltm', 'spillway', 'total_outflow', 'plta_status', 'irigasi_status', 'tail_water', 'rembesan_vnotch_h', 'rembesan_vnotch_q', 'rembesan_pump_pit_l_h', 'rembesan_pump_pit_l_q', 'rembesan_pump_pit_r_h', 'rembesan_pump_pit_r_q', 'keterangan', 'tahun_mulai_pembangunan', 'tipe_bendungan', 'elevasi_mercu', 'luas_das'];
+            default:
+                return ['id_pos', 'tanggal_input', 'data1', 'data2', 'keterangan'];
+        }
+    }
+
+    /**
+     * Import data CSV ke database
+     */
+    public function import_csv_data($module, $data, $user_id) {
+        // Bersihkan data
+        foreach ($data as &$val) {
+            if ($val === '' || $val === 'NULL' || $val === 'null') {
+                $val = null;
+            }
+            // Parse float untuk angka
+            if (is_numeric($val)) {
+                $val = (float)$val;
+            }
+        }
+        
+        // Tambahkan timestamp dan user
+        $data['id_user'] = $user_id;
+        $data['created_at'] = date('Y-m-d H:i:s');
+        
+        switch ($module) {
+            case 'telemetri':
+                return $this->db->insert('data_telemetri', $data);
+            case 'manual':
+                return $this->db->insert('data_manual', $data);
+            case 'bendung':
+                return $this->db->insert('data_bendung', $data);
+            case 'bendungan':
+                return $this->db->insert('data_bendungan', $data);
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Bulk import data CSV
+     */
+    public function bulk_import_csv($module, $rows, $user_id, $id_pos) {
+        $imported = 0;
+        $failed = 0;
+        $errors = [];
+        
+        foreach ($rows as $row) {
+            // Pastikan id_pos sesuai
+            $row['id_pos'] = $id_pos;
+            
+            // Validasi minimal data
+            if (empty($row['tanggal_input'])) {
+                $failed++;
+                $errors[] = 'Missing tanggal_input';
+                continue;
+            }
+            
+            // Coba import
+            $result = $this->import_csv_data($module, $row, $user_id);
+            if ($result) {
+                $imported++;
+            } else {
+                $failed++;
+                $errors[] = 'Gagal import: ' . json_encode($row);
+            }
+        }
+        
+        return [
+            'imported' => $imported,
+            'failed' => $failed,
+            'errors' => $errors
+        ];
+    }
+
+    /**
+     * Get pos list untuk admin (hanya pos yang ditangani)
+     */
+    public function get_admin_pos_list($allowed_pos) {
+        if (empty($allowed_pos)) {
+            return [];
+        }
+        
+        $this->db->select('id_pos, nama_pos, tipe_pos, nomor_pos, is_bendungan, is_bendung');
+        $this->db->where_in('id_pos', $allowed_pos);
+        $this->db->order_by('nama_pos', 'ASC');
+        return $this->db->get('master_pos')->result();
+    }
+
+    /**
+     * Get modules untuk dropdown export/import
+     */
+    public function get_export_modules() {
+        return [
+            'telemetri'   => 'Data Telemetri',
+            'manual'      => 'Data Manual Pos',
+            'bendung'     => 'Data Bendung',
+            'bendungan'   => 'Data Bendungan',
+            'all'         => 'Semua Data'
+        ];
+    }
+
+    /**
+     * Get periods untuk dropdown
+     */
+    public function get_export_periods() {
+        return [
+            'all'   => 'Semua',
+            'daily' => 'Harian',
+            'month' => 'Bulanan'
+        ];
     }
 }
