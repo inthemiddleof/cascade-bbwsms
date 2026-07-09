@@ -126,8 +126,8 @@ class Petugas extends CI_Controller {
             'id_pos'        => $id_pos,
             'id_user'       => $user_id,
             'tanggal_input' => $tanggal,
-            'rain'          => $this->_parse_float($this->input->post('rain')),  // ✅ mm
-            'wlevel'        => cm_to_m($this->input->post('wlevel')),           // ✅ cm → m
+            'rain'          => $this->_parse_float($this->input->post('rain')),
+            'wlevel'        => cm_to_m($this->input->post('wlevel')),
             'keterangan'    => $this->input->post('keterangan') ?: null,
         ]);
 
@@ -136,7 +136,7 @@ class Petugas extends CI_Controller {
     }
 
     // ==========================================
-    // SIMPAN DATA BENDUNGAN
+    // SIMPAN DATA BENDUNGAN (DENGAN KOLOM BARU)
     // ==========================================
     public function simpan_bendungan() {
         $id_pos  = $this->input->post('id_pos');
@@ -162,27 +162,32 @@ class Petugas extends CI_Controller {
             'id_pos'                => $id_pos,
             'id_user'               => $user_id,
             'tanggal_input'         => $tanggal,
-            'nwl'                   => $this->_parse_float($this->input->post('nwl')),           // ✅ m
-            'nwl_volume'            => $this->_parse_float($this->input->post('nwl_volume')),    // ✅ jt.m³
-            'nwl_luas'              => $this->_parse_float($this->input->post('nwl_luas')),      // ✅ km²
-            'rain'                  => $this->_parse_float($this->input->post('rain')),          // ✅ mm
-            'elevasi'               => cm_to_m($this->input->post('elevasi')),                   // ✅ cm → m
-            'volume'                => $this->_parse_float($this->input->post('volume')),        // ✅ jt.m³
-            'luas'                  => $this->_parse_float($this->input->post('luas')),          // ✅ km²
-            'inflow'                => $this->_parse_float($this->input->post('inflow')),        // ✅ m³/s
-            'pltm'                  => $this->_parse_float($this->input->post('pltm')),          // ✅ m³/s
-            'spillway'              => $this->_parse_float($this->input->post('spillway')),      // ✅ m³/s
-            'total_outflow'         => $this->_parse_float($this->input->post('total_outflow')), // ✅ m³/s
+            'nwl'                   => $this->_parse_float($this->input->post('nwl')),
+            'nwl_volume'            => $this->_parse_float($this->input->post('nwl_volume')),
+            'nwl_luas'              => $this->_parse_float($this->input->post('nwl_luas')),
+            'rain'                  => $this->_parse_float($this->input->post('rain')),
+            'elevasi'               => cm_to_m($this->input->post('elevasi')),
+            'volume'                => $this->_parse_float($this->input->post('volume')),
+            'luas'                  => $this->_parse_float($this->input->post('luas')),
+            'inflow'                => $this->_parse_float($this->input->post('inflow')),
+            'pltm'                  => $this->_parse_float($this->input->post('pltm')),
+            'spillway'              => $this->_parse_float($this->input->post('spillway')),
+            'total_outflow'         => $this->_parse_float($this->input->post('total_outflow')),
             'plta_status'           => $this->input->post('plta_status') ?: null,
             'irigasi_status'        => $this->input->post('irigasi_status') ?: null,
             'tail_water'            => $this->input->post('tail_water') ?: null,
-            'rembesan_vnotch_h'     => $this->_parse_float($this->input->post('rembesan_vnotch_h')),     // ✅ cm
-            'rembesan_vnotch_q'     => $this->_parse_float($this->input->post('rembesan_vnotch_q')),     // ✅ lt/s
-            'rembesan_pump_pit_l_h' => $this->_parse_float($this->input->post('rembesan_pump_pit_l_h')), // ✅ cm
-            'rembesan_pump_pit_l_q' => $this->_parse_float($this->input->post('rembesan_pump_pit_l_q')), // ✅ lt/s
-            'rembesan_pump_pit_r_h' => $this->_parse_float($this->input->post('rembesan_pump_pit_r_h')), // ✅ cm
-            'rembesan_pump_pit_r_q' => $this->_parse_float($this->input->post('rembesan_pump_pit_r_q')), // ✅ lt/s
+            'rembesan_vnotch_h'     => $this->_parse_float($this->input->post('rembesan_vnotch_h')),
+            'rembesan_vnotch_q'     => $this->_parse_float($this->input->post('rembesan_vnotch_q')),
+            'rembesan_pump_pit_l_h' => $this->_parse_float($this->input->post('rembesan_pump_pit_l_h')),
+            'rembesan_pump_pit_l_q' => $this->_parse_float($this->input->post('rembesan_pump_pit_l_q')),
+            'rembesan_pump_pit_r_h' => $this->_parse_float($this->input->post('rembesan_pump_pit_r_h')),
+            'rembesan_pump_pit_r_q' => $this->_parse_float($this->input->post('rembesan_pump_pit_r_q')),
             'keterangan'            => $this->input->post('keterangan') ?: null,
+            // KOLOM BARU
+            'tahun_mulai_pembangunan' => !empty($this->input->post('tahun_mulai_pembangunan')) ? $this->input->post('tahun_mulai_pembangunan') : null,
+            'tipe_bendungan'          => $this->input->post('tipe_bendungan') ?: null,
+            'elevasi_mercu'           => $this->_parse_float($this->input->post('elevasi_mercu')),
+            'luas_das'                => $this->_parse_float($this->input->post('luas_das')),
         ]);
 
         // Juga insert ke data_manual jika rain/elevasi diisi
@@ -203,7 +208,7 @@ class Petugas extends CI_Controller {
     }
 
     // ==========================================
-    // SIMPAN DATA BENDUNG (BARU)
+    // SIMPAN DATA BENDUNG (SESUAI STRUKTUR TERBARU)
     // ==========================================
     public function simpan_bendung() {
         $id_pos  = $this->input->post('id_pos');
@@ -219,14 +224,17 @@ class Petugas extends CI_Controller {
             'id_pos'        => $id_pos,
             'id_user'       => $user_id,
             'tanggal_input' => $tanggal,
-            'rain'          => $this->_parse_float($this->input->post('rain')),                    // ✅ mm
-            'elevasi_mercu' => cm_to_m($this->input->post('elevasi_mercu')),                    // ✅ cm → m (bisa negatif)
-            'q_total'       => $this->_parse_float($this->input->post('q_total')),                 // ✅ m³/dt
-            'q_fc1'         => $this->_parse_float($this->input->post('q_fc1')),                   // ✅ m³/dt
-            'q_fc2'         => $this->_parse_float($this->input->post('q_fc2')),                   // ✅ m³/dt
-            'q_limpas'      => $this->_parse_float($this->input->post('q_limpas')),                // ✅ m³/dt
-            'q_spam_kpbu'   => $this->_parse_float($this->input->post('q_spam_kpbu')),             // ✅ m³/dt
-            'sluice_gate'   => $this->_parse_float($this->input->post('sluice_gate')),             // ✅ m³/dt
+            'rain'          => $this->_parse_float($this->input->post('rain')),
+            'elevasi_mercu' => $this->_parse_float($this->input->post('elevasi_mercu')),
+            'q_total'       => $this->_parse_float($this->input->post('q_total')),
+            'q_fc1'         => $this->_parse_float($this->input->post('q_fc1')),
+            'q_fc2'         => $this->_parse_float($this->input->post('q_fc2')),
+            'q_sal_induk'   => $this->_parse_float($this->input->post('q_sal_induk')),
+            'q_limpas'      => $this->_parse_float($this->input->post('q_limpas')),
+            'q_sungai'      => $this->_parse_float($this->input->post('q_sungai')),
+            'q_spam_kpbu'   => $this->_parse_float($this->input->post('q_spam_kpbu')),
+            'sluice_gate'   => $this->_parse_float($this->input->post('sluice_gate')),
+            'bukaan_pintu'  => $this->_parse_float($this->input->post('bukaan_pintu')),
             'keterangan'    => $this->input->post('keterangan') ?: null,
         ]);
 

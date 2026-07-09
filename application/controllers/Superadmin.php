@@ -96,129 +96,72 @@ class Superadmin extends CI_Controller {
     }
 
     // ==========================================
-// KELOLA MANUAL
-// ==========================================
-public function kelola_manual() {
-    $this->load->model('M_admin');
-    
-    // Ambil ID pos dari parameter GET
-    $id_pos = $this->input->get('pos');
-    $bulan = $this->input->get('bulan') ?: date('Y-m');
-    
-    // 🔥 AMBIL POS LIST UNTUK DROPDOWN - EXCLUDE EMBUNG
-    // Gunakan method get_all_pos_unique yang sudah dimodifikasi
-    $pos_list = $this->M_superadmin->get_all_pos_unique(null);
-    
-    // Jika tidak ada pos yang dipilih, ambil yang pertama (bukan embung)
-    if (empty($id_pos) && !empty($pos_list)) {
-        $id_pos = $pos_list[0]->id_pos;
-    }
-    
-    // Ambil data pos yang dipilih
-    $pos = null;
-    foreach ($pos_list as $p) {
-        if ($p->id_pos == $id_pos) {
-            $pos = $p;
-            break;
+    // KELOLA MANUAL (DENGAN KOLOM BARU BENDUNGAN)
+    // ==========================================
+    public function kelola_manual() {
+        // Ambil ID pos dari parameter GET
+        $id_pos = $this->input->get('pos');
+        $bulan = $this->input->get('bulan') ?: date('Y-m');
+        
+        // AMBIL POS LIST UNTUK DROPDOWN - EXCLUDE EMBUNG
+        $pos_list = $this->M_superadmin->get_all_pos_unique(null);
+        
+        // Jika tidak ada pos yang dipilih, ambil yang pertama (bukan embung)
+        if (empty($id_pos) && !empty($pos_list)) {
+            $id_pos = $pos_list[0]->id_pos;
         }
-    }
-    
-    // Jika pos tidak ditemukan, ambil yang pertama
-    if (empty($pos) && !empty($pos_list)) {
-        $pos = $pos_list[0];
-        $id_pos = $pos->id_pos;
-    }
-    
-    // Ambil data manual berdasarkan pos dan bulan
-    $data_list = [];
-    if (!empty($pos)) {
-        if ($pos->is_bendung == 1) {
-            // Ambil data bendung
-            $data_list = $this->M_admin->get_bendung_data_by_pos($id_pos, $bulan);
-        } elseif ($pos->is_bendungan == 1) {
-            // Ambil data bendungan
-            $data_list = $this->M_admin->get_bendungan_data_by_pos($id_pos, $bulan);
-        } else {
-            // Ambil data pos biasa (PCH/PDA)
-            $data_list = $this->M_admin->get_manual_data_by_pos($id_pos, $bulan);
-        }
-    }
-    
-    // Siapkan data untuk view
-    $data = [
-        'app_name' => 'HydroSmart',
-        'title' => 'Kelola Laporan Manual',
-        'admin_name' => $this->session->userdata('nama_lengkap'),
-        'pos' => $pos,
-        'pos_list' => $pos_list, // Sudah filter exclude embung
-        'bulan' => $bulan,
-        'data_list' => $data_list,
-        'pos_data_js' => [],
-        'bendungan_data_js' => [],
-        'bendung_data_js' => [],
-    ];
-    
-    // Siapkan data untuk JavaScript (fix bug edit)
-    if (!empty($pos) && !empty($data_list)) {
-        if ($pos->is_bendung == 1) {
-            // Data bendung
-            foreach ($data_list as $d) {
-                $data['bendung_data_js'][$d->id_bendung] = [
-                    'tanggal'      => $d->tanggal_input,
-                    'rain'         => $d->rain,
-                    'elevasi_mercu'=> $d->elevasi_mercu,
-                    'q_total'      => $d->q_total,
-                    'q_fc1'        => $d->q_fc1,
-                    'q_fc2'        => $d->q_fc2,
-                    'q_limpas'     => $d->q_limpas,
-                    'q_spam_kpbu'  => $d->q_spam_kpbu,
-                    'sluice_gate'  => $d->sluice_gate,
-                    'keterangan'   => $d->keterangan ?? '',
-                ];
-            }
-        } elseif ($pos->is_bendungan == 1) {
-            // Data bendungan
-            foreach ($data_list as $d) {
-                $data['bendungan_data_js'][$d->id_bendungan] = [
-                    'tanggal'        => $d->tanggal_input,
-                    'nwl'            => $d->nwl,
-                    'nwl_volume'     => $d->nwl_volume,
-                    'nwl_luas'       => $d->nwl_luas,
-                    'rain'           => $d->rain,
-                    'elevasi'        => $d->elevasi,
-                    'volume'         => $d->volume,
-                    'luas'           => $d->luas,
-                    'inflow'         => $d->inflow,
-                    'pltm'           => $d->pltm,
-                    'spillway'       => $d->spillway,
-                    'total_outflow'  => $d->total_outflow,
-                    'plta_status'    => $d->plta_status ?? '',
-                    'irigasi_status' => $d->irigasi_status ?? '',
-                    'tail_water'     => $d->tail_water ?? '',
-                    'rvh'            => $d->rembesan_vnotch_h,
-                    'rvq'            => $d->rembesan_vnotch_q,
-                    'rplh'           => $d->rembesan_pump_pit_l_h,
-                    'rplq'           => $d->rembesan_pump_pit_l_q,
-                    'rprh'           => $d->rembesan_pump_pit_r_h,
-                    'rprq'           => $d->rembesan_pump_pit_r_q,
-                    'keterangan'     => $d->keterangan ?? '',
-                ];
-            }
-        } else {
-            // Data pos biasa (PCH/PDA)
-            foreach ($data_list as $d) {
-                $data['pos_data_js'][$d->id_manual] = [
-                    'tanggal'    => $d->tanggal_input,
-                    'rain'       => $d->rain,
-                    'wlevel'     => $d->wlevel,
-                    'keterangan' => $d->keterangan ?? '',
-                ];
+        
+        // Ambil data pos yang dipilih
+        $pos = null;
+        foreach ($pos_list as $p) {
+            if ($p->id_pos == $id_pos) {
+                $pos = $p;
+                break;
             }
         }
+        
+        // Jika pos tidak ditemukan, ambil yang pertama
+        if (empty($pos) && !empty($pos_list)) {
+            $pos = $pos_list[0];
+            $id_pos = $pos->id_pos;
+        }
+        
+        // Ambil data manual berdasarkan pos dan bulan (gunakan method dari model)
+        $kelola_data = $this->M_superadmin->get_kelola_manual_data($id_pos, $bulan);
+        $data_list = $kelola_data['data_list'];
+        $pos = $kelola_data['pos'];
+        
+        // Format data untuk JavaScript menggunakan model
+        $pos_data_js = [];
+        $bendungan_data_js = [];
+        $bendung_data_js = [];
+        
+        if (!empty($pos) && !empty($data_list)) {
+            if ($pos->is_bendung == 1) {
+                $bendung_data_js = $this->M_superadmin->format_bendung_for_js($data_list);
+            } elseif ($pos->is_bendungan == 1) {
+                $bendungan_data_js = $this->M_superadmin->format_bendungan_for_js($data_list);
+            } else {
+                $pos_data_js = $this->M_superadmin->format_pos_for_js($data_list);
+            }
+        }
+        
+        // Siapkan data untuk view
+        $data = [
+            'app_name' => 'HydroSmart',
+            'title' => 'Kelola Laporan Manual',
+            'admin_name' => $this->session->userdata('nama_lengkap'),
+            'pos' => $pos,
+            'pos_list' => $pos_list,
+            'bulan' => $bulan,
+            'data_list' => $data_list,
+            'pos_data_js' => $pos_data_js,
+            'bendungan_data_js' => $bendungan_data_js,
+            'bendung_data_js' => $bendung_data_js,
+        ];
+        
+        $this->_render('superadmin/v_kelola_manual', $data);
     }
-    
-    $this->_render('superadmin/v_kelola_manual', $data);
-}
 
     // ==========================================
     // SIMPAN DATA
@@ -226,6 +169,16 @@ public function kelola_manual() {
     public function simpan_data_pos() {
         $this->load->model('M_admin');
         $user_id = $this->session->userdata('user_id') ?: $this->session->userdata('id_user');
+        
+        // Validasi
+        $this->form_validation->set_rules('id_pos', 'Pos', 'required');
+        $this->form_validation->set_rules('tanggal_input', 'Tanggal', 'required');
+        
+        if ($this->form_validation->run() == FALSE) {
+            $this->session->set_flashdata('error', validation_errors());
+            redirect('superadmin/kelola_manual');
+        }
+        
         $result = $this->M_admin->insert_manual_pos(
             $this->input->post(),
             $user_id,
@@ -238,8 +191,27 @@ public function kelola_manual() {
     public function simpan_bendungan() {
         $this->load->model('M_admin');
         $user_id = $this->session->userdata('user_id') ?: $this->session->userdata('id_user');
+        
+        // Validasi
+        $this->form_validation->set_rules('id_pos', 'Pos', 'required');
+        $this->form_validation->set_rules('tanggal_input', 'Tanggal', 'required');
+        
+        if ($this->form_validation->run() == FALSE) {
+            $this->session->set_flashdata('error', validation_errors());
+            redirect('superadmin/kelola_manual');
+        }
+        
+        // Ambil data POST
+        $post = $this->input->post();
+        
+        // Tambahkan kolom baru ke data
+        $post['tahun_mulai_pembangunan'] = $this->input->post('tahun_mulai_pembangunan');
+        $post['tipe_bendungan'] = $this->input->post('tipe_bendungan');
+        $post['elevasi_mercu'] = $this->input->post('elevasi_mercu');
+        $post['luas_das'] = $this->input->post('luas_das');
+        
         $result = $this->M_admin->insert_manual_bendungan(
-            $this->input->post(),
+            $post,
             $user_id,
             null
         );
@@ -248,11 +220,21 @@ public function kelola_manual() {
     }
 
     // ==========================================
-    // SIMPAN BENDUNG (BARU)
+    // SIMPAN BENDUNG (SESUAI STRUKTUR TERBARU)
     // ==========================================
     public function simpan_bendung() {
         $this->load->model('M_admin');
         $user_id = $this->session->userdata('user_id') ?: $this->session->userdata('id_user');
+        
+        // Validasi
+        $this->form_validation->set_rules('id_pos', 'Pos', 'required');
+        $this->form_validation->set_rules('tanggal_input', 'Tanggal', 'required');
+        
+        if ($this->form_validation->run() == FALSE) {
+            $this->session->set_flashdata('error', validation_errors());
+            redirect('superadmin/kelola_manual');
+        }
+        
         $result = $this->M_admin->insert_manual_bendung(
             $this->input->post(),
             $user_id,
@@ -267,6 +249,17 @@ public function kelola_manual() {
     // ==========================================
     public function update_manual() {
         $this->load->model('M_admin');
+        
+        // Validasi
+        $this->form_validation->set_rules('id_manual', 'ID Manual', 'required');
+        $this->form_validation->set_rules('id_pos', 'Pos', 'required');
+        $this->form_validation->set_rules('tanggal', 'Tanggal', 'required');
+        
+        if ($this->form_validation->run() == FALSE) {
+            $this->session->set_flashdata('error', validation_errors());
+            redirect('superadmin/kelola_manual');
+        }
+        
         $result = $this->M_admin->update_manual_pos($this->input->post());
         $this->session->set_flashdata($result['status'], $result['message']);
         redirect('superadmin/kelola_manual?pos=' . $this->input->post('id_pos') . '&bulan=' . date('Y-m', strtotime($this->input->post('tanggal'))));
@@ -274,16 +267,47 @@ public function kelola_manual() {
 
     public function update_bendungan() {
         $this->load->model('M_admin');
-        $result = $this->M_admin->update_manual_bendungan($this->input->post());
+        
+        // Validasi
+        $this->form_validation->set_rules('id_bendungan', 'ID Bendungan', 'required');
+        $this->form_validation->set_rules('id_pos', 'Pos', 'required');
+        $this->form_validation->set_rules('tanggal', 'Tanggal', 'required');
+        
+        if ($this->form_validation->run() == FALSE) {
+            $this->session->set_flashdata('error', validation_errors());
+            redirect('superadmin/kelola_manual');
+        }
+        
+        // Ambil data POST
+        $post = $this->input->post();
+        
+        // Tambahkan kolom baru ke data
+        $post['tahun_mulai_pembangunan'] = $this->input->post('tahun_mulai_pembangunan');
+        $post['tipe_bendungan'] = $this->input->post('tipe_bendungan');
+        $post['elevasi_mercu'] = $this->input->post('elevasi_mercu');
+        $post['luas_das'] = $this->input->post('luas_das');
+        
+        $result = $this->M_admin->update_manual_bendungan($post);
         $this->session->set_flashdata($result['status'], $result['message']);
         redirect('superadmin/kelola_manual?pos=' . $this->input->post('id_pos') . '&bulan=' . date('Y-m', strtotime($this->input->post('tanggal'))));
     }
 
     // ==========================================
-    // UPDATE BENDUNG (BARU)
+    // UPDATE BENDUNG (SESUAI STRUKTUR TERBARU)
     // ==========================================
     public function update_bendung() {
         $this->load->model('M_admin');
+        
+        // Validasi
+        $this->form_validation->set_rules('id_bendung', 'ID Bendung', 'required');
+        $this->form_validation->set_rules('id_pos', 'Pos', 'required');
+        $this->form_validation->set_rules('tanggal', 'Tanggal', 'required');
+        
+        if ($this->form_validation->run() == FALSE) {
+            $this->session->set_flashdata('error', validation_errors());
+            redirect('superadmin/kelola_manual');
+        }
+        
         $result = $this->M_admin->update_manual_bendung($this->input->post());
         $this->session->set_flashdata($result['status'], $result['message']);
         redirect('superadmin/kelola_manual?pos=' . $this->input->post('id_pos') . '&bulan=' . date('Y-m', strtotime($this->input->post('tanggal'))));
@@ -307,7 +331,7 @@ public function kelola_manual() {
     }
 
     // ==========================================
-    // HAPUS BENDUNG (BARU)
+    // HAPUS BENDUNG (SESUAI STRUKTUR TERBARU)
     // ==========================================
     public function hapus_bendung($id) {
         $this->load->model('M_admin');
@@ -454,65 +478,65 @@ public function kelola_manual() {
     }
 
     /**
- * Export Data ke CSV (Format Excel Friendly)
- */
-public function export_csv() {
-    $this->load->helper('download');
-    
-    $module = $this->input->get('module');
-    $period = $this->input->get('period') ?? 'all';
-    $date = $this->input->get('date') ?? date('Y-m-d');
-    
-    $data = $this->_get_export_data($module, $period, $date);
-    
-    if (empty($data)) {
-        $this->session->set_flashdata('error', 'Tidak ada data untuk diexport.');
-        redirect('superadmin/export_import');
-    }
-    
-    $headers = array_keys((array)$data[0]);
-    $module_label = str_replace('_', ' ', ucwords($module));
-    $filename = str_replace('_', '-', $module) . '_' . date('Y-m-d_H-i') . '.csv';
-    
-    // Header untuk download CSV
-    header('Content-Type: text/csv; charset=utf-8');
-    header('Content-Disposition: attachment; filename="' . $filename . '"');
-    header('Pragma: no-cache');
-    header('Expires: 0');
-    
-    // BOM untuk UTF-8
-    echo "\xEF\xBB\xBF";
-    
-    $output = fopen('php://output', 'w');
-    
-    // Gunakan delimiter titik koma (;) untuk Excel Indonesia
-    $delimiter = ';';
-    
-    // Header info
-    fputcsv($output, ['=== ' . strtoupper($module_label) . ' ==='], $delimiter);
-    fputcsv($output, ['Periode', $this->_get_period_label($period, $date)], $delimiter);
-    fputcsv($output, ['Total Data', count($data) . ' record'], $delimiter);
-    fputcsv($output, ['Dicetak', date('d-m-Y H:i:s')], $delimiter);
-    fputcsv($output, [], $delimiter);
-    
-    // Header kolom
-    $header_labels = array_map(function($h) {
-        return str_replace('_', ' ', ucwords($h));
-    }, $headers);
-    fputcsv($output, $header_labels, $delimiter);
-    
-    // Tulis data
-    foreach ($data as $row) {
-        $row_data = [];
-        foreach ((array)$row as $value) {
-            $row_data[] = $value ?? '';
+     * Export Data ke CSV (Format Excel Friendly)
+     */
+    public function export_csv() {
+        $this->load->helper('download');
+        
+        $module = $this->input->get('module');
+        $period = $this->input->get('period') ?? 'all';
+        $date = $this->input->get('date') ?? date('Y-m-d');
+        
+        $data = $this->_get_export_data($module, $period, $date);
+        
+        if (empty($data)) {
+            $this->session->set_flashdata('error', 'Tidak ada data untuk diexport.');
+            redirect('superadmin/export_import');
         }
-        fputcsv($output, $row_data, $delimiter);
+        
+        $headers = array_keys((array)$data[0]);
+        $module_label = str_replace('_', ' ', ucwords($module));
+        $filename = str_replace('_', '-', $module) . '_' . date('Y-m-d_H-i') . '.csv';
+        
+        // Header untuk download CSV
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+        
+        // BOM untuk UTF-8
+        echo "\xEF\xBB\xBF";
+        
+        $output = fopen('php://output', 'w');
+        
+        // Gunakan delimiter titik koma (;) untuk Excel Indonesia
+        $delimiter = ';';
+        
+        // Header info
+        fputcsv($output, ['=== ' . strtoupper($module_label) . ' ==='], $delimiter);
+        fputcsv($output, ['Periode', $this->_get_period_label($period, $date)], $delimiter);
+        fputcsv($output, ['Total Data', count($data) . ' record'], $delimiter);
+        fputcsv($output, ['Dicetak', date('d-m-Y H:i:s')], $delimiter);
+        fputcsv($output, [], $delimiter);
+        
+        // Header kolom
+        $header_labels = array_map(function($h) {
+            return str_replace('_', ' ', ucwords($h));
+        }, $headers);
+        fputcsv($output, $header_labels, $delimiter);
+        
+        // Tulis data
+        foreach ($data as $row) {
+            $row_data = [];
+            foreach ((array)$row as $value) {
+                $row_data[] = $value ?? '';
+            }
+            fputcsv($output, $row_data, $delimiter);
+        }
+        
+        fclose($output);
+        exit;
     }
-    
-    fclose($output);
-    exit;
-}
 
     /**
      * Export Data ke PDF (menggunakan Dompdf)
@@ -553,123 +577,123 @@ public function export_csv() {
     }
 
     /**
- * Import Data dari CSV (Support Delimiter ; dan ,)
- */
-public function import_csv() {
-    $module = $this->input->post('module');
-    
-    if (empty($_FILES['file_csv']['name'])) {
-        $this->session->set_flashdata('error', 'Silakan pilih file CSV terlebih dahulu.');
-        redirect('superadmin/export_import');
-    }
-    
-    $ext = pathinfo($_FILES['file_csv']['name'], PATHINFO_EXTENSION);
-    if (!in_array(strtolower($ext), ['csv', 'txt'])) {
-        $this->session->set_flashdata('error', 'Hanya file CSV yang diperbolehkan.');
-        redirect('superadmin/export_import');
-    }
-    
-    // Baca file CSV
-    $file = fopen($_FILES['file_csv']['tmp_name'], 'r');
-    
-    // Baca baris pertama untuk deteksi delimiter
-    $first_line = fgets($file);
-    rewind($file);
-    
-    // Deteksi delimiter: cari koma atau titik koma
-    $delimiter = ',';
-    if (strpos($first_line, ';') !== false) {
-        $delimiter = ';';
-    } elseif (strpos($first_line, "\t") !== false) {
-        $delimiter = "\t";
-    }
-    
-    // Ambil header
-    $headers = fgetcsv($file, 0, $delimiter);
-    if ($headers === FALSE) {
-        fclose($file);
-        $this->session->set_flashdata('error', 'File CSV tidak valid atau kosong.');
-        redirect('superadmin/export_import');
-    }
-    
-    $headers = array_map('trim', $headers);
-    
-    // Cari baris data dimulai (skip baris info jika ada)
-    $data_start_row = 0;
-    $temp_headers = [];
-    foreach ($headers as $h) {
-        if (strpos($h, '===') !== false || strpos($h, 'Nama') !== false || strpos($h, 'Periode') !== false) {
-            $data_start_row++;
-            // Baca header berikutnya
-            $headers = fgetcsv($file, 0, $delimiter);
-            if ($headers === FALSE) {
-                fclose($file);
-                $this->session->set_flashdata('error', 'Format file CSV tidak sesuai.');
-                redirect('superadmin/export_import');
-            }
-            $headers = array_map('trim', $headers);
-            break;
-        }
-    }
-    
-    // Mapping header ke field database
-    $field_map = $this->_get_field_mapping($module);
-    
-    $success = 0;
-    $failed = 0;
-    $errors = [];
-    $row_index = $data_start_row + 1;
-    
-    while (($row = fgetcsv($file, 0, $delimiter)) !== FALSE) {
-        $row_index++;
+     * Import Data dari CSV (Support Delimiter ; dan ,)
+     */
+    public function import_csv() {
+        $module = $this->input->post('module');
         
-        // Skip baris kosong
-        if (empty(array_filter($row))) continue;
-        
-        // Pastikan jumlah kolom sesuai
-        if (count($row) < count($headers)) {
-            $failed++;
-            $errors[] = 'Baris ' . $row_index . ': Jumlah kolom tidak sesuai';
-            continue;
+        if (empty($_FILES['file_csv']['name'])) {
+            $this->session->set_flashdata('error', 'Silakan pilih file CSV terlebih dahulu.');
+            redirect('superadmin/export_import');
         }
         
-        $data = [];
-        foreach ($headers as $col_index => $header) {
-            $field = $field_map[$header] ?? null;
-            if ($field && isset($row[$col_index])) {
-                $value = trim($row[$col_index]);
-                // Konversi format angka (Indonesia ke float)
-                if (is_numeric(str_replace(',', '.', str_replace('.', '', $value)))) {
-                    $value = floatval(str_replace(',', '.', str_replace('.', '', $value)));
+        $ext = pathinfo($_FILES['file_csv']['name'], PATHINFO_EXTENSION);
+        if (!in_array(strtolower($ext), ['csv', 'txt'])) {
+            $this->session->set_flashdata('error', 'Hanya file CSV yang diperbolehkan.');
+            redirect('superadmin/export_import');
+        }
+        
+        // Baca file CSV
+        $file = fopen($_FILES['file_csv']['tmp_name'], 'r');
+        
+        // Baca baris pertama untuk deteksi delimiter
+        $first_line = fgets($file);
+        rewind($file);
+        
+        // Deteksi delimiter: cari koma atau titik koma
+        $delimiter = ',';
+        if (strpos($first_line, ';') !== false) {
+            $delimiter = ';';
+        } elseif (strpos($first_line, "\t") !== false) {
+            $delimiter = "\t";
+        }
+        
+        // Ambil header
+        $headers = fgetcsv($file, 0, $delimiter);
+        if ($headers === FALSE) {
+            fclose($file);
+            $this->session->set_flashdata('error', 'File CSV tidak valid atau kosong.');
+            redirect('superadmin/export_import');
+        }
+        
+        $headers = array_map('trim', $headers);
+        
+        // Cari baris data dimulai (skip baris info jika ada)
+        $data_start_row = 0;
+        $temp_headers = [];
+        foreach ($headers as $h) {
+            if (strpos($h, '===') !== false || strpos($h, 'Nama') !== false || strpos($h, 'Periode') !== false) {
+                $data_start_row++;
+                // Baca header berikutnya
+                $headers = fgetcsv($file, 0, $delimiter);
+                if ($headers === FALSE) {
+                    fclose($file);
+                    $this->session->set_flashdata('error', 'Format file CSV tidak sesuai.');
+                    redirect('superadmin/export_import');
                 }
-                $data[$field] = $value;
+                $headers = array_map('trim', $headers);
+                break;
             }
         }
         
-        if (empty($data)) continue;
+        // Mapping header ke field database
+        $field_map = $this->_get_field_mapping($module);
         
-        $result = $this->_import_data($module, $data);
-        if ($result['status'] == 'success') {
-            $success++;
-        } else {
-            $failed++;
-            $errors[] = 'Baris ' . $row_index . ': ' . $result['message'];
+        $success = 0;
+        $failed = 0;
+        $errors = [];
+        $row_index = $data_start_row + 1;
+        
+        while (($row = fgetcsv($file, 0, $delimiter)) !== FALSE) {
+            $row_index++;
+            
+            // Skip baris kosong
+            if (empty(array_filter($row))) continue;
+            
+            // Pastikan jumlah kolom sesuai
+            if (count($row) < count($headers)) {
+                $failed++;
+                $errors[] = 'Baris ' . $row_index . ': Jumlah kolom tidak sesuai';
+                continue;
+            }
+            
+            $data = [];
+            foreach ($headers as $col_index => $header) {
+                $field = $field_map[$header] ?? null;
+                if ($field && isset($row[$col_index])) {
+                    $value = trim($row[$col_index]);
+                    // Konversi format angka (Indonesia ke float)
+                    if (is_numeric(str_replace(',', '.', str_replace('.', '', $value)))) {
+                        $value = floatval(str_replace(',', '.', str_replace('.', '', $value)));
+                    }
+                    $data[$field] = $value;
+                }
+            }
+            
+            if (empty($data)) continue;
+            
+            $result = $this->_import_data($module, $data);
+            if ($result['status'] == 'success') {
+                $success++;
+            } else {
+                $failed++;
+                $errors[] = 'Baris ' . $row_index . ': ' . $result['message'];
+            }
         }
-    }
-    
-    fclose($file);
-    
-    $message = "Import selesai! Berhasil: $success, Gagal: $failed";
-    if (!empty($errors)) {
-        $message .= ' | Detail: ' . implode('; ', array_slice($errors, 0, 5));
-        if (count($errors) > 5) {
-            $message .= ' ... dan ' . (count($errors) - 5) . ' error lainnya.';
+        
+        fclose($file);
+        
+        $message = "Import selesai! Berhasil: $success, Gagal: $failed";
+        if (!empty($errors)) {
+            $message .= ' | Detail: ' . implode('; ', array_slice($errors, 0, 5));
+            if (count($errors) > 5) {
+                $message .= ' ... dan ' . (count($errors) - 5) . ' error lainnya.';
+            }
         }
+        
+        $this->session->set_flashdata($failed > 0 ? 'warning' : 'success', $message);
+        redirect('superadmin/export_import');
     }
-    
-    $this->session->set_flashdata($failed > 0 ? 'warning' : 'success', $message);
-    redirect('superadmin/export_import');
-}
 
     // ==========================================
     // PRIVATE HELPER METHODS
@@ -1011,27 +1035,6 @@ public function import_csv() {
     }
 
     // ==========================================
-    // KELOLA TELEMETRI
-    // ==========================================
-    public function kelola_telemetri() {
-        $data = $this->M_superadmin->get_telemetri_data();
-        $data['admin_name'] = $this->session->userdata('nama_lengkap');
-        $this->_render('superadmin/v_kelola_telemetri', $data);
-    }
-
-    public function edit_telemetri() {
-        $result = $this->M_superadmin->update_telemetri($this->input->post());
-        $this->session->set_flashdata($result['status'], $result['message']);
-        redirect('superadmin/kelola_telemetri');
-    }
-
-    public function hapus_telemetri($id) {
-        $result = $this->M_superadmin->delete_telemetri($id);
-        $this->session->set_flashdata($result['status'], $result['message']);
-        redirect('superadmin/kelola_telemetri');
-    }
-
-    // ==========================================
     // EXPORT TELEMETRI KHUSUS
     // ==========================================
 
@@ -1061,82 +1064,82 @@ public function import_csv() {
     }
 
     /**
- * Export Data Telemetri ke CSV (Format Excel Friendly)
- */
-public function export_telemetri_csv() {
-    $this->load->helper('download');
-    
-    $id_pos = $this->input->get('id_pos');
-    $period = $this->input->get('period') ?? 'daily';
-    $date = $this->input->get('date') ?? date('Y-m-d');
-    $start_time = $this->input->get('start_time') ?? '00:00';
-    $end_time = $this->input->get('end_time') ?? '23:59';
-    
-    if (empty($id_pos)) {
-        $this->session->set_flashdata('error', 'Silakan pilih pos telemetri.');
-        redirect('superadmin/export_telemetri');
+     * Export Data Telemetri ke CSV (Format Excel Friendly)
+     */
+    public function export_telemetri_csv() {
+        $this->load->helper('download');
+        
+        $id_pos = $this->input->get('id_pos');
+        $period = $this->input->get('period') ?? 'daily';
+        $date = $this->input->get('date') ?? date('Y-m-d');
+        $start_time = $this->input->get('start_time') ?? '00:00';
+        $end_time = $this->input->get('end_time') ?? '23:59';
+        
+        if (empty($id_pos)) {
+            $this->session->set_flashdata('error', 'Silakan pilih pos telemetri.');
+            redirect('superadmin/export_telemetri');
+        }
+        
+        $data = $this->_get_telemetri_export_data($id_pos, $period, $date, $start_time, $end_time);
+        
+        if (empty($data)) {
+            $this->session->set_flashdata('error', 'Tidak ada data telemetri untuk diexport.');
+            redirect('superadmin/export_telemetri');
+        }
+        
+        $pos = $this->db->select('nama_pos, tipe_pos, device_id_telemetry')
+                        ->where('id_pos', $id_pos)
+                        ->get('master_pos')
+                        ->row();
+        
+        $filename = 'telemetri_' . str_replace(' ', '_', $pos->nama_pos) . '_' . date('Y-m-d_H-i') . '.csv';
+        
+        // Header untuk download CSV - dengan charset UTF-8 BOM
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+        
+        // BOM untuk UTF-8 (biar Excel baca dengan benar)
+        echo "\xEF\xBB\xBF";
+        
+        $output = fopen('php://output', 'w');
+        
+        // Gunakan delimiter titik koma (;) agar Excel Indonesia bisa membaca dengan benar
+        $delimiter = ';';
+        
+        // Header info
+        fputcsv($output, ['=== DATA TELEMETRI ==='], $delimiter);
+        fputcsv($output, ['Nama Pos', $pos->nama_pos], $delimiter);
+        fputcsv($output, ['Tipe Pos', $pos->tipe_pos], $delimiter);
+        fputcsv($output, ['Device ID', $pos->device_id_telemetry], $delimiter);
+        fputcsv($output, ['Periode', $this->_get_period_label_telemetri($period, $date, $start_time, $end_time)], $delimiter);
+        fputcsv($output, ['Total Data', count($data) . ' record'], $delimiter);
+        fputcsv($output, ['Dicetak', date('d-m-Y H:i:s')], $delimiter);
+        fputcsv($output, [], $delimiter);
+        
+        // Header kolom
+        $headers = ['No', 'Tanggal', 'Jam', 'Baterai (V)', 'Curah Hujan (mm)', 'TMA (m)', 'Status'];
+        fputcsv($output, $headers, $delimiter);
+        
+        // Data
+        $no = 1;
+        foreach ($data as $row) {
+            $row_data = [
+                $no++,
+                date('d-m-Y', strtotime($row->received_at)),
+                date('H:i:s', strtotime($row->received_at)),
+                number_format($row->batt ?? 0, 1),
+                number_format($row->rain ?? 0, 1),
+                number_format($row->wlevel ?? 0, 2),
+                $row->status ?? '-'
+            ];
+            fputcsv($output, $row_data, $delimiter);
+        }
+        
+        fclose($output);
+        exit;
     }
-    
-    $data = $this->_get_telemetri_export_data($id_pos, $period, $date, $start_time, $end_time);
-    
-    if (empty($data)) {
-        $this->session->set_flashdata('error', 'Tidak ada data telemetri untuk diexport.');
-        redirect('superadmin/export_telemetri');
-    }
-    
-    $pos = $this->db->select('nama_pos, tipe_pos, device_id_telemetry')
-                    ->where('id_pos', $id_pos)
-                    ->get('master_pos')
-                    ->row();
-    
-    $filename = 'telemetri_' . str_replace(' ', '_', $pos->nama_pos) . '_' . date('Y-m-d_H-i') . '.csv';
-    
-    // Header untuk download CSV - dengan charset UTF-8 BOM
-    header('Content-Type: text/csv; charset=utf-8');
-    header('Content-Disposition: attachment; filename="' . $filename . '"');
-    header('Pragma: no-cache');
-    header('Expires: 0');
-    
-    // BOM untuk UTF-8 (biar Excel baca dengan benar)
-    echo "\xEF\xBB\xBF";
-    
-    $output = fopen('php://output', 'w');
-    
-    // Gunakan delimiter titik koma (;) agar Excel Indonesia bisa membaca dengan benar
-    $delimiter = ';';
-    
-    // Header info
-    fputcsv($output, ['=== DATA TELEMETRI ==='], $delimiter);
-    fputcsv($output, ['Nama Pos', $pos->nama_pos], $delimiter);
-    fputcsv($output, ['Tipe Pos', $pos->tipe_pos], $delimiter);
-    fputcsv($output, ['Device ID', $pos->device_id_telemetry], $delimiter);
-    fputcsv($output, ['Periode', $this->_get_period_label_telemetri($period, $date, $start_time, $end_time)], $delimiter);
-    fputcsv($output, ['Total Data', count($data) . ' record'], $delimiter);
-    fputcsv($output, ['Dicetak', date('d-m-Y H:i:s')], $delimiter);
-    fputcsv($output, [], $delimiter);
-    
-    // Header kolom
-    $headers = ['No', 'Tanggal', 'Jam', 'Baterai (V)', 'Curah Hujan (mm)', 'TMA (m)', 'Status'];
-    fputcsv($output, $headers, $delimiter);
-    
-    // Data
-    $no = 1;
-    foreach ($data as $row) {
-        $row_data = [
-            $no++,
-            date('d-m-Y', strtotime($row->received_at)),
-            date('H:i:s', strtotime($row->received_at)),
-            number_format($row->batt ?? 0, 1),
-            number_format($row->rain ?? 0, 1),
-            number_format($row->wlevel ?? 0, 2),
-            $row->status ?? '-'
-        ];
-        fputcsv($output, $row_data, $delimiter);
-    }
-    
-    fclose($output);
-    exit;
-}
 
     /**
      * Export Data Telemetri ke PDF
@@ -1401,48 +1404,48 @@ public function export_telemetri_csv() {
     }
 
     /**
- * Download Template CSV untuk Import
- */
-public function download_template_csv() {
-    $module = $this->input->get('module');
-    
-    if (empty($module)) {
-        $this->session->set_flashdata('error', 'Silakan pilih modul terlebih dahulu.');
-        redirect('superadmin/export_import');
+     * Download Template CSV untuk Import
+     */
+    public function download_template_csv() {
+        $module = $this->input->get('module');
+        
+        if (empty($module)) {
+            $this->session->set_flashdata('error', 'Silakan pilih modul terlebih dahulu.');
+            redirect('superadmin/export_import');
+        }
+        
+        $field_map = $this->_get_field_mapping($module);
+        $headers = array_keys($field_map);
+        
+        $filename = 'template_' . $module . '.csv';
+        
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+        
+        echo "\xEF\xBB\xBF";
+        $output = fopen('php://output', 'w');
+        $delimiter = ';';
+        
+        // Header info
+        fputcsv($output, ['=== TEMPLATE IMPORT ' . strtoupper(str_replace('_', ' ', $module)) . ' ==='], $delimiter);
+        fputcsv($output, ['Kolom yang wajib diisi: ' . implode(', ', $headers)], $delimiter);
+        fputcsv($output, ['Format angka: gunakan titik (.) untuk desimal'], $delimiter);
+        fputcsv($output, ['Tanggal: gunakan format YYYY-MM-DD'], $delimiter);
+        fputcsv($output, [], $delimiter);
+        
+        // Header kolom
+        fputcsv($output, $headers, $delimiter);
+        
+        // Contoh data (1 baris)
+        $example = [];
+        foreach ($headers as $h) {
+            $example[] = 'Contoh_' . str_replace(' ', '_', $h);
+        }
+        fputcsv($output, $example, $delimiter);
+        
+        fclose($output);
+        exit;
     }
-    
-    $field_map = $this->_get_field_mapping($module);
-    $headers = array_keys($field_map);
-    
-    $filename = 'template_' . $module . '.csv';
-    
-    header('Content-Type: text/csv; charset=utf-8');
-    header('Content-Disposition: attachment; filename="' . $filename . '"');
-    header('Pragma: no-cache');
-    header('Expires: 0');
-    
-    echo "\xEF\xBB\xBF";
-    $output = fopen('php://output', 'w');
-    $delimiter = ';';
-    
-    // Header info
-    fputcsv($output, ['=== TEMPLATE IMPORT ' . strtoupper(str_replace('_', ' ', $module)) . ' ==='], $delimiter);
-    fputcsv($output, ['Kolom yang wajib diisi: ' . implode(', ', $headers)], $delimiter);
-    fputcsv($output, ['Format angka: gunakan titik (.) untuk desimal'], $delimiter);
-    fputcsv($output, ['Tanggal: gunakan format YYYY-MM-DD'], $delimiter);
-    fputcsv($output, [], $delimiter);
-    
-    // Header kolom
-    fputcsv($output, $headers, $delimiter);
-    
-    // Contoh data (1 baris)
-    $example = [];
-    foreach ($headers as $h) {
-        $example[] = 'Contoh_' . str_replace(' ', '_', $h);
-    }
-    fputcsv($output, $example, $delimiter);
-    
-    fclose($output);
-    exit;
-}
 }

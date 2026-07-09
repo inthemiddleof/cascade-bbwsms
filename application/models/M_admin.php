@@ -127,8 +127,10 @@ class M_admin extends CI_Model {
             $this->db->where_in('id_pos', $allowed_pos);
         }
         $t = $this->db->where('DATE(received_at)', date('Y-m-d'))->count_all_results('data_telemetri');
-        $m = $this->db->where('tanggal_input', date('Y-m-d'))->count_all_results('data_manual');
-        return $t + $m;
+        $m = $this->db->where('DATE(tanggal_input)', date('Y-m-d'))->count_all_results('data_manual');
+        $b = $this->db->where('DATE(tanggal_input)', date('Y-m-d'))->count_all_results('data_bendung');
+        $bendungan = $this->db->where('DATE(tanggal_input)', date('Y-m-d'))->count_all_results('data_bendungan');
+        return $t + $m + $b + $bendungan;
     }
 
     private function _count_online_pos($allowed_pos = null) {
@@ -157,7 +159,27 @@ class M_admin extends CI_Model {
         $this->db->select('MAX(created_at) as last_sync');
         $man = $this->db->get('data_manual')->row();
         
-        return !empty($man->last_sync) ? $man->last_sync : null;
+        if (!empty($man->last_sync)) {
+            return $man->last_sync;
+        }
+        
+        if ($allowed_pos !== null) {
+            $this->db->where_in('id_pos', $allowed_pos);
+        }
+        $this->db->select('MAX(created_at) as last_sync');
+        $bendung = $this->db->get('data_bendung')->row();
+        
+        if (!empty($bendung->last_sync)) {
+            return $bendung->last_sync;
+        }
+        
+        if ($allowed_pos !== null) {
+            $this->db->where_in('id_pos', $allowed_pos);
+        }
+        $this->db->select('MAX(created_at) as last_sync');
+        $bendungan = $this->db->get('data_bendungan')->row();
+        
+        return !empty($bendungan->last_sync) ? $bendungan->last_sync : null;
     }
 
     public function get_detailed_pos_list($allowed_pos = null) {
@@ -320,7 +342,7 @@ class M_admin extends CI_Model {
     }
 
     // ==========================================
-    // KELOLA MANUAL DATA
+    // KELOLA MANUAL DATA (DENGAN BENDUNG)
     // ==========================================
     public function get_manual_data($pos_filter, $bulan, $allowed_pos) {
         // Ambil daftar pos
@@ -343,95 +365,16 @@ class M_admin extends CI_Model {
         $data_list = [];
 
         if ($pos) {
-            // ==========================================
             // CEK TIPE POS: Bendung > Bendungan > Pos Biasa
-            // ==========================================
             if ($pos->is_bendung == 1) {
-                // QUERY BENDUNG + JOIN USERS
-                $this->db->select('
-                    d.id_bendung,
-                    d.id_pos,
-                    d.id_user,
-                    d.tanggal_input,
-                    d.rain,
-                    d.elevasi_mercu,
-                    d.q_total,
-                    d.q_fc1,
-                    d.q_fc2,
-                    d.q_limpas,
-                    d.q_spam_kpbu,
-                    d.sluice_gate,
-                    d.keterangan,
-                    d.created_at,
-                    u.nama_lengkap as nama_user
-                ');
-                $this->db->from('data_bendung d');
-                $this->db->join('users u', 'd.id_user = u.id_user', 'left');
-                $this->db->where('d.id_pos', $selected_id);
-                $this->db->like('d.tanggal_input', $bulan, 'after');
-                $this->db->order_by('d.tanggal_input', 'DESC');
-                $this->db->order_by('d.created_at', 'DESC');
-                $data_list = $this->db->get()->result();
-                
+                // QUERY BENDUNG
+                $data_list = $this->get_bendung_data_by_pos($selected_id, $bulan);
             } elseif ($pos->is_bendungan == 1) {
-                // QUERY BENDUNGAN + JOIN USERS
-                $this->db->select('
-                    d.id_bendungan,
-                    d.id_pos,
-                    d.id_user,
-                    d.tanggal_input,
-                    d.nwl,
-                    d.nwl_volume,
-                    d.nwl_luas,
-                    d.rain,
-                    d.elevasi,
-                    d.volume,
-                    d.luas,
-                    d.inflow,
-                    d.pltm,
-                    d.spillway,
-                    d.total_outflow,
-                    d.plta_status,
-                    d.irigasi_status,
-                    d.tail_water,
-                    d.rembesan_vnotch_h,
-                    d.rembesan_vnotch_q,
-                    d.rembesan_pump_pit_l_h,
-                    d.rembesan_pump_pit_l_q,
-                    d.rembesan_pump_pit_r_h,
-                    d.rembesan_pump_pit_r_q,
-                    d.keterangan,
-                    d.created_at,
-                    u.nama_lengkap as nama_user
-                ');
-                $this->db->from('data_bendungan d');
-                $this->db->join('users u', 'd.id_user = u.id_user', 'left');
-                $this->db->where('d.id_pos', $selected_id);
-                $this->db->like('d.tanggal_input', $bulan, 'after');
-                $this->db->order_by('d.tanggal_input', 'DESC');
-                $this->db->order_by('d.created_at', 'DESC');
-                $data_list = $this->db->get()->result();
-                
+                // QUERY BENDUNGAN
+                $data_list = $this->get_bendungan_data_by_pos($selected_id, $bulan);
             } else {
-                // QUERY POS BIASA + JOIN USERS
-                $this->db->select('
-                    m.id_manual, 
-                    m.id_pos, 
-                    m.id_user, 
-                    m.tanggal_input, 
-                    m.rain, 
-                    m.wlevel, 
-                    m.keterangan, 
-                    m.created_at,
-                    u.nama_lengkap as nama_petugas
-                ');
-                $this->db->from('data_manual m');
-                $this->db->join('users u', 'm.id_user = u.id_user', 'left');
-                $this->db->where('m.id_pos', $selected_id);
-                $this->db->where("DATE_FORMAT(m.tanggal_input, '%Y-%m') =", $bulan);
-                $this->db->order_by('m.tanggal_input', 'DESC');
-                $this->db->order_by('m.created_at', 'DESC');
-                $data_list = $this->db->get()->result();
+                // QUERY POS BIASA
+                $data_list = $this->get_manual_data_by_pos($selected_id, $bulan);
             }
         }
 
@@ -443,6 +386,109 @@ class M_admin extends CI_Model {
             'bulan'     => $bulan, 
             'data_list' => $data_list
         ];
+    }
+
+    /**
+     * Get data manual pos biasa (PCH/PDA) berdasarkan pos dan bulan
+     */
+    public function get_manual_data_by_pos($id_pos, $bulan) {
+        $this->db->select('
+            m.id_manual, 
+            m.id_pos, 
+            m.id_user, 
+            m.tanggal_input, 
+            m.rain, 
+            m.wlevel, 
+            m.keterangan, 
+            m.created_at,
+            u.nama_lengkap as nama_petugas
+        ');
+        $this->db->from('data_manual m');
+        $this->db->join('users u', 'm.id_user = u.id_user', 'left');
+        $this->db->where('m.id_pos', $id_pos);
+        $this->db->where("DATE_FORMAT(m.tanggal_input, '%Y-%m') =", $bulan);
+        $this->db->order_by('m.tanggal_input', 'DESC');
+        $this->db->order_by('m.created_at', 'DESC');
+        return $this->db->get()->result();
+    }
+
+    /**
+     * Get data bendungan berdasarkan pos dan bulan (DENGAN KOLOM BARU)
+     */
+    public function get_bendungan_data_by_pos($id_pos, $bulan) {
+        $this->db->select('
+            d.id_bendungan,
+            d.id_pos,
+            d.id_user,
+            d.tanggal_input,
+            d.nwl,
+            d.nwl_volume,
+            d.nwl_luas,
+            d.rain,
+            d.elevasi,
+            d.volume,
+            d.luas,
+            d.inflow,
+            d.pltm,
+            d.spillway,
+            d.total_outflow,
+            d.plta_status,
+            d.irigasi_status,
+            d.tail_water,
+            d.rembesan_vnotch_h,
+            d.rembesan_vnotch_q,
+            d.rembesan_pump_pit_l_h,
+            d.rembesan_pump_pit_l_q,
+            d.rembesan_pump_pit_r_h,
+            d.rembesan_pump_pit_r_q,
+            d.keterangan,
+            d.created_at,
+            d.tahun_mulai_pembangunan,
+            d.tipe_bendungan,
+            d.elevasi_mercu,
+            d.luas_das,
+            u.nama_lengkap as nama_user
+        ');
+        $this->db->from('data_bendungan d');
+        $this->db->join('users u', 'd.id_user = u.id_user', 'left');
+        $this->db->where('d.id_pos', $id_pos);
+        $this->db->where("DATE_FORMAT(d.tanggal_input, '%Y-%m') =", $bulan);
+        $this->db->order_by('d.tanggal_input', 'DESC');
+        $this->db->order_by('d.created_at', 'DESC');
+        return $this->db->get()->result();
+    }
+
+    /**
+     * Get data bendung berdasarkan pos dan bulan (SESUAI STRUKTUR TERBARU)
+     */
+    public function get_bendung_data_by_pos($id_pos, $bulan) {
+        $this->db->select('
+            b.id_bendung,
+            b.id_pos,
+            b.id_user,
+            b.tanggal_input,
+            b.rain,
+            b.elevasi_mercu,
+            b.q_total,
+            b.q_fc1,
+            b.q_fc2,
+            b.q_sal_induk,
+            b.q_limpas,
+            b.q_sungai,
+            b.q_spam_kpbu,
+            b.sluice_gate,
+            b.bukaan_pintu,
+            b.keterangan,
+            b.created_at,
+            u.nama_lengkap as nama_user
+        ');
+        $this->db->from('data_bendung b');
+        $this->db->join('users u', 'b.id_user = u.id_user', 'left');
+        $this->db->where('b.id_pos', $id_pos);
+        $this->db->where("DATE_FORMAT(b.tanggal_input, '%Y-%m') =", $bulan);
+        $this->db->order_by('b.tanggal_input', 'DESC');
+        $this->db->order_by('b.created_at', 'DESC');
+        return $this->db->get()->result();
     }
 
     // ==========================================
@@ -458,7 +504,7 @@ class M_admin extends CI_Model {
             'id_user'       => $user_id, 
             'tanggal_input' => $post['tanggal_input'], 
             'rain'          => $this->_parse_float($post['rain'] ?? null), 
-            'wlevel'        => cm_to_m($post['wlevel'] ?? null), 
+            'wlevel'        => $this->_parse_float($post['wlevel'] ?? null), 
             'keterangan'    => $post['keterangan'] ?: null, 
             'created_at'    => date('Y-m-d H:i:s')
         ];
@@ -481,7 +527,7 @@ class M_admin extends CI_Model {
             'nwl_volume'              => $this->_parse_float($post['nwl_volume'] ?? null), 
             'nwl_luas'                => $this->_parse_float($post['nwl_luas'] ?? null),
             'rain'                    => $this->_parse_float($post['rain'] ?? null), 
-            'elevasi'                 => cm_to_m($post['elevasi'] ?? null), 
+            'elevasi'                 => $this->_parse_float($post['elevasi'] ?? null), 
             'volume'                  => $this->_parse_float($post['volume'] ?? null), 
             'luas'                    => $this->_parse_float($post['luas'] ?? null),
             'inflow'                  => $this->_parse_float($post['inflow'] ?? null), 
@@ -497,7 +543,12 @@ class M_admin extends CI_Model {
             'rembesan_pump_pit_l_q'   => $this->_parse_float($post['rembesan_pump_pit_l_q'] ?? null),
             'rembesan_pump_pit_r_h'   => $this->_parse_float($post['rembesan_pump_pit_r_h'] ?? null), 
             'rembesan_pump_pit_r_q'   => $this->_parse_float($post['rembesan_pump_pit_r_q'] ?? null),
-            'keterangan'              => $post['keterangan'] ?: null, 
+            'keterangan'              => $post['keterangan'] ?: null,
+            // KOLOM BARU
+            'tahun_mulai_pembangunan' => !empty($post['tahun_mulai_pembangunan']) ? $post['tahun_mulai_pembangunan'] : null,
+            'tipe_bendungan'          => $post['tipe_bendungan'] ?? null,
+            'elevasi_mercu'           => $this->_parse_float($post['elevasi_mercu'] ?? null),
+            'luas_das'                => $this->_parse_float($post['luas_das'] ?? null),
             'created_at'              => date('Y-m-d H:i:s')
         ];
         
@@ -506,28 +557,31 @@ class M_admin extends CI_Model {
             : $this->_error('Gagal menyimpan.');
     }
 
-    // ==========================================
-    // INSERT BENDUNG (BARU)
-    // ==========================================
+    /**
+     * Insert data bendung (SESUAI STRUKTUR TERBARU)
+     */
     public function insert_manual_bendung($post, $user_id, $allowed) {
         if ($allowed !== null && !in_array($post['id_pos'], $allowed)) {
             show_error('Akses Terblokir!', 403);
         }
         
         $data = [
-            'id_pos'        => $post['id_pos'],
-            'id_user'       => $user_id,
-            'tanggal_input' => $post['tanggal_input'],
-            'rain'          => $this->_parse_float($post['rain'] ?? null),
-            'elevasi_mercu' => cm_to_m($post['elevasi_mercu'] ?? null),
-            'q_total'       => $this->_parse_float($post['q_total'] ?? null),
-            'q_fc1'         => $this->_parse_float($post['q_fc1'] ?? null),
-            'q_fc2'         => $this->_parse_float($post['q_fc2'] ?? null),
-            'q_limpas'      => $this->_parse_float($post['q_limpas'] ?? null),
-            'q_spam_kpbu'   => $this->_parse_float($post['q_spam_kpbu'] ?? null),
-            'sluice_gate'   => $this->_parse_float($post['sluice_gate'] ?? null),
-            'keterangan'    => $post['keterangan'] ?: null,
-            'created_at'    => date('Y-m-d H:i:s')
+            'id_pos'         => $post['id_pos'],
+            'id_user'        => $user_id,
+            'tanggal_input'  => $post['tanggal_input'],
+            'rain'           => $this->_parse_float($post['rain'] ?? null),
+            'elevasi_mercu'  => $this->_parse_float($post['elevasi_mercu'] ?? null),
+            'q_total'        => $this->_parse_float($post['q_total'] ?? null),
+            'q_fc1'          => $this->_parse_float($post['q_fc1'] ?? null),
+            'q_fc2'          => $this->_parse_float($post['q_fc2'] ?? null),
+            'q_sal_induk'    => $this->_parse_float($post['q_sal_induk'] ?? null),
+            'q_limpas'       => $this->_parse_float($post['q_limpas'] ?? null),
+            'q_sungai'       => $this->_parse_float($post['q_sungai'] ?? null),
+            'q_spam_kpbu'    => $this->_parse_float($post['q_spam_kpbu'] ?? null),
+            'sluice_gate'    => $this->_parse_float($post['sluice_gate'] ?? null),
+            'bukaan_pintu'   => $this->_parse_float($post['bukaan_pintu'] ?? null),
+            'keterangan'     => $post['keterangan'] ?: null,
+            'created_at'     => date('Y-m-d H:i:s')
         ];
         
         return $this->db->insert('data_bendung', $data) 
@@ -542,7 +596,7 @@ class M_admin extends CI_Model {
         $data = [
             'tanggal_input' => $post['tanggal'], 
             'rain'          => $this->_parse_float($post['rain'] ?? null), 
-            'wlevel'        => cm_to_m($post['wlevel'] ?? null), 
+            'wlevel'        => $this->_parse_float($post['wlevel'] ?? null), 
             'keterangan'    => $post['keterangan'] ?? null
         ];
         
@@ -558,7 +612,7 @@ class M_admin extends CI_Model {
             'nwl_volume'              => $this->_parse_float($post['nwl_volume'] ?? null), 
             'nwl_luas'                => $this->_parse_float($post['nwl_luas'] ?? null),
             'rain'                    => $this->_parse_float($post['rain'] ?? null), 
-            'elevasi'                 => cm_to_m($post['elevasi'] ?? null),
+            'elevasi'                 => $this->_parse_float($post['elevasi'] ?? null),
             'volume'                  => $this->_parse_float($post['volume'] ?? null), 
             'luas'                    => $this->_parse_float($post['luas'] ?? null),
             'inflow'                  => $this->_parse_float($post['inflow'] ?? null), 
@@ -575,6 +629,11 @@ class M_admin extends CI_Model {
             'rembesan_pump_pit_r_h'   => $this->_parse_float($post['rembesan_pump_pit_r_h'] ?? null), 
             'rembesan_pump_pit_r_q'   => $this->_parse_float($post['rembesan_pump_pit_r_q'] ?? null),
             'keterangan'              => $post['keterangan'] ?? null,
+            // KOLOM BARU
+            'tahun_mulai_pembangunan' => !empty($post['tahun_mulai_pembangunan']) ? $post['tahun_mulai_pembangunan'] : null,
+            'tipe_bendungan'          => $post['tipe_bendungan'] ?? null,
+            'elevasi_mercu'           => $this->_parse_float($post['elevasi_mercu'] ?? null),
+            'luas_das'                => $this->_parse_float($post['luas_das'] ?? null),
         ];
         
         return $this->db->where('id_bendungan', $post['id_bendungan'])->update('data_bendungan', $data) 
@@ -582,21 +641,24 @@ class M_admin extends CI_Model {
             : $this->_error('Gagal memperbarui.');
     }
 
-    // ==========================================
-    // UPDATE BENDUNG (BARU)
-    // ==========================================
+    /**
+     * Update data bendung (SESUAI STRUKTUR TERBARU)
+     */
     public function update_manual_bendung($post) {
         $data = [
-            'tanggal_input' => $post['tanggal'],
-            'rain'          => $this->_parse_float($post['rain'] ?? null),
-            'elevasi_mercu' => cm_to_m($post['elevasi_mercu'] ?? null),
-            'q_total'       => $this->_parse_float($post['q_total'] ?? null),
-            'q_fc1'         => $this->_parse_float($post['q_fc1'] ?? null),
-            'q_fc2'         => $this->_parse_float($post['q_fc2'] ?? null),
-            'q_limpas'      => $this->_parse_float($post['q_limpas'] ?? null),
-            'q_spam_kpbu'   => $this->_parse_float($post['q_spam_kpbu'] ?? null),
-            'sluice_gate'   => $this->_parse_float($post['sluice_gate'] ?? null),
-            'keterangan'    => $post['keterangan'] ?? null,
+            'tanggal_input'  => $post['tanggal'],
+            'rain'           => $this->_parse_float($post['rain'] ?? null),
+            'elevasi_mercu'  => $this->_parse_float($post['elevasi_mercu'] ?? null),
+            'q_total'        => $this->_parse_float($post['q_total'] ?? null),
+            'q_fc1'          => $this->_parse_float($post['q_fc1'] ?? null),
+            'q_fc2'          => $this->_parse_float($post['q_fc2'] ?? null),
+            'q_sal_induk'    => $this->_parse_float($post['q_sal_induk'] ?? null),
+            'q_limpas'       => $this->_parse_float($post['q_limpas'] ?? null),
+            'q_sungai'       => $this->_parse_float($post['q_sungai'] ?? null),
+            'q_spam_kpbu'    => $this->_parse_float($post['q_spam_kpbu'] ?? null),
+            'sluice_gate'    => $this->_parse_float($post['sluice_gate'] ?? null),
+            'bukaan_pintu'   => $this->_parse_float($post['bukaan_pintu'] ?? null),
+            'keterangan'     => $post['keterangan'] ?? null,
         ];
         
         return $this->db->where('id_bendung', $post['id_bendung'])->update('data_bendung', $data) 
@@ -627,9 +689,9 @@ class M_admin extends CI_Model {
             : $this->_error('Gagal menghapus.');
     }
 
-    // ==========================================
-    // DELETE BENDUNG (BARU)
-    // ==========================================
+    /**
+     * Delete data bendung (SESUAI STRUKTUR TERBARU)
+     */
     public function delete_manual_bendung($id) {
         return $this->db->where('id_bendung', $id)->delete('data_bendung') 
             ? $this->_success('Data bendung dihapus.') 
@@ -637,105 +699,109 @@ class M_admin extends CI_Model {
     }
 
     // ==========================================
-// GET DATA BY POS (UNTUK KELOLA MANUAL)
-// ==========================================
+    // GET SINGLE DATA BY ID (UNTUK EDIT)
+    // ==========================================
+    
+    /**
+     * Get single bendung data by ID (SESUAI STRUKTUR TERBARU)
+     */
+    public function get_bendung_by_id($id_bendung) {
+        $this->db->select('
+            b.*,
+            u.nama_lengkap as nama_user,
+            p.nama_pos,
+            p.tipe_pos
+        ');
+        $this->db->from('data_bendung b');
+        $this->db->join('users u', 'b.id_user = u.id_user', 'left');
+        $this->db->join('master_pos p', 'b.id_pos = p.id_pos', 'left');
+        $this->db->where('b.id_bendung', $id_bendung);
+        $query = $this->db->get();
+        return $query->row();
+    }
 
-/**
- * Get data manual pos biasa (PCH/PDA) berdasarkan pos dan bulan
- */
-public function get_manual_data_by_pos($id_pos, $bulan) {
-    $this->db->select('
-        m.id_manual, 
-        m.id_pos, 
-        m.id_user, 
-        m.tanggal_input, 
-        m.rain, 
-        m.wlevel, 
-        m.keterangan, 
-        m.created_at,
-        u.nama_lengkap as nama_petugas
-    ');
-    $this->db->from('data_manual m');
-    $this->db->join('users u', 'm.id_user = u.id_user', 'left');
-    $this->db->where('m.id_pos', $id_pos);
-    // PERBAIKAN: tambahkan operator = 
-    $this->db->where("DATE_FORMAT(m.tanggal_input, '%Y-%m') =", $bulan);
-    $this->db->order_by('m.tanggal_input', 'DESC');
-    $this->db->order_by('m.created_at', 'DESC');
-    return $this->db->get()->result();
-}
+    /**
+     * Get single bendungan data by ID (DENGAN KOLOM BARU)
+     */
+    public function get_bendungan_by_id($id_bendungan) {
+        $this->db->select('
+            d.*,
+            u.nama_lengkap as nama_user,
+            p.nama_pos,
+            p.tipe_pos
+        ');
+        $this->db->from('data_bendungan d');
+        $this->db->join('users u', 'd.id_user = u.id_user', 'left');
+        $this->db->join('master_pos p', 'd.id_pos = p.id_pos', 'left');
+        $this->db->where('d.id_bendungan', $id_bendungan);
+        $query = $this->db->get();
+        return $query->row();
+    }
 
-/**
- * Get data bendungan berdasarkan pos dan bulan
- */
-public function get_bendungan_data_by_pos($id_pos, $bulan) {
-    $this->db->select('
-        d.id_bendungan,
-        d.id_pos,
-        d.id_user,
-        d.tanggal_input,
-        d.nwl,
-        d.nwl_volume,
-        d.nwl_luas,
-        d.rain,
-        d.elevasi,
-        d.volume,
-        d.luas,
-        d.inflow,
-        d.pltm,
-        d.spillway,
-        d.total_outflow,
-        d.plta_status,
-        d.irigasi_status,
-        d.tail_water,
-        d.rembesan_vnotch_h,
-        d.rembesan_vnotch_q,
-        d.rembesan_pump_pit_l_h,
-        d.rembesan_pump_pit_l_q,
-        d.rembesan_pump_pit_r_h,
-        d.rembesan_pump_pit_r_q,
-        d.keterangan,
-        d.created_at,
-        u.nama_lengkap as nama_user
-    ');
-    $this->db->from('data_bendungan d');
-    $this->db->join('users u', 'd.id_user = u.id_user', 'left');
-    $this->db->where('d.id_pos', $id_pos);
-    // PERBAIKAN: tambahkan operator =
-    $this->db->where("DATE_FORMAT(d.tanggal_input, '%Y-%m') =", $bulan);
-    $this->db->order_by('d.tanggal_input', 'DESC');
-    $this->db->order_by('d.created_at', 'DESC');
-    return $this->db->get()->result();
-}
+    /**
+     * Get single pos manual data by ID
+     */
+    public function get_manual_by_id($id_manual) {
+        $this->db->select('
+            m.*,
+            u.nama_lengkap as nama_user,
+            p.nama_pos,
+            p.tipe_pos
+        ');
+        $this->db->from('data_manual m');
+        $this->db->join('users u', 'm.id_user = u.id_user', 'left');
+        $this->db->join('master_pos p', 'm.id_pos = p.id_pos', 'left');
+        $this->db->where('m.id_manual', $id_manual);
+        $query = $this->db->get();
+        return $query->row();
+    }
 
-/**
- * Get data bendung berdasarkan pos dan bulan
- */
-public function get_bendung_data_by_pos($id_pos, $bulan) {
-    $this->db->select('
-        d.id_bendung,
-        d.id_pos,
-        d.id_user,
-        d.tanggal_input,
-        d.rain,
-        d.elevasi_mercu,
-        d.q_total,
-        d.q_fc1,
-        d.q_fc2,
-        d.q_limpas,
-        d.q_spam_kpbu,
-        d.sluice_gate,
-        d.keterangan,
-        d.created_at,
-        u.nama_lengkap as nama_user
-    ');
-    $this->db->from('data_bendung d');
-    $this->db->join('users u', 'd.id_user = u.id_user', 'left');
-    $this->db->where('d.id_pos', $id_pos);
-    // PERBAIKAN: tambahkan operator =
-    $this->db->where("DATE_FORMAT(d.tanggal_input, '%Y-%m') =", $bulan);
-    $this->db->order_by('d.tanggal_input', 'DESC');
-    $this->db->order_by('d.created_at', 'DESC');
-    return $this->db->get()->result();
-}
+    // ==========================================
+    // GET BENDUNGAN DATA BY POS (UNTUK PETUGAS)
+    // ==========================================
+    
+    /**
+     * Get data bendungan by date (untuk petugas)
+     */
+    public function get_bendungan_by_date($id_pos, $tanggal) {
+        $this->db->select('
+            d.id_bendungan,
+            d.id_pos,
+            d.id_user,
+            d.tanggal_input,
+            d.nwl,
+            d.nwl_volume,
+            d.nwl_luas,
+            d.rain,
+            d.elevasi,
+            d.volume,
+            d.luas,
+            d.inflow,
+            d.pltm,
+            d.spillway,
+            d.total_outflow,
+            d.plta_status,
+            d.irigasi_status,
+            d.tail_water,
+            d.rembesan_vnotch_h,
+            d.rembesan_vnotch_q,
+            d.rembesan_pump_pit_l_h,
+            d.rembesan_pump_pit_l_q,
+            d.rembesan_pump_pit_r_h,
+            d.rembesan_pump_pit_r_q,
+            d.keterangan,
+            d.created_at,
+            d.tahun_mulai_pembangunan,
+            d.tipe_bendungan,
+            d.elevasi_mercu,
+            d.luas_das,
+            u.nama_lengkap as nama_user
+        ');
+        $this->db->from('data_bendungan d');
+        $this->db->join('users u', 'd.id_user = u.id_user', 'left');
+        $this->db->where('d.id_pos', $id_pos);
+        $this->db->where('DATE(d.tanggal_input)', $tanggal);
+        $this->db->order_by('d.created_at', 'DESC');
+        return $this->db->get()->result();
+    }
 }

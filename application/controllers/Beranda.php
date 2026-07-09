@@ -24,16 +24,16 @@ class Beranda extends CI_Controller {
             'bendungan_db'          => $summary['bendungan_db'],
             'bendung_db'            => $summary['bendung_db'],
             'embung_db'             => $summary['embung_db'], 
-            'pengaman_db'       => $summary['pengaman_db'], // <-- TAMBAHAN
-            'sedimen_db'        => $summary['sedimen_db'],
-            'irigasi_db'    => $summary['irigasi_db'],   
+            'pengaman_db'           => $summary['pengaman_db'],
+            'sedimen_db'            => $summary['sedimen_db'],
+            'irigasi_db'            => $summary['irigasi_db'],   
             'pch_db'                => $summary['pch_db'],
             'pda_db'                => $summary['pda_db'],
             'bendung_count'         => $summary['bendung_count'],
             'embung_count'          => $summary['embung_count'],
-            'pengaman_count'    => $summary['pengaman_count'], // <-- TAMBAHAN
-            'sedimen_count'     => $summary['sedimen_count'],
-            'irigasi_count' => $summary['irigasi_count'],
+            'pengaman_count'        => $summary['pengaman_count'],
+            'sedimen_count'         => $summary['sedimen_count'],
+            'irigasi_count'         => $summary['irigasi_count'],
             'ws_geojson'            => $summary['ws_geojson'],
             'bendung_geojson'       => $summary['bendung_geojson'],
             'das_geojson'           => $summary['das_geojson'],
@@ -44,6 +44,4 @@ class Beranda extends CI_Controller {
         $this->load->view('layout/v_header', $data);
         $this->load->view('pages/v_beranda', $data);
     }
-
-    
 }

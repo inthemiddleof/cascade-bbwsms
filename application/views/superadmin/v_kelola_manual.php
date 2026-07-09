@@ -191,7 +191,7 @@ if ($is_bendung) {
 </div>
 
 <!-- ============================================ -->
-<!-- TABEL BENDUNG -->
+<!-- TABEL BENDUNG (SESUAI STRUKTUR TERBARU) -->
 <!-- ============================================ -->
 <?php elseif($is_bendung): ?>
 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
@@ -201,7 +201,7 @@ if ($is_bendung) {
     </div>
     
     <div class="overflow-auto max-h-[500px]">
-        <table class="w-full text-xs md:text-sm min-w-[800px]">
+        <table class="w-full text-xs md:text-sm min-w-[1100px]">
             <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider text-[10px] md:text-xs sticky top-0 z-10">
                 <tr>
                     <th class="px-2 md:px-3 py-2.5 md:py-3 text-left font-bold w-8">#</th>
@@ -212,9 +212,12 @@ if ($is_bendung) {
                     <th class="px-2 md:px-3 py-2.5 md:py-3 text-center font-bold">Q-Total</th>
                     <th class="px-2 md:px-3 py-2.5 md:py-3 text-center font-bold">Q-FC1</th>
                     <th class="px-2 md:px-3 py-2.5 md:py-3 text-center font-bold">Q-FC2</th>
-                    <th class="px-2 md:px-3 py-2.5 md:py-3 text-center font-bold">Q-Limpas</th>
-                    <th class="px-2 md:px-3 py-2.5 md:py-3 text-center font-bold">Q-SPAM KPBU</th>
-                    <th class="px-2 md:px-3 py-2.5 md:py-3 text-center font-bold">Sluice Gate</th>
+                    <th class="px-2 md:px-3 py-2.5 md:py-3 text-center font-bold hidden sm:table-cell">Q-Sal. Induk</th>
+                    <th class="px-2 md:px-3 py-2.5 md:py-3 text-center font-bold hidden sm:table-cell">Q-Limpas</th>
+                    <th class="px-2 md:px-3 py-2.5 md:py-3 text-center font-bold hidden lg:table-cell">Q-Sungai</th>
+                    <th class="px-2 md:px-3 py-2.5 md:py-3 text-center font-bold hidden lg:table-cell">Q-SPAM KPBU</th>
+                    <th class="px-2 md:px-3 py-2.5 md:py-3 text-center font-bold hidden sm:table-cell">Sluice Gate</th>
+                    <th class="px-2 md:px-3 py-2.5 md:py-3 text-center font-bold hidden sm:table-cell">Bukaan Pintu</th>
                     <th class="px-2 md:px-3 py-2.5 md:py-3 text-center font-bold w-20">Aksi</th>
                 </tr>
             </thead>
@@ -244,14 +247,23 @@ if ($is_bendung) {
                     <td class="px-2 md:px-3 py-2 md:py-3 text-center">
                         <span class="text-[10px] md:text-xs font-bold text-blue-600"><?= fmtNilai($d->q_fc2, 3) ?></span>
                     </td>
-                    <td class="px-2 md:px-3 py-2 md:py-3 text-center">
+                    <td class="px-2 md:px-3 py-2 md:py-3 text-center hidden sm:table-cell">
+                        <span class="text-[10px] md:text-xs font-bold text-amber-600"><?= fmtNilai($d->q_sal_induk, 3) ?></span>
+                    </td>
+                    <td class="px-2 md:px-3 py-2 md:py-3 text-center hidden sm:table-cell">
                         <span class="text-[10px] md:text-xs font-bold text-red-500"><?= fmtNilai($d->q_limpas, 3) ?></span>
                     </td>
-                    <td class="px-2 md:px-3 py-2 md:py-3 text-center">
+                    <td class="px-2 md:px-3 py-2 md:py-3 text-center hidden lg:table-cell">
+                        <span class="text-[10px] md:text-xs font-bold text-cyan-600"><?= fmtNilai($d->q_sungai, 3) ?></span>
+                    </td>
+                    <td class="px-2 md:px-3 py-2 md:py-3 text-center hidden lg:table-cell">
                         <span class="text-[10px] md:text-xs font-bold text-purple-600"><?= fmtNilai($d->q_spam_kpbu, 3) ?></span>
                     </td>
-                    <td class="px-2 md:px-3 py-2 md:py-3 text-center">
+                    <td class="px-2 md:px-3 py-2 md:py-3 text-center hidden sm:table-cell">
                         <span class="text-[10px] md:text-xs font-bold text-slate-700"><?= fmtNilai($d->sluice_gate, 3) ?></span>
+                    </td>
+                    <td class="px-2 md:px-3 py-2 md:py-3 text-center hidden sm:table-cell">
+                        <span class="text-[10px] md:text-xs font-bold text-slate-700"><?= fmtNilai($d->bukaan_pintu, 3) ?></span>
                     </td>
                     <td class="px-2 md:px-3 py-2 md:py-3">
                         <div class="flex items-center justify-center gap-1">
@@ -265,7 +277,7 @@ if ($is_bendung) {
                     </td>
                 </tr>
                 <?php endforeach; else: ?>
-                <tr><td colspan="12" class="px-5 py-12 text-center text-slate-400"><p class="text-sm font-medium">Belum ada data</p></td></tr>
+                <tr><td colspan="15" class="px-5 py-12 text-center text-slate-400"><p class="text-sm font-medium">Belum ada data</p></td></tr>
                 <?php endif; ?>
             </tbody>
         </table>
@@ -426,7 +438,7 @@ if ($is_bendung) {
 <?php endif; ?>
 
 <!-- ============================================ -->
-<!-- MODAL INPUT BENDUNG -->
+<!-- MODAL INPUT BENDUNG (SESUAI STRUKTUR TERBARU) -->
 <!-- ============================================ -->
 <?php if($is_bendung): ?>
 <div id="modalInputBendung" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" style="display: none;">
@@ -443,19 +455,103 @@ if ($is_bendung) {
         <form action="<?= base_url($segment.'/simpan_bendung') ?>" method="POST" class="p-5 space-y-4">
             <input type="hidden" name="<?= $this->security->get_csrf_token_name() ?>" value="<?= $this->security->get_csrf_hash() ?>">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Pilih Bendung <span class="text-red-500">*</span></label><select name="id_pos" required class="w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow bg-white font-medium"><option value="">-- Pilih Bendung --</option><?php foreach($pos_list as $pl): if($pl->is_bendung == 1): ?><option value="<?= $pl->id_pos ?>" <?= ($is_bendung && $pl->id_pos == $pos->id_pos) ? 'selected' : '' ?>><?= htmlspecialchars($pl->nama_pos) ?></option><?php endif; endforeach; ?></select></div>
-                <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tanggal Pengukuran <span class="text-red-500">*</span></label><input type="date" name="tanggal_input" value="<?= date('Y-m-d') ?>" required class="w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow bg-white font-medium"></div>
-            </div>
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div class="px-5 py-3 bg-darkblue flex items-center gap-3"><div class="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center"><svg class="w-4 h-4 text-brandyellow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg></div><div><h3 class="font-bold text-white text-sm">Data Pengukuran Harian</h3></div></div>
-                <div class="p-4 space-y-4">
-                    <div class="border border-slate-200 rounded-xl p-3"><p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3"><span class="w-1.5 h-4 bg-blue-500 rounded-full"></span> Hidrologi Dasar</p><div class="grid grid-cols-2 gap-3"><div><label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Curah Hujan (mm)</label><input type="number" step="any" name="rain" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm bg-white font-semibold" placeholder="0"></div><div><label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Elevasi Air thd Mercu (cm)</label><input type="number" step="any" name="elevasi_mercu" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm bg-white font-semibold" placeholder="0.00"></div></div></div>
-                    <div class="border border-slate-200 rounded-xl p-3"><p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3"><span class="w-1.5 h-4 bg-purple-500 rounded-full"></span> Parameter Debit</p><div class="grid grid-cols-2 sm:grid-cols-3 gap-2"><div><label class="block text-[10px] font-bold text-slate-500 mb-1">Q-Total (m³/dt)</label><input type="number" step="any" name="q_total" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0"></div><div><label class="block text-[10px] font-bold text-slate-500 mb-1">Q-FC1 (m³/dt)</label><input type="number" step="any" name="q_fc1" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0"></div><div><label class="block text-[10px] font-bold text-slate-500 mb-1">Q-FC2 (m³/dt)</label><input type="number" step="any" name="q_fc2" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0"></div><div><label class="block text-[10px] font-bold text-slate-500 mb-1">Q-Limpas (m³/dt)</label><input type="number" step="any" name="q_limpas" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0"></div><div><label class="block text-[10px] font-bold text-slate-500 mb-1">Q-SPAM KPBU (m³/dt)</label><input type="number" step="any" name="q_spam_kpbu" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0"></div><div><label class="block text-[10px] font-bold text-slate-500 mb-1">Sluice Gate (m³/dt)</label><input type="number" step="any" name="sluice_gate" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0"></div></div></div>
-                    <div><label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Keterangan</label><textarea name="keterangan" rows="2" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm bg-white resize-none" placeholder="Tambahkan keterangan jika diperlukan..."></textarea></div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Pilih Bendung <span class="text-red-500">*</span></label>
+                    <select name="id_pos" required class="w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow bg-white font-medium">
+                        <option value="">-- Pilih Bendung --</option>
+                        <?php foreach($pos_list as $pl): if($pl->is_bendung == 1): ?>
+                            <option value="<?= $pl->id_pos ?>" <?= ($is_bendung && $pl->id_pos == $pos->id_pos) ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($pl->nama_pos) ?>
+                            </option>
+                        <?php endif; endforeach; ?>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tanggal Pengukuran <span class="text-red-500">*</span></label>
+                    <input type="date" name="tanggal_input" value="<?= date('Y-m-d') ?>" required class="w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow bg-white font-medium">
                 </div>
             </div>
-            <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-center gap-2"><svg class="w-5 h-5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><p class="text-xs text-blue-700">Jam input akan tercatat otomatis: <b class="text-blue-900"><?= date('H:i') ?> WIB</b></p></div>
-            <div class="flex gap-3 pt-2"><button type="button" onclick="closeModalInputBendung()" class="flex-1 px-4 py-3 border-2 border-slate-200 text-slate-600 font-bold rounded-xl text-sm hover:bg-slate-50 transition-colors">Batal</button><button type="submit" class="flex-1 px-4 py-3 bg-brandyellow hover:bg-yellow-400 text-darkblue font-bold rounded-xl text-sm transition-all shadow-lg shadow-brandyellow/20">Simpan Data Bendung</button></div>
+            
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="px-5 py-3 bg-darkblue flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-brandyellow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+                    </div>
+                    <div><h3 class="font-bold text-white text-sm">Data Pengukuran Harian</h3></div>
+                </div>
+                <div class="p-4 space-y-4">
+                    <div class="border border-slate-200 rounded-xl p-3">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3"><span class="w-1.5 h-4 bg-blue-500 rounded-full"></span> Hidrologi Dasar</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Curah Hujan (mm)</label>
+                                <input type="number" step="any" name="rain" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm bg-white font-semibold" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Elevasi Air thd Mercu (m)</label>
+                                <input type="number" step="any" name="elevasi_mercu" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm bg-white font-semibold" placeholder="0.00">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="border border-slate-200 rounded-xl p-3">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3"><span class="w-1.5 h-4 bg-purple-500 rounded-full"></span> Parameter Debit</p>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-1">Q-Total (m³/dt)</label>
+                                <input type="number" step="any" name="q_total" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-1">Q-FC1 (m³/dt)</label>
+                                <input type="number" step="any" name="q_fc1" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-1">Q-FC2 (m³/dt)</label>
+                                <input type="number" step="any" name="q_fc2" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-1">Q-Sal. Induk (m³/dt)</label>
+                                <input type="number" step="any" name="q_sal_induk" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-1">Q-Limpas (m³/dt)</label>
+                                <input type="number" step="any" name="q_limpas" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-1">Q-Sungai (m³/dt)</label>
+                                <input type="number" step="any" name="q_sungai" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-1">Q-SPAM KPBU (m³/dt)</label>
+                                <input type="number" step="any" name="q_spam_kpbu" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-1">Sluice Gate</label>
+                                <input type="number" step="any" name="sluice_gate" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-1">Bukaan Pintu (m)</label>
+                                <input type="number" step="any" name="bukaan_pintu" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Keterangan</label>
+                        <textarea name="keterangan" rows="2" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm bg-white resize-none" placeholder="Tambahkan keterangan jika diperlukan..."></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-center gap-2">
+                <svg class="w-5 h-5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <p class="text-xs text-blue-700">Jam input akan tercatat otomatis: <b class="text-blue-900"><?= date('H:i') ?> WIB</b></p>
+            </div>
+            
+            <div class="flex gap-3 pt-2">
+                <button type="button" onclick="closeModalInputBendung()" class="flex-1 px-4 py-3 border-2 border-slate-200 text-slate-600 font-bold rounded-xl text-sm hover:bg-slate-50 transition-colors">Batal</button>
+                <button type="submit" class="flex-1 px-4 py-3 bg-brandyellow hover:bg-yellow-400 text-darkblue font-bold rounded-xl text-sm transition-all shadow-lg shadow-brandyellow/20">Simpan Data Bendung</button>
+            </div>
         </form>
     </div>
 </div>
@@ -522,7 +618,7 @@ if ($is_bendung) {
 </div>
 
 <!-- ============================================ -->
-<!-- MODAL EDIT BENDUNG -->
+<!-- MODAL EDIT BENDUNG (SESUAI STRUKTUR TERBARU) -->
 <!-- ============================================ -->
 <div id="modalEditBendung" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" style="display: none;">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -540,8 +636,8 @@ if ($is_bendung) {
             <input type="hidden" name="id_bendung" id="edit_bd_id">
             <input type="hidden" name="id_pos" value="<?= $pos->id_pos ?>">
             <div><label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Tanggal <span class="text-red-500">*</span></label><input type="date" name="tanggal" id="edit_bd_tanggal" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white" required></div>
-            <div class="bg-slate-50 rounded-xl p-4"><p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Hidrologi Dasar</p><div class="grid grid-cols-2 gap-3"><div><label class="block text-[10px] font-bold text-slate-500 mb-1">Curah Hujan (mm)</label><input type="number" step="any" name="rain" id="edit_bd_rain" class="w-full px-3 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0"></div><div><label class="block text-[10px] font-bold text-slate-500 mb-1">Elevasi Mercu (cm)</label><input type="number" step="any" name="elevasi_mercu" id="edit_bd_elevasi_mercu" class="w-full px-3 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0.00"></div></div></div>
-            <div class="bg-slate-50 rounded-xl p-4"><p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Parameter Debit</p><div class="grid grid-cols-2 sm:grid-cols-3 gap-2"><div><label class="block text-[10px] font-bold text-slate-500 mb-1">Q-Total</label><input type="number" step="any" name="q_total" id="edit_bd_q_total" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0"></div><div><label class="block text-[10px] font-bold text-slate-500 mb-1">Q-FC1</label><input type="number" step="any" name="q_fc1" id="edit_bd_q_fc1" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0"></div><div><label class="block text-[10px] font-bold text-slate-500 mb-1">Q-FC2</label><input type="number" step="any" name="q_fc2" id="edit_bd_q_fc2" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0"></div><div><label class="block text-[10px] font-bold text-slate-500 mb-1">Q-Limpas</label><input type="number" step="any" name="q_limpas" id="edit_bd_q_limpas" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0"></div><div><label class="block text-[10px] font-bold text-slate-500 mb-1">Q-SPAM KPBU</label><input type="number" step="any" name="q_spam_kpbu" id="edit_bd_q_spam_kpbu" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0"></div><div><label class="block text-[10px] font-bold text-slate-500 mb-1">Sluice Gate</label><input type="number" step="any" name="sluice_gate" id="edit_bd_sluice_gate" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0"></div></div></div>
+            <div class="bg-slate-50 rounded-xl p-4"><p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Hidrologi Dasar</p><div class="grid grid-cols-2 gap-3"><div><label class="block text-[10px] font-bold text-slate-500 mb-1">Curah Hujan (mm)</label><input type="number" step="any" name="rain" id="edit_bd_rain" class="w-full px-3 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0"></div><div><label class="block text-[10px] font-bold text-slate-500 mb-1">Elevasi Mercu (m)</label><input type="number" step="any" name="elevasi_mercu" id="edit_bd_elevasi_mercu" class="w-full px-3 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0.00"></div></div></div>
+            <div class="bg-slate-50 rounded-xl p-4"><p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Parameter Debit</p><div class="grid grid-cols-2 sm:grid-cols-3 gap-2"><div><label class="block text-[10px] font-bold text-slate-500 mb-1">Q-Total</label><input type="number" step="any" name="q_total" id="edit_bd_q_total" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0"></div><div><label class="block text-[10px] font-bold text-slate-500 mb-1">Q-FC1</label><input type="number" step="any" name="q_fc1" id="edit_bd_q_fc1" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0"></div><div><label class="block text-[10px] font-bold text-slate-500 mb-1">Q-FC2</label><input type="number" step="any" name="q_fc2" id="edit_bd_q_fc2" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0"></div><div><label class="block text-[10px] font-bold text-slate-500 mb-1">Q-Sal. Induk</label><input type="number" step="any" name="q_sal_induk" id="edit_bd_q_sal_induk" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0"></div><div><label class="block text-[10px] font-bold text-slate-500 mb-1">Q-Limpas</label><input type="number" step="any" name="q_limpas" id="edit_bd_q_limpas" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0"></div><div><label class="block text-[10px] font-bold text-slate-500 mb-1">Q-Sungai</label><input type="number" step="any" name="q_sungai" id="edit_bd_q_sungai" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0"></div><div><label class="block text-[10px] font-bold text-slate-500 mb-1">Q-SPAM KPBU</label><input type="number" step="any" name="q_spam_kpbu" id="edit_bd_q_spam_kpbu" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0"></div><div><label class="block text-[10px] font-bold text-slate-500 mb-1">Sluice Gate</label><input type="number" step="any" name="sluice_gate" id="edit_bd_sluice_gate" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0"></div><div><label class="block text-[10px] font-bold text-slate-500 mb-1">Bukaan Pintu (m)</label><input type="number" step="any" name="bukaan_pintu" id="edit_bd_bukaan_pintu" class="w-full px-2 py-2.5 border-2 border-slate-200 rounded-lg text-sm bg-white" placeholder="0"></div></div></div>
             <div><label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Keterangan</label><textarea name="keterangan" id="edit_bd_keterangan" rows="2" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white resize-none" placeholder="Tambahkan keterangan..."></textarea></div>
             <div class="flex gap-3 pt-2"><button type="button" onclick="closeModalEditBendung()" class="flex-1 px-4 py-3 border-2 border-slate-200 text-slate-600 font-bold rounded-xl text-sm hover:bg-slate-50 transition-colors">Batal</button><button type="submit" class="flex-1 px-4 py-3 bg-darkblue hover:bg-blue-900 text-white font-bold rounded-xl text-sm transition-all shadow-md">Simpan</button></div>
         </form>
@@ -617,17 +713,26 @@ function openModalEditBendungan(id) {
 function closeModalEditBendungan() { document.getElementById('modalEditBendungan').style.display = 'none'; }
 
 // ==========================================
-// EDIT BENDUNG
+// EDIT BENDUNG (SESUAI STRUKTUR TERBARU)
 // ==========================================
 function openModalEditBendung(id) {
     var d = bendungData[id];
     if (!d) { alert('Data bendung tidak ditemukan!'); return; }
     document.getElementById('edit_bd_id').value = id;
     document.getElementById('edit_bd_tanggal').value = d.tanggal;
-    setVal('edit_bd_rain', d.rain); setVal('edit_bd_elevasi_mercu', (d.elevasi_mercu !== null && d.elevasi_mercu !== '' && d.elevasi_mercu !== undefined) ? (parseFloat(d.elevasi_mercu) * 100) : d.elevasi_mercu);
-    setVal('edit_bd_q_total', d.q_total); setVal('edit_bd_q_fc1', d.q_fc1); setVal('edit_bd_q_fc2', d.q_fc2);
-    setVal('edit_bd_q_limpas', d.q_limpas); setVal('edit_bd_q_spam_kpbu', d.q_spam_kpbu); setVal('edit_bd_sluice_gate', d.sluice_gate);
-    var ketEl = document.getElementById('edit_bd_keterangan'); if (ketEl && d.keterangan && d.keterangan !== 'null') ketEl.value = d.keterangan;
+    setVal('edit_bd_rain', d.rain);
+    setVal('edit_bd_elevasi_mercu', (d.elevasi_mercu !== null && d.elevasi_mercu !== '' && d.elevasi_mercu !== undefined) ? (parseFloat(d.elevasi_mercu) * 100) : d.elevasi_mercu);
+    setVal('edit_bd_q_total', d.q_total);
+    setVal('edit_bd_q_fc1', d.q_fc1);
+    setVal('edit_bd_q_fc2', d.q_fc2);
+    setVal('edit_bd_q_sal_induk', d.q_sal_induk);
+    setVal('edit_bd_q_limpas', d.q_limpas);
+    setVal('edit_bd_q_sungai', d.q_sungai);
+    setVal('edit_bd_q_spam_kpbu', d.q_spam_kpbu);
+    setVal('edit_bd_sluice_gate', d.sluice_gate);
+    setVal('edit_bd_bukaan_pintu', d.bukaan_pintu);
+    var ketEl = document.getElementById('edit_bd_keterangan');
+    if (ketEl && d.keterangan && d.keterangan !== 'null') ketEl.value = d.keterangan;
     document.getElementById('modalEditBendung').style.display = 'flex';
 }
 function closeModalEditBendung() { document.getElementById('modalEditBendung').style.display = 'none'; }

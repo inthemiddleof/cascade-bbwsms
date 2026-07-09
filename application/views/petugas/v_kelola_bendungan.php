@@ -7,19 +7,22 @@ function fmtNilai($val, $dec = 3) {
 $segment = 'petugas';
 ?>
 
-<div class="mb-6">
-    <h1 class="text-xl md:text-2xl font-bold text-slate-800">Riwayat Laporan</h1>
-    <p class="text-slate-500 text-sm mt-1">
-        Bendungan: <span class="font-bold text-darkblue"><?= htmlspecialchars($pos->nama_pos) ?></span>
-    </p>
+<!-- Header -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+    <div>
+        <h1 class="text-xl md:text-2xl font-bold text-slate-800">Riwayat Laporan</h1>
+        <p class="text-slate-500 text-sm mt-1">
+            Bendungan: <span class="font-bold text-darkblue"><?= htmlspecialchars($pos->nama_pos) ?></span>
+        </p>
+    </div>
 </div>
 
 <!-- Dropdown Pilih Pos -->
 <?php if(count($daftar_pos_petugas) > 1): ?>
-<div class="bg-white rounded-2xl border border-slate-200 p-4 mb-4">
+<div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 mb-4">
     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Pilih Pos</label>
     <select onchange="window.location='<?= base_url('petugas/kelola') ?>?pos='+this.value+'&tanggal=<?= $tanggal ?>'" 
-            class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white">
+            class="w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white font-medium">
         <?php foreach($daftar_pos_petugas as $p): ?>
         <option value="<?= $p->id_pos ?>" <?= $p->id_pos == $id_pos_active ? 'selected' : '' ?>>
             <?= htmlspecialchars($p->nama_pos) ?> (<?= $p->tipe_pos ?>)
@@ -55,7 +58,7 @@ $segment = 'petugas';
 <?php endif; ?>
 
 <!-- ============================================ -->
-<!-- TABEL BENDUNGAN -->
+<!-- TABEL BENDUNGAN (HANYA KOLOM YANG DIINPUT) -->
 <!-- ============================================ -->
 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
     <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
@@ -63,12 +66,13 @@ $segment = 'petugas';
             Data Bendungan - <?= htmlspecialchars($pos->nama_pos) ?>
         </h3>
         <div class="flex items-center gap-2">
+            <span class="text-[10px] text-slate-400"><?= date('d M Y', strtotime($tanggal)) ?></span>
             <span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full"><?= count($data_list) ?> data</span>
         </div>
     </div>
     
     <div class="overflow-auto max-h-[500px]">
-        <table class="w-full text-xs md:text-sm min-w-[600px]">
+        <table class="w-full text-xs md:text-sm min-w-[700px]">
             <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider text-[10px] md:text-xs sticky top-0 z-10">
                 <tr>
                     <th class="px-2 md:px-3 py-2.5 md:py-3 text-left font-bold w-8">#</th>

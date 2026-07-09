@@ -52,32 +52,97 @@ class M_beranda extends CI_Model {
     }
 
     // ==========================================
-    // GET BENDUNGAN DATA - pakai jenis_aset
+    // GET BENDUNGAN DATA - pakai jenis_aset (DENGAN KOLOM BARU)
     // ==========================================
     public function get_bendungan_data() {
         $this->db->select('
-            m.id_pos, m.nama_pos, m.lat, m.lng, m.nwl, m.sungai, m.wilayah_sungai,
-            db.rain, db.elevasi, db.volume, db.inflow, db.total_outflow, 
-            db.tanggal_input as tgl_bendungan, db.created_at
+            m.id_pos, 
+            m.nama_pos, 
+            m.lat, 
+            m.lng, 
+            m.nwl, 
+            m.sungai, 
+            m.wilayah_sungai,
+            db.rain, 
+            db.elevasi, 
+            db.volume, 
+            db.inflow, 
+            db.total_outflow, 
+            db.tanggal_input as tgl_bendungan, 
+            db.created_at,
+            db.tahun_mulai_pembangunan,
+            db.tipe_bendungan,
+            db.elevasi_mercu,
+            db.luas_das
         ');
         $this->db->from('master_pos m');
-        $this->db->join('(SELECT id_pos, rain, elevasi, volume, inflow, total_outflow, tanggal_input, created_at FROM data_bendungan WHERE id_bendungan IN (SELECT MAX(id_bendungan) FROM data_bendungan GROUP BY id_pos)) db', 'm.id_pos = db.id_pos', 'left');
+        $this->db->join('(
+            SELECT 
+                id_pos, 
+                rain, 
+                elevasi, 
+                volume, 
+                inflow, 
+                total_outflow, 
+                tanggal_input, 
+                created_at,
+                tahun_mulai_pembangunan,
+                tipe_bendungan,
+                elevasi_mercu,
+                luas_das
+            FROM data_bendungan 
+            WHERE id_bendungan IN (SELECT MAX(id_bendungan) FROM data_bendungan GROUP BY id_pos)
+        ) db', 'm.id_pos = db.id_pos', 'left');
         $this->db->where('m.jenis_aset', 'bendungan');
+        $this->db->order_by('m.nama_pos', 'ASC');
         return $this->db->get()->result_array();
     }
 
     // ==========================================
-    // GET BENDUNG DATA - pakai jenis_aset
+    // GET BENDUNG DATA - pakai jenis_aset (SESUAI STRUKTUR TERBARU)
     // ==========================================
     public function get_bendung_data() {
         $this->db->select('
-            m.id_pos, m.nama_pos, m.lat, m.lng, m.sungai, m.wilayah_sungai,
-            db.rain, db.elevasi_mercu, db.q_total, db.q_fc1, db.q_fc2, 
-            db.q_limpas, db.q_spam_kpbu, db.sluice_gate,
-            db.tanggal_input, db.created_at
+            m.id_pos, 
+            m.nama_pos, 
+            m.lat, 
+            m.lng, 
+            m.sungai, 
+            m.wilayah_sungai,
+            db.rain, 
+            db.elevasi_mercu, 
+            db.q_total, 
+            db.q_fc1, 
+            db.q_fc2, 
+            db.q_sal_induk,
+            db.q_limpas, 
+            db.q_sungai,
+            db.q_spam_kpbu, 
+            db.sluice_gate,
+            db.bukaan_pintu,
+            db.tanggal_input, 
+            db.created_at
         ');
         $this->db->from('master_pos m');
-        $this->db->join('(SELECT id_pos, rain, elevasi_mercu, q_total, q_fc1, q_fc2, q_limpas, q_spam_kpbu, sluice_gate, tanggal_input, created_at FROM data_bendung WHERE id_bendung IN (SELECT MAX(id_bendung) FROM data_bendung GROUP BY id_pos)) db', 'm.id_pos = db.id_pos', 'left');
+        $this->db->join('(
+            SELECT 
+                id_pos, 
+                rain, 
+                elevasi_mercu, 
+                q_total, 
+                q_fc1, 
+                q_fc2, 
+                q_sal_induk,
+                q_limpas, 
+                q_sungai,
+                q_spam_kpbu, 
+                sluice_gate,
+                bukaan_pintu,
+                tanggal_input, 
+                created_at 
+            FROM data_bendung 
+            WHERE id_bendung IN (SELECT MAX(id_bendung) FROM data_bendung GROUP BY id_pos)
+        ) db', 'm.id_pos = db.id_pos', 'left');
         $this->db->where('m.jenis_aset', 'bendung');
         $this->db->order_by('m.nama_pos', 'ASC');
         return $this->db->get()->result_array();
@@ -88,21 +153,28 @@ class M_beranda extends CI_Model {
     // ==========================================
     public function get_embung_data() {
         $this->db->select('
-            m.id_pos, m.nama_pos, m.lat, m.lng, m.sungai, m.wilayah_sungai,
-            m.nwl as elevasi_normal,
-            m.nwl_volume as volume_normal,
-            m.nwl_luas as luas_normal,
-            e.rain, e.elevasi, e.volume, e.luas_genangan, 
-            e.inflow, e.outflow,
-            e.tanggal_input, e.created_at
+            m.id_pos,
+            m.nama_pos,
+            m.lat,
+            m.lng,
+            m.sungai,
+            m.wilayah_sungai,
+            e.id_embung,
+            e.kapasitas_volume,
+            e.elevasi_puncak,
+            e.tinggi_embung,
+            e.panjang_tubuh,
+            e.tahun_mulai_pembangunan,
+            e.created_at
         ');
         $this->db->from('master_pos m');
         $this->db->join('(
-            SELECT id_pos, rain, elevasi, volume, luas_genangan, inflow, outflow, tanggal_input, created_at 
+            SELECT id_pos, id_embung, kapasitas_volume, elevasi_puncak, tinggi_embung, panjang_tubuh, tahun_mulai_pembangunan, created_at 
             FROM data_embung 
             WHERE id_embung IN (SELECT MAX(id_embung) FROM data_embung GROUP BY id_pos)
         ) e', 'm.id_pos = e.id_pos', 'left');
         $this->db->where('m.jenis_aset', 'embung');
+        $this->db->order_by('m.nama_pos', 'ASC');
         return $this->db->get()->result_array();
     }
 
@@ -132,6 +204,7 @@ class M_beranda extends CI_Model {
             ) t2 ON t1.id_pos = t2.id_pos AND t1.received_at = t2.max_time
         ) t", 't.id_pos = m.id_pos', 'left');
         $this->db->where('m.jenis_aset', 'pch');
+        $this->db->order_by('m.nama_pos', 'ASC');
         return $this->db->get()->result_array();
     }
 
@@ -162,6 +235,7 @@ class M_beranda extends CI_Model {
             ) t2 ON t1.id_pos = t2.id_pos AND t1.received_at = t2.max_time
         ) t", 't.id_pos = m.id_pos', 'left');
         $this->db->where('m.jenis_aset', 'pda');
+        $this->db->order_by('m.nama_pos', 'ASC');
         return $this->db->get()->result_array();
     }
 
@@ -196,13 +270,12 @@ class M_beranda extends CI_Model {
             panjang,
             elevasi_puncak,
             lebar_puncak,
-            kondisi_bangunan,
-            status_operasi,
             tahun_dibangun,
             kabupaten_kota,
             kecamatan,
             kelurahan,
-            manfaat
+            manfaat,
+            created_at
         ');
         $this->db->from('data_pengaman_pantai');
         $this->db->order_by('nama_aset', 'ASC');
@@ -227,15 +300,48 @@ class M_beranda extends CI_Model {
             panjang,
             lebar,
             tinggi,
-            kondisi,
-            status_operasi,
             tahun_dibangun,
             kabupaten_kota,
             kecamatan,
             kelurahan,
-            jenis_material
+            jenis_material,
+            keterangan,
+            created_at
         ');
         $this->db->from('data_pengendali_sedimen');
+        $this->db->order_by('nama_aset', 'ASC');
+        return $this->db->get()->result_array();
+    }
+
+    // ==========================================
+    // GET DAERAH IRIGASI DATA
+    // ==========================================
+    public function get_irigasi_data() {
+        $this->db->select('
+            id_irigasi,
+            kode_integrasi,
+            nama_aset,
+            jenis_daerah_irigasi,
+            wilayah_sungai,
+            daerah_aliran_sungai,
+            provinsi,
+            kabupaten_kota,
+            kecamatan,
+            kelurahan,
+            latitude,
+            longitude,
+            luas_permen,
+            luas_baku,
+            luas_potensial,
+            luas_fungsional,
+            jenis_bangunan_utama,
+            sumber_air,
+            status_pemeliharaan,
+            di_op_kan_oleh,
+            deskripsi_aset,
+            created_at
+        ');
+        $this->db->from('data_irigasi');
         $this->db->order_by('nama_aset', 'ASC');
         return $this->db->get()->result_array();
     }
@@ -327,34 +433,5 @@ class M_beranda extends CI_Model {
                 'prediksi' => 'Update: ' . (!empty($latest_rain['received_at']) ? date('H:i:s', strtotime($latest_rain['received_at'])) : date('H:i:s'))
             ]
         ];
-    }
-    // ==========================================
-    // GET DAERAH IRIGASI DATA
-    // ==========================================
-    public function get_irigasi_data() {
-        $this->db->select('
-            kode_integrasi,
-            nama_aset,
-            jenis_daerah_irigasi,
-            wilayah_sungai,
-            daerah_aliran_sungai,
-            provinsi,
-            kabupaten_kota,
-            latitude,
-            longitude,
-            luas_permen,
-            luas_baku,
-            luas_potensial,
-            luas_fungsional,
-            jenis_bangunan_utama,
-            sumber_air,
-            tahun_pembangunan,
-            status_pemeliharaan,
-            di_op_kan_oleh,
-            deskripsi_aset
-        ');
-        $this->db->from('data_irigasi'); // asumsi tabelnya bernama data_irigasi
-        $this->db->order_by('nama_aset', 'ASC');
-        return $this->db->get()->result_array();
     }
 }

@@ -72,7 +72,7 @@ class M_petugas extends CI_Model {
     }
 
     // ==========================================
-    // DATA BENDUNGAN
+    // DATA BENDUNGAN (DENGAN KOLOM BARU)
     // ==========================================
 
     /**
@@ -106,6 +106,10 @@ class M_petugas extends CI_Model {
             d.rembesan_pump_pit_r_q,
             d.keterangan,
             d.created_at,
+            d.tahun_mulai_pembangunan,
+            d.tipe_bendungan,
+            d.elevasi_mercu,
+            d.luas_das,
             u.nama_lengkap as nama_user
         ');
         $this->db->from('data_bendungan d');
@@ -121,15 +125,16 @@ class M_petugas extends CI_Model {
     }
 
     /**
-     * Insert data bendungan
+     * Insert data bendungan (DENGAN KOLOM BARU)
      */
     public function insert_bendungan($data) {
+        // Pastikan kolom baru ada di $data
         $data['created_at'] = date('Y-m-d H:i:s');
         return $this->db->insert('data_bendungan', $data);
     }
 
     // ==========================================
-    // DATA BENDUNG (BARU)
+    // DATA BENDUNG (SESUAI STRUKTUR TERBARU)
     // ==========================================
 
     /**
@@ -146,9 +151,12 @@ class M_petugas extends CI_Model {
             d.q_total,
             d.q_fc1,
             d.q_fc2,
+            d.q_sal_induk,
             d.q_limpas,
+            d.q_sungai,
             d.q_spam_kpbu,
             d.sluice_gate,
+            d.bukaan_pintu,
             d.keterangan,
             d.created_at,
             u.nama_lengkap as nama_user
@@ -166,7 +174,7 @@ class M_petugas extends CI_Model {
     }
 
     /**
-     * Insert data bendung
+     * Insert data bendung (SESUAI STRUKTUR TERBARU)
      */
     public function insert_bendung($data) {
         $data['created_at'] = date('Y-m-d H:i:s');

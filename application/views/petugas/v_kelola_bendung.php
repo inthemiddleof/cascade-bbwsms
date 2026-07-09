@@ -18,7 +18,7 @@ $segment = 'petugas';
 <?php if(count($daftar_pos_petugas) > 1): ?>
 <div class="bg-white rounded-2xl border border-slate-200 p-4 mb-4">
     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Pilih Bendung</label>
-    <select onchange="window.location='<?= base_url('petugas/kelola') ?>?pos='+this.value+'&tanggal=<?= $tanggal ?>'" 
+    <select onchange="window.location='<?= base_url('petugas/kelola_bendung') ?>?pos='+this.value+'&tanggal=<?= $tanggal ?>'" 
             class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brandyellow focus:border-brandyellow bg-white">
         <?php foreach($daftar_pos_petugas as $p): ?>
             <?php if($p->is_bendung == 1): ?>
@@ -33,7 +33,7 @@ $segment = 'petugas';
 
 <!-- Filter Tanggal -->
 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 mb-4">
-    <form method="GET" action="<?= base_url('petugas/kelola') ?>" class="flex flex-col sm:flex-row gap-3 items-end">
+    <form method="GET" action="<?= base_url('petugas/kelola_bendung') ?>" class="flex flex-col sm:flex-row gap-3 items-end">
         <input type="hidden" name="pos" value="<?= $id_pos_active ?>">
         <div class="w-full sm:w-auto">
             <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Pilih Tanggal</label>
@@ -44,13 +44,19 @@ $segment = 'petugas';
 
 <!-- Alert Messages -->
 <?php if($this->session->flashdata('success')): ?>
-<div class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl mb-4 text-sm flex items-center gap-2" id="alert-success"><svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><?= $this->session->flashdata('success') ?></div>
+<div class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl mb-4 text-sm flex items-center gap-2" id="alert-success">
+    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <?= $this->session->flashdata('success') ?>
+</div>
 <?php endif; ?>
 <?php if($this->session->flashdata('error')): ?>
-<div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm flex items-center gap-2" id="alert-error"><svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><?= $this->session->flashdata('error') ?></div>
+<div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm flex items-center gap-2" id="alert-error">
+    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <?= $this->session->flashdata('error') ?>
+</div>
 <?php endif; ?>
 
-<!-- TABEL BENDUNG -->
+<!-- TABEL BENDUNG (SESUAI STRUKTUR TERBARU) -->
 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
     <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
         <h3 class="font-bold text-darkblue text-sm uppercase tracking-wider">Data Bendung - <?= htmlspecialchars($pos->nama_pos) ?></h3>
@@ -61,7 +67,7 @@ $segment = 'petugas';
     </div>
     
     <div class="overflow-auto max-h-[500px]">
-        <table class="w-full text-xs md:text-sm min-w-[700px]">
+        <table class="w-full text-xs md:text-sm min-w-[900px]">
             <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider text-[10px] md:text-xs sticky top-0 z-10">
                 <tr>
                     <th class="px-2 md:px-3 py-2.5 md:py-3 text-left font-bold w-8">#</th>
@@ -72,8 +78,12 @@ $segment = 'petugas';
                     <th class="px-2 md:px-3 py-2.5 md:py-3 text-center font-bold">Q-Total</th>
                     <th class="px-2 md:px-3 py-2.5 md:py-3 text-center font-bold">Q-FC1</th>
                     <th class="px-2 md:px-3 py-2.5 md:py-3 text-center font-bold">Q-FC2</th>
-                    <th class="px-2 md:px-3 py-2.5 md:py-3 text-center font-bold">Q-Limpas</th>
-                    <th class="px-2 md:px-3 py-2.5 md:py-3 text-center font-bold">Sluice Gate</th>
+                    <th class="px-2 md:px-3 py-2.5 md:py-3 text-center font-bold hidden sm:table-cell">Q-Sal. Induk</th>
+                    <th class="px-2 md:px-3 py-2.5 md:py-3 text-center font-bold hidden sm:table-cell">Q-Limpas</th>
+                    <th class="px-2 md:px-3 py-2.5 md:py-3 text-center font-bold hidden lg:table-cell">Q-Sungai</th>
+                    <th class="px-2 md:px-3 py-2.5 md:py-3 text-center font-bold hidden lg:table-cell">Q-SPAM</th>
+                    <th class="px-2 md:px-3 py-2.5 md:py-3 text-center font-bold hidden sm:table-cell">Sluice</th>
+                    <th class="px-2 md:px-3 py-2.5 md:py-3 text-center font-bold hidden sm:table-cell">Bukaan</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -101,15 +111,27 @@ $segment = 'petugas';
                     <td class="px-2 md:px-3 py-2 md:py-3 text-center">
                         <span class="text-[10px] md:text-xs font-bold text-blue-600"><?= fmtNilai($d->q_fc2, 3) ?></span>
                     </td>
-                    <td class="px-2 md:px-3 py-2 md:py-3 text-center">
+                    <td class="px-2 md:px-3 py-2 md:py-3 text-center hidden sm:table-cell">
+                        <span class="text-[10px] md:text-xs font-bold text-amber-600"><?= fmtNilai($d->q_sal_induk, 3) ?></span>
+                    </td>
+                    <td class="px-2 md:px-3 py-2 md:py-3 text-center hidden sm:table-cell">
                         <span class="text-[10px] md:text-xs font-bold text-red-500"><?= fmtNilai($d->q_limpas, 3) ?></span>
                     </td>
-                    <td class="px-2 md:px-3 py-2 md:py-3 text-center">
+                    <td class="px-2 md:px-3 py-2 md:py-3 text-center hidden lg:table-cell">
+                        <span class="text-[10px] md:text-xs font-bold text-cyan-600"><?= fmtNilai($d->q_sungai, 3) ?></span>
+                    </td>
+                    <td class="px-2 md:px-3 py-2 md:py-3 text-center hidden lg:table-cell">
+                        <span class="text-[10px] md:text-xs font-bold text-purple-600"><?= fmtNilai($d->q_spam_kpbu, 3) ?></span>
+                    </td>
+                    <td class="px-2 md:px-3 py-2 md:py-3 text-center hidden sm:table-cell">
                         <span class="text-[10px] md:text-xs font-bold text-slate-700"><?= fmtNilai($d->sluice_gate, 3) ?></span>
+                    </td>
+                    <td class="px-2 md:px-3 py-2 md:py-3 text-center hidden sm:table-cell">
+                        <span class="text-[10px] md:text-xs font-bold text-slate-700"><?= fmtNilai($d->bukaan_pintu, 3) ?></span>
                     </td>
                 </tr>
                 <?php endforeach; else: ?>
-                <tr><td colspan="10" class="px-5 py-12 text-center text-slate-400"><p class="text-xs md:text-sm font-medium">Belum ada data pada tanggal ini</p></td></tr>
+                <tr><td colspan="14" class="px-5 py-12 text-center text-slate-400"><p class="text-xs md:text-sm font-medium">Belum ada data pada tanggal ini</p></td></tr>
                 <?php endif; ?>
             </tbody>
         </table>
