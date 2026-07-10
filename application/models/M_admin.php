@@ -391,26 +391,30 @@ class M_admin extends CI_Model {
     /**
      * Get data manual pos biasa (PCH/PDA) berdasarkan pos dan bulan
      */
-    public function get_manual_data_by_pos($id_pos, $bulan) {
-        $this->db->select('
-            m.id_manual, 
-            m.id_pos, 
-            m.id_user, 
-            m.tanggal_input, 
-            m.rain, 
-            m.wlevel, 
-            m.keterangan, 
-            m.created_at,
-            u.nama_lengkap as nama_petugas
-        ');
-        $this->db->from('data_manual m');
-        $this->db->join('users u', 'm.id_user = u.id_user', 'left');
-        $this->db->where('m.id_pos', $id_pos);
-        $this->db->where("DATE_FORMAT(m.tanggal_input, '%Y-%m')", $bulan);
-        $this->db->order_by('m.tanggal_input', 'DESC');
-        $this->db->order_by('m.created_at', 'DESC');
-        return $this->db->get()->result();
-    }
+    /**
+ * Get data manual pos biasa (PCH/PDA) berdasarkan pos dan bulan
+ */
+public function get_manual_data_by_pos($id_pos, $bulan) {
+    $this->db->select('
+        m.id_manual, 
+        m.id_pos, 
+        m.id_user, 
+        m.tanggal_input, 
+        m.rain, 
+        m.wlevel, 
+        m.keterangan, 
+        m.created_at,
+        u.nama_lengkap as nama_petugas
+    ');
+    $this->db->from('data_manual m');
+    $this->db->join('users u', 'm.id_user = u.id_user', 'left');
+    $this->db->where('m.id_pos', $id_pos);
+    // PERBAIKAN: tambahkan operator =
+    $this->db->where("DATE_FORMAT(m.tanggal_input, '%Y-%m') =", $bulan);
+    $this->db->order_by('m.tanggal_input', 'DESC');
+    $this->db->order_by('m.created_at', 'DESC');
+    return $this->db->get()->result();
+}
 
     /**
      * Get data bendungan berdasarkan pos dan bulan (DENGAN KOLOM BARU)
@@ -452,7 +456,7 @@ class M_admin extends CI_Model {
         $this->db->from('data_bendungan d');
         $this->db->join('users u', 'd.id_user = u.id_user', 'left');
         $this->db->where('d.id_pos', $id_pos);
-        $this->db->where("DATE_FORMAT(d.tanggal_input, '%Y-%m')", $bulan);
+        $this->db->where("DATE_FORMAT(d.tanggal_input, '%Y-%m') =", $bulan);
         $this->db->order_by('d.tanggal_input', 'DESC');
         $this->db->order_by('d.created_at', 'DESC');
         return $this->db->get()->result();

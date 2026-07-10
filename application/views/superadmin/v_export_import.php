@@ -54,7 +54,7 @@
                 
                 <div>
                     <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Periode Data</label>
-                    <div class="grid grid-cols-3 gap-2">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                         <?php foreach ($periods as $key => $label): ?>
                             <label class="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer transition-all">
                                 <input type="radio" name="period" value="<?= $key ?>" class="w-4 h-4 accent-brandyellow" <?= $key == 'all' ? 'checked' : '' ?>>
@@ -84,6 +84,7 @@
             <div class="mt-4 bg-blue-50 rounded-lg p-3 border border-blue-200">
                 <p class="text-xs text-blue-600">💡 <strong>CSV</strong> dapat dibuka dengan Microsoft Excel atau Google Sheets. <strong>PDF</strong> untuk cetak dokumen.</p>
                 <p class="text-xs text-blue-600 mt-1">📌 CSV menggunakan delimiter <strong>titik koma (;)</strong> agar kompatibel dengan Excel Indonesia.</p>
+                <p class="text-xs text-blue-600 mt-1">📋 Untuk <strong>Bendung, Bendungan, PCH, PDA</strong> format mengikuti template standar.</p>
             </div>
         </div>
 
@@ -144,7 +145,7 @@
     </div>
 
     <!-- Quick Export Cards -->
-    <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="mt-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <?php foreach ($modules as $key => $label): ?>
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 hover:shadow-md transition-all">
                 <div class="flex items-center justify-between mb-3">

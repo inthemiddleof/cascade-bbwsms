@@ -75,9 +75,9 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => 'localhost',
-	'username' => 'root',
-	'password' => '',
+	'hostname' => 'mysql',
+	'username' => 'hidrologi_admin',
+	'password' => 'hidrologi123',
 	'database' => 'db_hidrologibbwsms',
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',

@@ -20,15 +20,80 @@ class Superadmin extends CI_Controller {
         $this->load->view('layout/v_superadmin_layout', $data);
     }
 
-    // ==========================================
-    // DASHBOARD
-    // ==========================================
     public function index() {
-        $data = $this->M_superadmin->get_dashboard_data();
-        $data['admin_name'] = $this->session->userdata('nama_lengkap');
-        $this->_render('superadmin/v_dashboard', $data);
-    }
+    $data = $this->M_superadmin->get_dashboard_data();
+    $data['admin_name'] = $this->session->userdata('nama_lengkap');
+    
+    // Tambahkan data untuk grafik
+    $data['pos_list'] = $this->M_superadmin->get_detailed_pos_list();
+    $data['total_pch'] = $this->db->where('tipe_pos', 'PCH')->count_all_results('master_pos');
+    $data['total_pda'] = $this->db->where('tipe_pos', 'PDA')->count_all_results('master_pos');
+    $data['pos_online'] = $this->_count_online_pos();
+    $data['total_data_hari_ini'] = $this->_count_today_data();
+    $data['last_sync'] = $this->_get_last_sync();
+    
+    $this->_render('superadmin/v_dashboard', $data);
+}
 
+private function _count_online_pos($allowed_pos = null) {
+    $this->db->distinct()->select('id_pos');
+    $this->db->where('received_at >=', date('Y-m-d H:i:s', strtotime('-1 hour')));
+    if ($allowed_pos !== null) {
+        $this->db->where_in('id_pos', $allowed_pos);
+    }
+    return $this->db->get('data_telemetri')->num_rows();
+}
+
+private function _count_today_data($allowed_pos = null) {
+    if ($allowed_pos !== null) {
+        $this->db->where_in('id_pos', $allowed_pos);
+    }
+    $t = $this->db->where('DATE(received_at)', date('Y-m-d'))->count_all_results('data_telemetri');
+    $m = $this->db->where('tanggal_input', date('Y-m-d'))->count_all_results('data_manual');
+    $b = $this->db->where('DATE(tanggal_input)', date('Y-m-d'))->count_all_results('data_bendung');
+    $bendungan = $this->db->where('DATE(tanggal_input)', date('Y-m-d'))->count_all_results('data_bendungan');
+    return $t + $m + $b + $bendungan;
+}
+
+private function _get_last_sync($allowed_pos = null) {
+    if ($allowed_pos !== null) {
+        $this->db->where_in('id_pos', $allowed_pos);
+    }
+    $this->db->select('MAX(received_at) as last_sync');
+    $tel = $this->db->get('data_telemetri')->row();
+    
+    if (!empty($tel->last_sync)) {
+        return $tel->last_sync;
+    }
+    
+    if ($allowed_pos !== null) {
+        $this->db->where_in('id_pos', $allowed_pos);
+    }
+    $this->db->select('MAX(created_at) as last_sync');
+    $man = $this->db->get('data_manual')->row();
+    
+    if (!empty($man->last_sync)) {
+        return $man->last_sync;
+    }
+    
+    if ($allowed_pos !== null) {
+        $this->db->where_in('id_pos', $allowed_pos);
+    }
+    $this->db->select('MAX(created_at) as last_sync');
+    $bendung = $this->db->get('data_bendung')->row();
+    
+    if (!empty($bendung->last_sync)) {
+        return $bendung->last_sync;
+    }
+    
+    if ($allowed_pos !== null) {
+        $this->db->where_in('id_pos', $allowed_pos);
+    }
+    $this->db->select('MAX(created_at) as last_sync');
+    $bendungan = $this->db->get('data_bendungan')->row();
+    
+    return !empty($bendungan->last_sync) ? $bendungan->last_sync : null;
+}
     // ==========================================
     // KELOLA POS
     // ==========================================
@@ -96,22 +161,18 @@ class Superadmin extends CI_Controller {
     }
 
     // ==========================================
-    // KELOLA MANUAL (DENGAN KOLOM BARU BENDUNGAN)
+    // KELOLA MANUAL
     // ==========================================
     public function kelola_manual() {
-        // Ambil ID pos dari parameter GET
         $id_pos = $this->input->get('pos');
         $bulan = $this->input->get('bulan') ?: date('Y-m');
         
-        // AMBIL POS LIST UNTUK DROPDOWN - EXCLUDE EMBUNG
         $pos_list = $this->M_superadmin->get_all_pos_unique(null);
         
-        // Jika tidak ada pos yang dipilih, ambil yang pertama (bukan embung)
         if (empty($id_pos) && !empty($pos_list)) {
             $id_pos = $pos_list[0]->id_pos;
         }
         
-        // Ambil data pos yang dipilih
         $pos = null;
         foreach ($pos_list as $p) {
             if ($p->id_pos == $id_pos) {
@@ -120,18 +181,15 @@ class Superadmin extends CI_Controller {
             }
         }
         
-        // Jika pos tidak ditemukan, ambil yang pertama
         if (empty($pos) && !empty($pos_list)) {
             $pos = $pos_list[0];
             $id_pos = $pos->id_pos;
         }
         
-        // Ambil data manual berdasarkan pos dan bulan (gunakan method dari model)
         $kelola_data = $this->M_superadmin->get_kelola_manual_data($id_pos, $bulan);
         $data_list = $kelola_data['data_list'];
         $pos = $kelola_data['pos'];
         
-        // Format data untuk JavaScript menggunakan model
         $pos_data_js = [];
         $bendungan_data_js = [];
         $bendung_data_js = [];
@@ -146,7 +204,6 @@ class Superadmin extends CI_Controller {
             }
         }
         
-        // Siapkan data untuk view
         $data = [
             'app_name' => 'HydroSmart',
             'title' => 'Kelola Laporan Manual',
@@ -170,7 +227,6 @@ class Superadmin extends CI_Controller {
         $this->load->model('M_admin');
         $user_id = $this->session->userdata('user_id') ?: $this->session->userdata('id_user');
         
-        // Validasi
         $this->form_validation->set_rules('id_pos', 'Pos', 'required');
         $this->form_validation->set_rules('tanggal_input', 'Tanggal', 'required');
         
@@ -192,7 +248,6 @@ class Superadmin extends CI_Controller {
         $this->load->model('M_admin');
         $user_id = $this->session->userdata('user_id') ?: $this->session->userdata('id_user');
         
-        // Validasi
         $this->form_validation->set_rules('id_pos', 'Pos', 'required');
         $this->form_validation->set_rules('tanggal_input', 'Tanggal', 'required');
         
@@ -201,10 +256,7 @@ class Superadmin extends CI_Controller {
             redirect('superadmin/kelola_manual');
         }
         
-        // Ambil data POST
         $post = $this->input->post();
-        
-        // Tambahkan kolom baru ke data
         $post['tahun_mulai_pembangunan'] = $this->input->post('tahun_mulai_pembangunan');
         $post['tipe_bendungan'] = $this->input->post('tipe_bendungan');
         $post['elevasi_mercu'] = $this->input->post('elevasi_mercu');
@@ -219,14 +271,10 @@ class Superadmin extends CI_Controller {
         redirect('superadmin/kelola_manual?pos=' . $this->input->post('id_pos') . '&bulan=' . date('Y-m', strtotime($this->input->post('tanggal_input'))));
     }
 
-    // ==========================================
-    // SIMPAN BENDUNG (SESUAI STRUKTUR TERBARU)
-    // ==========================================
     public function simpan_bendung() {
         $this->load->model('M_admin');
         $user_id = $this->session->userdata('user_id') ?: $this->session->userdata('id_user');
         
-        // Validasi
         $this->form_validation->set_rules('id_pos', 'Pos', 'required');
         $this->form_validation->set_rules('tanggal_input', 'Tanggal', 'required');
         
@@ -250,7 +298,6 @@ class Superadmin extends CI_Controller {
     public function update_manual() {
         $this->load->model('M_admin');
         
-        // Validasi
         $this->form_validation->set_rules('id_manual', 'ID Manual', 'required');
         $this->form_validation->set_rules('id_pos', 'Pos', 'required');
         $this->form_validation->set_rules('tanggal', 'Tanggal', 'required');
@@ -268,7 +315,6 @@ class Superadmin extends CI_Controller {
     public function update_bendungan() {
         $this->load->model('M_admin');
         
-        // Validasi
         $this->form_validation->set_rules('id_bendungan', 'ID Bendungan', 'required');
         $this->form_validation->set_rules('id_pos', 'Pos', 'required');
         $this->form_validation->set_rules('tanggal', 'Tanggal', 'required');
@@ -278,10 +324,7 @@ class Superadmin extends CI_Controller {
             redirect('superadmin/kelola_manual');
         }
         
-        // Ambil data POST
         $post = $this->input->post();
-        
-        // Tambahkan kolom baru ke data
         $post['tahun_mulai_pembangunan'] = $this->input->post('tahun_mulai_pembangunan');
         $post['tipe_bendungan'] = $this->input->post('tipe_bendungan');
         $post['elevasi_mercu'] = $this->input->post('elevasi_mercu');
@@ -292,13 +335,9 @@ class Superadmin extends CI_Controller {
         redirect('superadmin/kelola_manual?pos=' . $this->input->post('id_pos') . '&bulan=' . date('Y-m', strtotime($this->input->post('tanggal'))));
     }
 
-    // ==========================================
-    // UPDATE BENDUNG (SESUAI STRUKTUR TERBARU)
-    // ==========================================
     public function update_bendung() {
         $this->load->model('M_admin');
         
-        // Validasi
         $this->form_validation->set_rules('id_bendung', 'ID Bendung', 'required');
         $this->form_validation->set_rules('id_pos', 'Pos', 'required');
         $this->form_validation->set_rules('tanggal', 'Tanggal', 'required');
@@ -330,9 +369,6 @@ class Superadmin extends CI_Controller {
         redirect('superadmin/kelola_manual?pos=' . $this->input->get('pos'));
     }
 
-    // ==========================================
-    // HAPUS BENDUNG (SESUAI STRUKTUR TERBARU)
-    // ==========================================
     public function hapus_bendung($id) {
         $this->load->model('M_admin');
         $result = $this->M_admin->delete_manual_bendung($id);
@@ -449,27 +485,27 @@ class Superadmin extends CI_Controller {
     }
 
     // ==========================================
-    // EXPORT & IMPORT DATA (OPSI 3 - SEDERHANA)
+    // EXPORT & IMPORT DATA
     // ==========================================
 
-    /**
-     * Halaman Export/Import Data
-     */
     public function export_import() {
         $data = [
             'app_name'   => 'HydroSmart',
             'title'      => 'Export & Import Data',
             'admin_name' => $this->session->userdata('nama_lengkap'),
             'modules'    => [
-                'embung' => 'Kelola Embung',
+                'embung' => 'Embung',
                 'pengaman_pantai' => 'Pengaman Pantai',
                 'pengendali_sedimen' => 'Pengendali Sedimen',
-                'irigasi' => 'Daerah Irigasi'
+                'irigasi' => 'Daerah Irigasi',
+                'bendung' => 'Data Bendung',
+                'bendungan' => 'Data Bendungan',
+                'pos_manual_pch' => 'Data Manual PCH (Curah Hujan)',
+                'pos_manual_pda' => 'Data Manual PDA (TMA)',
             ],
             'periods' => [
                 'all' => 'Semua Data',
                 'daily' => 'Harian',
-                'weekly' => 'Mingguan',
                 'monthly' => 'Bulanan',
                 'yearly' => 'Tahunan'
             ]
@@ -477,12 +513,7 @@ class Superadmin extends CI_Controller {
         $this->_render('superadmin/v_export_import', $data);
     }
 
-    /**
-     * Export Data ke CSV (Format Excel Friendly)
-     */
     public function export_csv() {
-        $this->load->helper('download');
-        
         $module = $this->input->get('module');
         $period = $this->input->get('period') ?? 'all';
         $date = $this->input->get('date') ?? date('Y-m-d');
@@ -495,37 +526,29 @@ class Superadmin extends CI_Controller {
         }
         
         $headers = array_keys((array)$data[0]);
-        $module_label = str_replace('_', ' ', ucwords($module));
+        $module_label = str_replace('_', ' ', ucwords(str_replace('_manual', '', $module)));
         $filename = str_replace('_', '-', $module) . '_' . date('Y-m-d_H-i') . '.csv';
         
-        // Header untuk download CSV
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
         header('Pragma: no-cache');
         header('Expires: 0');
         
-        // BOM untuk UTF-8
         echo "\xEF\xBB\xBF";
-        
         $output = fopen('php://output', 'w');
-        
-        // Gunakan delimiter titik koma (;) untuk Excel Indonesia
         $delimiter = ';';
         
-        // Header info
         fputcsv($output, ['=== ' . strtoupper($module_label) . ' ==='], $delimiter);
         fputcsv($output, ['Periode', $this->_get_period_label($period, $date)], $delimiter);
         fputcsv($output, ['Total Data', count($data) . ' record'], $delimiter);
         fputcsv($output, ['Dicetak', date('d-m-Y H:i:s')], $delimiter);
         fputcsv($output, [], $delimiter);
         
-        // Header kolom
         $header_labels = array_map(function($h) {
             return str_replace('_', ' ', ucwords($h));
         }, $headers);
         fputcsv($output, $header_labels, $delimiter);
         
-        // Tulis data
         foreach ($data as $row) {
             $row_data = [];
             foreach ((array)$row as $value) {
@@ -538,9 +561,6 @@ class Superadmin extends CI_Controller {
         exit;
     }
 
-    /**
-     * Export Data ke PDF (menggunakan Dompdf)
-     */
     public function export_pdf() {
         $module = $this->input->get('module');
         $period = $this->input->get('period') ?? 'all';
@@ -553,7 +573,6 @@ class Superadmin extends CI_Controller {
             redirect('superadmin/export_import');
         }
         
-        // Load Dompdf
         $this->_load_dompdf();
         
         $dompdf = new Dompdf\Dompdf();
@@ -561,7 +580,7 @@ class Superadmin extends CI_Controller {
         $dompdf->set_option('isRemoteEnabled', true);
         $dompdf->set_option('defaultFont', 'sans-serif');
         
-        $module_label = str_replace('_', ' ', ucwords($module));
+        $module_label = str_replace('_', ' ', ucwords(str_replace('_manual', '', $module)));
         $period_label = $this->_get_period_label($period, $date);
         $headers = array_keys((array)$data[0]);
         
@@ -576,9 +595,6 @@ class Superadmin extends CI_Controller {
         exit;
     }
 
-    /**
-     * Import Data dari CSV (Support Delimiter ; dan ,)
-     */
     public function import_csv() {
         $module = $this->input->post('module');
         
@@ -593,14 +609,10 @@ class Superadmin extends CI_Controller {
             redirect('superadmin/export_import');
         }
         
-        // Baca file CSV
         $file = fopen($_FILES['file_csv']['tmp_name'], 'r');
-        
-        // Baca baris pertama untuk deteksi delimiter
         $first_line = fgets($file);
         rewind($file);
         
-        // Deteksi delimiter: cari koma atau titik koma
         $delimiter = ',';
         if (strpos($first_line, ';') !== false) {
             $delimiter = ';';
@@ -608,7 +620,6 @@ class Superadmin extends CI_Controller {
             $delimiter = "\t";
         }
         
-        // Ambil header
         $headers = fgetcsv($file, 0, $delimiter);
         if ($headers === FALSE) {
             fclose($file);
@@ -618,13 +629,9 @@ class Superadmin extends CI_Controller {
         
         $headers = array_map('trim', $headers);
         
-        // Cari baris data dimulai (skip baris info jika ada)
-        $data_start_row = 0;
-        $temp_headers = [];
+        // Skip baris info jika ada
         foreach ($headers as $h) {
-            if (strpos($h, '===') !== false || strpos($h, 'Nama') !== false || strpos($h, 'Periode') !== false) {
-                $data_start_row++;
-                // Baca header berikutnya
+            if (strpos($h, '===') !== false || strpos($h, 'Periode') !== false) {
                 $headers = fgetcsv($file, 0, $delimiter);
                 if ($headers === FALSE) {
                     fclose($file);
@@ -636,21 +643,18 @@ class Superadmin extends CI_Controller {
             }
         }
         
-        // Mapping header ke field database
         $field_map = $this->_get_field_mapping($module);
         
         $success = 0;
         $failed = 0;
         $errors = [];
-        $row_index = $data_start_row + 1;
+        $row_index = 1;
         
         while (($row = fgetcsv($file, 0, $delimiter)) !== FALSE) {
             $row_index++;
             
-            // Skip baris kosong
             if (empty(array_filter($row))) continue;
             
-            // Pastikan jumlah kolom sesuai
             if (count($row) < count($headers)) {
                 $failed++;
                 $errors[] = 'Baris ' . $row_index . ': Jumlah kolom tidak sesuai';
@@ -662,7 +666,6 @@ class Superadmin extends CI_Controller {
                 $field = $field_map[$header] ?? null;
                 if ($field && isset($row[$col_index])) {
                     $value = trim($row[$col_index]);
-                    // Konversi format angka (Indonesia ke float)
                     if (is_numeric(str_replace(',', '.', str_replace('.', '', $value)))) {
                         $value = floatval(str_replace(',', '.', str_replace('.', '', $value)));
                     }
@@ -695,352 +698,126 @@ class Superadmin extends CI_Controller {
         redirect('superadmin/export_import');
     }
 
+   /**
+ * Download Template CSV untuk Import
+ */
+public function download_template_csv() {
+    $module = $this->input->get('module');
+    
+    if (empty($module)) {
+        $this->session->set_flashdata('error', 'Silakan pilih modul terlebih dahulu.');
+        redirect('superadmin/export_import');
+    }
+    
+    $field_map = $this->_get_field_mapping($module);
+    
+    // Untuk PCH dan PDA, gunakan template khusus
+    if ($module == 'pos_manual_pch' || $module == 'pos_manual_pda') {
+        $this->_download_template_hidrologi($module);
+        return;
+    }
+    
+    // Untuk modul lainnya
+    $headers = array_keys($field_map);
+    $filename = 'template_' . $module . '.csv';
+    
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="' . $filename . '"');
+    header('Pragma: no-cache');
+    header('Expires: 0');
+    
+    echo "\xEF\xBB\xBF";
+    $output = fopen('php://output', 'w');
+    $delimiter = ';';
+    
+    fputcsv($output, ['=== TEMPLATE IMPORT ' . strtoupper(str_replace('_', ' ', $module)) . ' ==='], $delimiter);
+    fputcsv($output, ['Kolom yang wajib diisi: ' . implode(', ', $headers)], $delimiter);
+    fputcsv($output, ['Format angka: gunakan titik (.) untuk desimal'], $delimiter);
+    fputcsv($output, ['Tanggal: gunakan format YYYY-MM-DD'], $delimiter);
+    fputcsv($output, [], $delimiter);
+    
+    fputcsv($output, $headers, $delimiter);
+    
+    $example = [];
+    foreach ($headers as $h) {
+        $example[] = 'Contoh_' . str_replace(' ', '_', $h);
+    }
+    fputcsv($output, $example, $delimiter);
+    
+    fclose($output);
+    exit;
+}
+
+/**
+ * Download Template Khusus untuk PCH dan PDA
+ */
+private function _download_template_hidrologi($module) {
+    $is_pch = ($module == 'pos_manual_pch');
+    $tipe = $is_pch ? 'PCH' : 'PDA';
+    $satuan = $is_pch ? 'mm' : 'cm';
+    $nama_modul = $is_pch ? 'Curah Hujan (PCH)' : 'Tinggi Muka Air (PDA)';
+    $filename = 'template_' . $module . '.csv';
+    
+    // Buat data template untuk 31 hari
+    $times = ['07:00:00', '12:00:00', '17:00:00'];
+    $dates = [];
+    for ($i = 1; $i <= 31; $i++) {
+        $dates[] = '2026-01-' . str_pad($i, 2, '0', STR_PAD_LEFT);
+    }
+    
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="' . $filename . '"');
+    header('Pragma: no-cache');
+    header('Expires: 0');
+    
+    echo "\xEF\xBB\xBF";
+    $output = fopen('php://output', 'w');
+    $delimiter = ';';
+    
     // ==========================================
-    // PRIVATE HELPER METHODS
+    // HEADER INFO
     // ==========================================
-
-    /**
-     * Load Dompdf Library
-     */
-    private function _load_dompdf() {
-        $paths = [
-            APPPATH . 'third_party/dompdf/autoload.inc.php',
-            APPPATH . 'vendor/autoload.php',
-            FCPATH . 'vendor/autoload.php',
-            APPPATH . 'third_party/dompdf/vendor/autoload.php',
-        ];
-        
-        foreach ($paths as $path) {
-            if (file_exists($path)) {
-                require_once $path;
-                return;
-            }
-        }
-        
-        // Jika tidak ada, tampilkan error
-        show_error('Library Dompdf tidak ditemukan. Silakan download Dompdf dan letakkan di application/third_party/dompdf/');
-    }
-
-    /**
-     * Generate PDF HTML
-     */
-    private function _generate_pdf_html($module_label, $period_label, $headers, $data) {
-        // Batasi jumlah kolom untuk PDF agar tidak overflow
-        $max_cols = 12;
-        if (count($headers) > $max_cols) {
-            $headers = array_slice($headers, 0, $max_cols);
-            // Potong data juga
-            $data = array_map(function($row) use ($max_cols) {
-                return array_slice((array)$row, 0, $max_cols);
-            }, $data);
-        }
-        
-        $html = '<!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <title>Export ' . $module_label . '</title>
-            <style>
-                body { font-family: Arial, sans-serif; font-size: 11px; padding: 15px; }
-                .header { text-align: center; margin-bottom: 15px; border-bottom: 3px solid #feb700; padding-bottom: 10px; }
-                .header h1 { color: #0a2a4a; margin: 0; font-size: 18px; }
-                .header .subtitle { color: #666; margin: 3px 0; font-size: 10px; }
-                .header .total { font-size: 10px; font-weight: bold; color: #0a2a4a; }
-                table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 9px; }
-                th { background-color: #feb700; color: #0a2a4a; padding: 6px 8px; text-align: left; font-weight: bold; border: 1px solid #e5a500; }
-                td { padding: 5px 8px; border: 1px solid #ddd; }
-                tr:nth-child(even) { background-color: #f9f9f9; }
-                .footer { margin-top: 15px; text-align: center; font-size: 9px; color: #999; border-top: 1px solid #ddd; padding-top: 8px; }
-                .badge { display: inline-block; padding: 1px 6px; border-radius: 10px; font-size: 8px; font-weight: bold; }
-                .badge-success { background: #d1fae5; color: #065f46; }
-                .badge-warning { background: #fef3c7; color: #92400e; }
-                .badge-danger { background: #fee2e2; color: #991b1b; }
-                .badge-info { background: #dbeafe; color: #1e40af; }
-                .badge-primary { background: #e0e7ff; color: #3730a3; }
-            </style>
-        </head>
-        <body>
-            <div class="header">
-                <h1>📊 ' . $module_label . '</h1>
-                <div class="subtitle">Periode: ' . $period_label . ' | Dicetak: ' . date('d-m-Y H:i:s') . '</div>
-                <div class="total">Total Data: ' . number_format(count($data)) . ' record</div>
-            </div>
-            <table>
-                <thead>
-                    <tr>';
-        
-        foreach ($headers as $header) {
-            $label = str_replace('_', ' ', ucwords($header));
-            // Singkat label jika terlalu panjang
-            if (strlen($label) > 25) {
-                $label = substr($label, 0, 22) . '...';
-            }
-            $html .= '<th>' . $label . '</th>';
-        }
-        
-        $html .= '</tr></thead><tbody>';
-        
-        $row_count = 0;
-        foreach ($data as $item) {
-            $row_count++;
-            $html .= '<tr>';
-            foreach ((array)$item as $key => $value) {
-                $display = htmlspecialchars($value ?? '-');
-                // Format untuk kolom kondisi/status
-                if (strpos($key, 'kondisi') !== false || strpos($key, 'status') !== false) {
-                    $value_str = (string)$value;
-                    if (strpos($value_str, 'Baik') !== false || strpos($value_str, 'Beroperasi') !== false) {
-                        $display = '<span class="badge badge-success">' . $value_str . '</span>';
-                    } elseif (strpos($value_str, 'Rusak Ringan') !== false) {
-                        $display = '<span class="badge badge-warning">' . $value_str . '</span>';
-                    } elseif (strpos($value_str, 'Rusak Berat') !== false || strpos($value_str, 'Tidak Beroperasi') !== false) {
-                        $display = '<span class="badge badge-danger">' . $value_str . '</span>';
-                    } elseif (!empty($value_str)) {
-                        $display = '<span class="badge badge-primary">' . $value_str . '</span>';
-                    }
-                }
-                $html .= '<td>' . $display . '</td>';
-            }
-            $html .= '</tr>';
-            
-            // Batasi 500 baris untuk PDF (agar tidak overload)
-            if ($row_count >= 500) {
-                $html .= '<tr><td colspan="' . count($headers) . '" style="text-align:center;font-style:italic;color:#999;padding:10px;">... dan ' . (count($data) - 500) . ' data lainnya. Export CSV untuk semua data.</td></tr>';
-                break;
-            }
-        }
-        
-        $html .= '</tbody></table>
-            <div class="footer">
-                <p>Dicetak dari Sistem HydroSmart - BBWS Mesuji Sekampung</p>
-                <p>' . date('d-m-Y H:i:s') . '</p>
-            </div>
-        </body>
-        </html>';
-        
-        return $html;
-    }
-
-    /**
-     * Ambil data untuk export
-     */
-    private function _get_export_data($module, $period, $date) {
-        $this->db->select('*');
-        
-        if ($module == 'embung') {
-            $this->db->from('master_pos');
-            $this->db->where('jenis_aset', 'embung');
-            $this->db->order_by('nama_pos', 'ASC');
-        } elseif ($module == 'pengaman_pantai') {
-            $this->db->from('data_pengaman_pantai');
-            $this->db->order_by('nama_aset', 'ASC');
-        } elseif ($module == 'pengendali_sedimen') {
-            $this->db->from('data_pengendali_sedimen');
-            $this->db->order_by('nama_aset', 'ASC');
-        } elseif ($module == 'irigasi') {
-            $this->db->from('data_irigasi');
-            $this->db->order_by('nama_aset', 'ASC');
-        } else {
-            return [];
-        }
-        
-        // Filter periode
-        if ($period != 'all') {
-            $field_date = 'created_at';
-            $this->_apply_period_filter($period, $date, $field_date);
-        }
-        
-        $query = $this->db->get();
-        return $query->result_array();
-    }
-
-    /**
-     * Apply filter periode
-     */
-    private function _apply_period_filter($period, $date, $field) {
-        $date_obj = new DateTime($date);
-        
-        switch ($period) {
-            case 'daily':
-                $this->db->where('DATE(' . $field . ')', $date);
-                break;
-            case 'weekly':
-                $start = clone $date_obj;
-                $start->modify('monday this week');
-                $end = clone $start;
-                $end->modify('sunday this week');
-                $this->db->where($field . ' >=', $start->format('Y-m-d 00:00:00'));
-                $this->db->where($field . ' <=', $end->format('Y-m-d 23:59:59'));
-                break;
-            case 'monthly':
-                $this->db->where('MONTH(' . $field . ')', $date_obj->format('m'));
-                $this->db->where('YEAR(' . $field . ')', $date_obj->format('Y'));
-                break;
-            case 'yearly':
-                $this->db->where('YEAR(' . $field . ')', $date_obj->format('Y'));
-                break;
+    fputcsv($output, ['=== TEMPLATE IMPORT DATA ' . $nama_modul . ' ==='], $delimiter);
+    fputcsv($output, ['Tipe Pos', $tipe], $delimiter);
+    fputcsv($output, ['Satuan', $satuan], $delimiter);
+    fputcsv($output, ['Format Tanggal', 'YYYY-MM-DD'], $delimiter);
+    fputcsv($output, ['Format Waktu', 'HH:MM:SS (24 jam)'], $delimiter);
+    fputcsv($output, ['Kolom Wajib Diisi', 'time, date, value'], $delimiter);
+    fputcsv($output, [], $delimiter);
+    
+    // ==========================================
+    // HEADER KOLOM (RAPIH DENGAN SPASI)
+    // ==========================================
+    fputcsv($output, ['Waktu (Jam)', 'Tanggal', 'Nilai (' . $satuan . ')', 'Unit'], $delimiter);
+    
+    // ==========================================
+    // DATA TEMPLATE (31 Hari x 3 Waktu)
+    // ==========================================
+    foreach ($dates as $date) {
+        foreach ($times as $time) {
+            fputcsv($output, [$time, $date, '', $satuan], $delimiter);
         }
     }
-
-    /**
-     * Get period label
-     */
-    private function _get_period_label($period, $date) {
-        $date_obj = new DateTime($date);
-        switch ($period) {
-            case 'all': return 'Semua Data';
-            case 'daily': return 'Harian - ' . $date_obj->format('d-m-Y');
-            case 'weekly': 
-                $start = clone $date_obj;
-                $start->modify('monday this week');
-                $end = clone $start;
-                $end->modify('sunday this week');
-                return 'Mingguan - ' . $start->format('d-m-Y') . ' s/d ' . $end->format('d-m-Y');
-            case 'monthly': return 'Bulanan - ' . $date_obj->format('F Y');
-            case 'yearly': return 'Tahunan - ' . $date_obj->format('Y');
-            default: return $date;
-        }
-    }
-
-    /**
-     * Get column letter untuk Excel
-     */
-    private function _get_column_letter($index) {
-        $letters = range('A', 'Z');
-        if ($index <= 26) return $letters[$index - 1];
-        return 'A' . $letters[$index - 27];
-    }
-
-    /**
-     * Get field mapping untuk import
-     */
-    private function _get_field_mapping($module) {
-        $maps = [
-            'embung' => [
-                'Nomor Pos' => 'nomor_pos',
-                'Nama Pos' => 'nama_pos',
-                'Sungai' => 'sungai',
-                'Wilayah Sungai' => 'wilayah_sungai',
-                'Latitude' => 'lat',
-                'Longitude' => 'lng',
-                'NWL' => 'nwl',
-                'Volume NWL' => 'nwl_volume',
-                'Luas NWL' => 'nwl_luas',
-            ],
-            'pengaman_pantai' => [
-                'Kode Integrasi' => 'kode_integrasi',
-                'Nama Aset' => 'nama_aset',
-                'Jenis Bangunan' => 'jenis_bangunan',
-                'Sungai' => 'sungai',
-                'Wilayah Sungai' => 'wilayah_sungai',
-                'Lat Awal' => 'lat_awal',
-                'Lng Awal' => 'lng_awal',
-                'Lat Akhir' => 'lat_akhir',
-                'Lng Akhir' => 'lng_akhir',
-                'Panjang' => 'panjang',
-                'Elevasi Puncak' => 'elevasi_puncak',
-                'Lebar Puncak' => 'lebar_puncak',
-                'Kondisi' => 'kondisi_bangunan',
-                'Status Operasi' => 'status_operasi',
-                'Tahun' => 'tahun_dibangun',
-                'Kab/Kota' => 'kabupaten_kota',
-                'Kecamatan' => 'kecamatan',
-                'Kelurahan' => 'kelurahan',
-                'Manfaat' => 'manfaat',
-            ],
-            'pengendali_sedimen' => [
-                'Kode Integrasi' => 'kode_integrasi',
-                'Nama Aset' => 'nama_aset',
-                'Jenis Bangunan' => 'jenis_bangunan',
-                'Sungai' => 'sungai',
-                'DAS' => 'daerah_aliran_sungai',
-                'Wilayah Sungai' => 'wilayah_sungai',
-                'Latitude' => 'lat',
-                'Longitude' => 'lng',
-                'Daya Tampung' => 'daya_tampung',
-                'Panjang' => 'panjang',
-                'Lebar' => 'lebar',
-                'Tinggi' => 'tinggi',
-                'Kondisi' => 'kondisi',
-                'Status Operasi' => 'status_operasi',
-                'Tahun' => 'tahun_dibangun',
-                'Kab/Kota' => 'kabupaten_kota',
-                'Kecamatan' => 'kecamatan',
-                'Kelurahan' => 'kelurahan',
-                'Jenis Material' => 'jenis_material',
-            ],
-            'irigasi' => [
-                'Kode Integrasi' => 'kode_integrasi',
-                'Nama DI' => 'nama_aset',
-                'Jenis DI' => 'jenis_daerah_irigasi',
-                'Wilayah Sungai' => 'wilayah_sungai',
-                'DAS' => 'daerah_aliran_sungai',
-                'Kab/Kota' => 'kabupaten_kota',
-                'Kecamatan' => 'kecamatan',
-                'Kelurahan' => 'kelurahan',
-                'Latitude' => 'latitude',
-                'Longitude' => 'longitude',
-                'Luas Permen' => 'luas_permen',
-                'Luas Baku' => 'luas_baku',
-                'Luas Potensial' => 'luas_potensial',
-                'Luas Fungsional' => 'luas_fungsional',
-                'Sumber Air' => 'sumber_air',
-                'Jenis Bangunan Utama' => 'jenis_bangunan_utama',
-                'Tahun' => 'tahun_pembangunan',
-                'Status Pemeliharaan' => 'status_pemeliharaan',
-                'Di OP Kan Oleh' => 'di_op_kan_oleh',
-            ],
-        ];
-        return $maps[$module] ?? [];
-    }
-
-    /**
-     * Import data ke database
-     */
-    private function _import_data($module, $data) {
-        try {
-            // Bersihkan data
-            foreach ($data as $key => $value) {
-                if ($value === '' || $value === null) {
-                    $data[$key] = null;
-                }
-            }
-            
-            if ($module == 'embung') {
-                $data['tipe_pos'] = 'PCH';
-                $data['jenis_aset'] = 'embung';
-                $data['is_bendungan'] = 0;
-                $data['is_bendung'] = 0;
-                $data['created_at'] = date('Y-m-d H:i:s');
-                $this->db->insert('master_pos', $data);
-            } elseif ($module == 'pengaman_pantai') {
-                $data['created_at'] = date('Y-m-d H:i:s');
-                $this->db->insert('data_pengaman_pantai', $data);
-            } elseif ($module == 'pengendali_sedimen') {
-                $data['created_at'] = date('Y-m-d H:i:s');
-                $this->db->insert('data_pengendali_sedimen', $data);
-            } elseif ($module == 'irigasi') {
-                $data['created_at'] = date('Y-m-d H:i:s');
-                $this->db->insert('data_irigasi', $data);
-            } else {
-                return ['status' => 'error', 'message' => 'Module tidak dikenal'];
-            }
-            
-            return $this->db->affected_rows() > 0 
-                ? ['status' => 'success', 'message' => 'Data berhasil diimport'] 
-                : ['status' => 'error', 'message' => 'Gagal import data'];
-        } catch (Exception $e) {
-            return ['status' => 'error', 'message' => $e->getMessage()];
-        }
-    }
+    
+    // ==========================================
+    // CATATAN KAKI
+    // ==========================================
+    fputcsv($output, [], $delimiter);
+    fputcsv($output, ['=== CATATAN ==='], $delimiter);
+    fputcsv($output, ['1. Isi kolom "Nilai" dengan angka sesuai pengukuran'], $delimiter);
+    fputcsv($output, ['2. Waktu pengukuran bisa disesuaikan (07:00, 12:00, 17:00)'], $delimiter);
+    fputcsv($output, ['3. Tanggal bisa diubah sesuai kebutuhan'], $delimiter);
+    fputcsv($output, ['4. Unit otomatis: ' . $satuan], $delimiter);
+    fputcsv($output, ['5. Kolom "Unit" tidak wajib diisi'], $delimiter);
+    
+    fclose($output);
+    exit;
+}
 
     // ==========================================
-    // EXPORT TELEMETRI KHUSUS
+    // EXPORT TELEMETRI
     // ==========================================
 
-    /**
-     * Halaman Export Telemetri
-     */
     public function export_telemetri() {
         $data = [
             'app_name'    => 'HydroSmart',
@@ -1063,9 +840,6 @@ class Superadmin extends CI_Controller {
         $this->_render('superadmin/v_export_telemetri', $data);
     }
 
-    /**
-     * Export Data Telemetri ke CSV (Format Excel Friendly)
-     */
     public function export_telemetri_csv() {
         $this->load->helper('download');
         
@@ -1094,21 +868,15 @@ class Superadmin extends CI_Controller {
         
         $filename = 'telemetri_' . str_replace(' ', '_', $pos->nama_pos) . '_' . date('Y-m-d_H-i') . '.csv';
         
-        // Header untuk download CSV - dengan charset UTF-8 BOM
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
         header('Pragma: no-cache');
         header('Expires: 0');
         
-        // BOM untuk UTF-8 (biar Excel baca dengan benar)
         echo "\xEF\xBB\xBF";
-        
         $output = fopen('php://output', 'w');
-        
-        // Gunakan delimiter titik koma (;) agar Excel Indonesia bisa membaca dengan benar
         $delimiter = ';';
         
-        // Header info
         fputcsv($output, ['=== DATA TELEMETRI ==='], $delimiter);
         fputcsv($output, ['Nama Pos', $pos->nama_pos], $delimiter);
         fputcsv($output, ['Tipe Pos', $pos->tipe_pos], $delimiter);
@@ -1118,11 +886,9 @@ class Superadmin extends CI_Controller {
         fputcsv($output, ['Dicetak', date('d-m-Y H:i:s')], $delimiter);
         fputcsv($output, [], $delimiter);
         
-        // Header kolom
         $headers = ['No', 'Tanggal', 'Jam', 'Baterai (V)', 'Curah Hujan (mm)', 'TMA (m)', 'Status'];
         fputcsv($output, $headers, $delimiter);
         
-        // Data
         $no = 1;
         foreach ($data as $row) {
             $row_data = [
@@ -1141,9 +907,6 @@ class Superadmin extends CI_Controller {
         exit;
     }
 
-    /**
-     * Export Data Telemetri ke PDF
-     */
     public function export_telemetri_pdf() {
         $id_pos = $this->input->get('id_pos');
         $period = $this->input->get('period') ?? 'daily';
@@ -1188,64 +951,130 @@ class Superadmin extends CI_Controller {
     }
 
     // ==========================================
-    // PRIVATE METHODS UNTUK TELEMETRI
+    // PRIVATE HELPER METHODS
     // ==========================================
 
-    /**
-     * Get data telemetri untuk export
-     */
-    private function _get_telemetri_export_data($id_pos, $period, $date, $start_time, $end_time) {
-        $this->db->select('received_at, batt, rain, wlevel, status');
-        $this->db->from('data_telemetri');
-        $this->db->where('id_pos', $id_pos);
+    private function _load_dompdf() {
+        $paths = [
+            APPPATH . 'third_party/dompdf/autoload.inc.php',
+            APPPATH . 'vendor/autoload.php',
+            FCPATH . 'vendor/autoload.php',
+            APPPATH . 'third_party/dompdf/vendor/autoload.php',
+        ];
         
-        // Filter periode
-        $date_obj = new DateTime($date);
-        
-        switch ($period) {
-            case 'hourly':
-                // Data per jam pada tanggal tertentu
-                $this->db->where('DATE(received_at)', $date);
-                $this->db->where('TIME(received_at) >=', $start_time);
-                $this->db->where('TIME(received_at) <=', $end_time);
-                break;
-            case 'daily':
-                $this->db->where('DATE(received_at)', $date);
-                break;
-            case 'weekly':
-                $start = clone $date_obj;
-                $start->modify('monday this week');
-                $end = clone $start;
-                $end->modify('sunday this week');
-                $this->db->where('received_at >=', $start->format('Y-m-d 00:00:00'));
-                $this->db->where('received_at <=', $end->format('Y-m-d 23:59:59'));
-                break;
-            case 'monthly':
-                $this->db->where('MONTH(received_at)', $date_obj->format('m'));
-                $this->db->where('YEAR(received_at)', $date_obj->format('Y'));
-                break;
-            case 'custom':
-                // Kustom: jam dan menit
-                $this->db->where('DATE(received_at)', $date);
-                if (!empty($start_time)) {
-                    $this->db->where('TIME(received_at) >=', $start_time);
-                }
-                if (!empty($end_time)) {
-                    $this->db->where('TIME(received_at) <=', $end_time);
-                }
-                break;
-            default:
-                $this->db->where('DATE(received_at)', $date);
+        foreach ($paths as $path) {
+            if (file_exists($path)) {
+                require_once $path;
+                return;
+            }
         }
         
-        $this->db->order_by('received_at', 'ASC');
-        $query = $this->db->get();
-        return $query->result();
+        show_error('Library Dompdf tidak ditemukan. Silakan download Dompdf dan letakkan di application/third_party/dompdf/');
     }
 
-    /**
-     * Get period label untuk telemetri
-     */
+    private function _generate_pdf_html($module_label, $period_label, $headers, $data) {
+        $max_cols = 12;
+        if (count($headers) > $max_cols) {
+            $headers = array_slice($headers, 0, $max_cols);
+            $data = array_map(function($row) use ($max_cols) {
+                return array_slice((array)$row, 0, $max_cols);
+            }, $data);
+        }
+        
+        $html = '<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Export ' . $module_label . '</title>
+            <style>
+                body { font-family: Arial, sans-serif; font-size: 11px; padding: 15px; }
+                .header { text-align: center; margin-bottom: 15px; border-bottom: 3px solid #feb700; padding-bottom: 10px; }
+                .header h1 { color: #0a2a4a; margin: 0; font-size: 18px; }
+                .header .subtitle { color: #666; margin: 3px 0; font-size: 10px; }
+                .header .total { font-size: 10px; font-weight: bold; color: #0a2a4a; }
+                table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 9px; }
+                th { background-color: #feb700; color: #0a2a4a; padding: 6px 8px; text-align: left; font-weight: bold; border: 1px solid #e5a500; }
+                td { padding: 5px 8px; border: 1px solid #ddd; }
+                tr:nth-child(even) { background-color: #f9f9f9; }
+                .footer { margin-top: 15px; text-align: center; font-size: 9px; color: #999; border-top: 1px solid #ddd; padding-top: 8px; }
+                .badge { display: inline-block; padding: 1px 6px; border-radius: 10px; font-size: 8px; font-weight: bold; }
+                .badge-success { background: #d1fae5; color: #065f46; }
+                .badge-warning { background: #fef3c7; color: #92400e; }
+                .badge-danger { background: #fee2e2; color: #991b1b; }
+                .badge-info { background: #dbeafe; color: #1e40af; }
+                .badge-primary { background: #e0e7ff; color: #3730a3; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>📊 ' . $module_label . '</h1>
+                <div class="subtitle">Periode: ' . $period_label . ' | Dicetak: ' . date('d-m-Y H:i:s') . '</div>
+                <div class="total">Total Data: ' . number_format(count($data)) . ' record</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>';
+        
+        foreach ($headers as $header) {
+            $label = str_replace('_', ' ', ucwords($header));
+            if (strlen($label) > 25) {
+                $label = substr($label, 0, 22) . '...';
+            }
+            $html .= '<th>' . $label . '</th>';
+        }
+        
+        $html .= '</tr></thead><tbody>';
+        
+        $row_count = 0;
+        foreach ($data as $item) {
+            $row_count++;
+            $html .= '<tr>';
+            foreach ((array)$item as $key => $value) {
+                $display = htmlspecialchars($value ?? '-');
+                if (strpos($key, 'kondisi') !== false || strpos($key, 'status') !== false) {
+                    $value_str = (string)$value;
+                    if (strpos($value_str, 'Baik') !== false || strpos($value_str, 'Beroperasi') !== false) {
+                        $display = '<span class="badge badge-success">' . $value_str . '</span>';
+                    } elseif (strpos($value_str, 'Rusak Ringan') !== false) {
+                        $display = '<span class="badge badge-warning">' . $value_str . '</span>';
+                    } elseif (strpos($value_str, 'Rusak Berat') !== false || strpos($value_str, 'Tidak Beroperasi') !== false) {
+                        $display = '<span class="badge badge-danger">' . $value_str . '</span>';
+                    } elseif (!empty($value_str)) {
+                        $display = '<span class="badge badge-primary">' . $value_str . '</span>';
+                    }
+                }
+                $html .= '<td>' . $display . '</td>';
+            }
+            $html .= '</tr>';
+            
+            if ($row_count >= 500) {
+                $html .= '<tr><td colspan="' . count($headers) . '" style="text-align:center;font-style:italic;color:#999;padding:10px;">... dan ' . (count($data) - 500) . ' data lainnya. Export CSV untuk semua data.</td></tr>';
+                break;
+            }
+        }
+        
+        $html .= '</tbody></table>
+            <div class="footer">
+                <p>Dicetak dari Sistem HydroSmart - BBWS Mesuji Sekampung</p>
+                <p>' . date('d-m-Y H:i:s') . '</p>
+            </div>
+        </body>
+        </html>';
+        
+        return $html;
+    }
+
+    private function _get_period_label($period, $date) {
+        $date_obj = new DateTime($date);
+        switch ($period) {
+            case 'all': return 'Semua Data';
+            case 'daily': return 'Harian - ' . $date_obj->format('d-m-Y');
+            case 'monthly': return 'Bulanan - ' . $date_obj->format('F Y');
+            case 'yearly': return 'Tahunan - ' . $date_obj->format('Y');
+            default: return $date;
+        }
+    }
+
     private function _get_period_label_telemetri($period, $date, $start_time, $end_time) {
         $date_obj = new DateTime($date);
         
@@ -1269,14 +1098,10 @@ class Superadmin extends CI_Controller {
         }
     }
 
-    /**
-     * Generate PDF HTML untuk telemetri
-     */
     private function _generate_telemetri_pdf_html($pos, $period_label, $data) {
         $total = count($data);
         $tipe_icon = ($pos->tipe_pos == 'PCH') ? '🌧️' : '📊';
         
-        // Hitung statistik
         $max_rain = 0;
         $max_wlevel = 0;
         $avg_batt = 0;
@@ -1300,28 +1125,23 @@ class Superadmin extends CI_Controller {
                 .header { text-align: center; margin-bottom: 15px; border-bottom: 3px solid #feb700; padding-bottom: 10px; }
                 .header h1 { color: #0a2a4a; margin: 0; font-size: 20px; }
                 .header .subtitle { color: #666; margin: 3px 0; font-size: 10px; }
-                
                 .info-grid { display: flex; gap: 20px; flex-wrap: wrap; margin: 10px 0 15px 0; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
                 .info-item { font-size: 10px; }
                 .info-item label { font-weight: bold; color: #475569; }
                 .info-item span { color: #0a2a4a; }
-                
                 .stats { display: flex; gap: 15px; flex-wrap: wrap; margin: 10px 0 15px 0; }
                 .stat-box { padding: 8px 14px; background: #f1f5f9; border-radius: 6px; border-left: 3px solid #feb700; }
                 .stat-box .label { font-size: 8px; color: #94a3b8; text-transform: uppercase; }
                 .stat-box .value { font-size: 14px; font-weight: bold; color: #0a2a4a; }
-                
                 table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 9px; }
                 th { background-color: #feb700; color: #0a2a4a; padding: 6px 8px; text-align: left; font-weight: bold; border: 1px solid #e5a500; }
                 td { padding: 5px 8px; border: 1px solid #ddd; }
                 tr:nth-child(even) { background-color: #f9f9f9; }
-                
                 .badge { display: inline-block; padding: 1px 6px; border-radius: 10px; font-size: 8px; font-weight: bold; }
                 .badge-success { background: #d1fae5; color: #065f46; }
                 .badge-warning { background: #fef3c7; color: #92400e; }
                 .badge-danger { background: #fee2e2; color: #991b1b; }
                 .badge-info { background: #dbeafe; color: #1e40af; }
-                
                 .footer { margin-top: 15px; text-align: center; font-size: 9px; color: #999; border-top: 1px solid #ddd; padding-top: 8px; }
             </style>
         </head>
@@ -1330,21 +1150,18 @@ class Superadmin extends CI_Controller {
                 <h1>' . $tipe_icon . ' Data Telemetri - ' . htmlspecialchars($pos->nama_pos) . '</h1>
                 <div class="subtitle">Periode: ' . $period_label . ' | Dicetak: ' . date('d-m-Y H:i:s') . '</div>
             </div>
-            
             <div class="info-grid">
                 <div class="info-item"><label>Nama Pos:</label> <span>' . htmlspecialchars($pos->nama_pos) . '</span></div>
                 <div class="info-item"><label>Tipe:</label> <span>' . htmlspecialchars($pos->tipe_pos) . '</span></div>
                 <div class="info-item"><label>Device ID:</label> <span>' . htmlspecialchars($pos->device_id_telemetry) . '</span></div>
                 <div class="info-item"><label>Total Data:</label> <span>' . number_format($total) . ' record</span></div>
             </div>
-            
             <div class="stats">
                 <div class="stat-box"><div class="label">Total Curah Hujan</div><div class="value">' . number_format($total_rain, 1) . ' mm</div></div>
                 <div class="stat-box"><div class="label">Maks Curah Hujan</div><div class="value">' . number_format($max_rain, 1) . ' mm</div></div>
                 <div class="stat-box"><div class="label">Maks TMA</div><div class="value">' . number_format($max_wlevel, 2) . ' m</div></div>
                 <div class="stat-box"><div class="label">Rata-rata Baterai</div><div class="value">' . number_format($avg_batt, 1) . ' V</div></div>
             </div>
-            
             <table>
                 <thead>
                     <tr>
@@ -1385,7 +1202,6 @@ class Superadmin extends CI_Controller {
                 <td>' . $status_badge . '</td>
             </tr>';
             
-            // Batasi 500 baris
             if ($row_count >= 500) {
                 $html .= '<tr><td colspan="7" style="text-align:center;font-style:italic;color:#999;padding:10px;">... dan ' . ($total - 500) . ' data lainnya. Export CSV untuk semua data.</td></tr>';
                 break;
@@ -1403,49 +1219,671 @@ class Superadmin extends CI_Controller {
         return $html;
     }
 
-    /**
-     * Download Template CSV untuk Import
-     */
-    public function download_template_csv() {
-        $module = $this->input->get('module');
+    private function _get_telemetri_export_data($id_pos, $period, $date, $start_time, $end_time) {
+        $this->db->select('received_at, batt, rain, wlevel, status');
+        $this->db->from('data_telemetri');
+        $this->db->where('id_pos', $id_pos);
         
-        if (empty($module)) {
-            $this->session->set_flashdata('error', 'Silakan pilih modul terlebih dahulu.');
-            redirect('superadmin/export_import');
+        $date_obj = new DateTime($date);
+        
+        switch ($period) {
+            case 'hourly':
+                $this->db->where('DATE(received_at)', $date);
+                $this->db->where('TIME(received_at) >=', $start_time);
+                $this->db->where('TIME(received_at) <=', $end_time);
+                break;
+            case 'daily':
+                $this->db->where('DATE(received_at)', $date);
+                break;
+            case 'weekly':
+                $start = clone $date_obj;
+                $start->modify('monday this week');
+                $end = clone $start;
+                $end->modify('sunday this week');
+                $this->db->where('received_at >=', $start->format('Y-m-d 00:00:00'));
+                $this->db->where('received_at <=', $end->format('Y-m-d 23:59:59'));
+                break;
+            case 'monthly':
+                $this->db->where('MONTH(received_at)', $date_obj->format('m'));
+                $this->db->where('YEAR(received_at)', $date_obj->format('Y'));
+                break;
+            case 'custom':
+                $this->db->where('DATE(received_at)', $date);
+                if (!empty($start_time)) {
+                    $this->db->where('TIME(received_at) >=', $start_time);
+                }
+                if (!empty($end_time)) {
+                    $this->db->where('TIME(received_at) <=', $end_time);
+                }
+                break;
+            default:
+                $this->db->where('DATE(received_at)', $date);
         }
         
-        $field_map = $this->_get_field_mapping($module);
-        $headers = array_keys($field_map);
-        
-        $filename = 'template_' . $module . '.csv';
-        
-        header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
-        header('Pragma: no-cache');
-        header('Expires: 0');
-        
-        echo "\xEF\xBB\xBF";
-        $output = fopen('php://output', 'w');
-        $delimiter = ';';
-        
-        // Header info
-        fputcsv($output, ['=== TEMPLATE IMPORT ' . strtoupper(str_replace('_', ' ', $module)) . ' ==='], $delimiter);
-        fputcsv($output, ['Kolom yang wajib diisi: ' . implode(', ', $headers)], $delimiter);
-        fputcsv($output, ['Format angka: gunakan titik (.) untuk desimal'], $delimiter);
-        fputcsv($output, ['Tanggal: gunakan format YYYY-MM-DD'], $delimiter);
-        fputcsv($output, [], $delimiter);
-        
-        // Header kolom
-        fputcsv($output, $headers, $delimiter);
-        
-        // Contoh data (1 baris)
-        $example = [];
-        foreach ($headers as $h) {
-            $example[] = 'Contoh_' . str_replace(' ', '_', $h);
-        }
-        fputcsv($output, $example, $delimiter);
-        
-        fclose($output);
-        exit;
+        $this->db->order_by('received_at', 'ASC');
+        $query = $this->db->get();
+        return $query->result();
     }
+
+    private function _get_field_mapping($module) {
+        $maps = [
+            'embung' => [
+                'Nama Pos' => 'nama_pos',
+                'Sungai' => 'sungai',
+                'Wilayah Sungai' => 'wilayah_sungai',
+                'Latitude' => 'lat',
+                'Longitude' => 'lng',
+                'NWL (m)' => 'nwl',
+                'Volume NWL (jt.m³)' => 'nwl_volume',
+                'Luas NWL (km²)' => 'nwl_luas',
+                'Kapasitas Volume (m³)' => 'kapasitas_volume',
+                'Elevasi Puncak (m)' => 'elevasi_puncak',
+                'Tinggi Embung (m)' => 'tinggi_embung',
+                'Panjang Tubuh (m)' => 'panjang_tubuh',
+                'Tahun Mulai Pembangunan' => 'tahun_mulai_pembangunan',
+            ],
+            'pengaman_pantai' => [
+                'Kode Integrasi' => 'kode_integrasi',
+                'Nama Aset' => 'nama_aset',
+                'Jenis Bangunan' => 'jenis_bangunan',
+                'Sungai' => 'sungai',
+                'Wilayah Sungai' => 'wilayah_sungai',
+                'Lat Awal' => 'lat_awal',
+                'Lng Awal' => 'lng_awal',
+                'Lat Akhir' => 'lat_akhir',
+                'Lng Akhir' => 'lng_akhir',
+                'Panjang (m)' => 'panjang',
+                'Elevasi Puncak (m)' => 'elevasi_puncak',
+                'Lebar Puncak (m)' => 'lebar_puncak',
+                'Tahun Dibangun' => 'tahun_dibangun',
+                'Kabupaten/Kota' => 'kabupaten_kota',
+                'Kecamatan' => 'kecamatan',
+                'Kelurahan/Desa' => 'kelurahan',
+                'Manfaat' => 'manfaat',
+                'Keterangan' => 'keterangan',
+            ],
+            'pengendali_sedimen' => [
+                'Kode Integrasi' => 'kode_integrasi',
+                'Nama Aset' => 'nama_aset',
+                'Jenis Bangunan' => 'jenis_bangunan',
+                'Sungai' => 'sungai',
+                'DAS' => 'daerah_aliran_sungai',
+                'Wilayah Sungai' => 'wilayah_sungai',
+                'Latitude' => 'lat',
+                'Longitude' => 'lng',
+                'Daya Tampung (m³)' => 'daya_tampung',
+                'Panjang (m)' => 'panjang',
+                'Lebar (m)' => 'lebar',
+                'Tinggi (m)' => 'tinggi',
+                'Tahun Dibangun' => 'tahun_dibangun',
+                'Kabupaten/Kota' => 'kabupaten_kota',
+                'Kecamatan' => 'kecamatan',
+                'Kelurahan/Desa' => 'kelurahan',
+                'Jenis Material' => 'jenis_material',
+                'Keterangan' => 'keterangan',
+            ],
+            'irigasi' => [
+                'Kode Integrasi' => 'kode_integrasi',
+                'Nama Daerah Irigasi' => 'nama_aset',
+                'Jenis DI' => 'jenis_daerah_irigasi',
+                'Wilayah Sungai' => 'wilayah_sungai',
+                'DAS' => 'daerah_aliran_sungai',
+                'Kabupaten/Kota' => 'kabupaten_kota',
+                'Kecamatan' => 'kecamatan',
+                'Desa/Kelurahan' => 'kelurahan',
+                'Latitude' => 'latitude',
+                'Longitude' => 'longitude',
+                'Luas Permen (ha)' => 'luas_permen',
+                'Luas Baku (ha)' => 'luas_baku',
+                'Luas Potensial (ha)' => 'luas_potensial',
+                'Luas Fungsional (ha)' => 'luas_fungsional',
+                'Sumber Air' => 'sumber_air',
+                'Jenis Bangunan Utama' => 'jenis_bangunan_utama',
+                'Tahun Pembangunan' => 'tahun_pembangunan',
+                'Status Pemeliharaan' => 'status_pemeliharaan',
+                'Di OP Kan Oleh' => 'di_op_kan_oleh',
+            ],
+            'bendung' => [
+                'Tanggal Pengukuran' => 'tanggal_input',
+                'Nama Bendung' => 'nama_pos',
+                'Sungai' => 'sungai',
+                'Wilayah Sungai' => 'wilayah_sungai',
+                'Curah Hujan (mm)' => 'rain',
+                'Elevasi Air thd Mercu (m)' => 'elevasi_mercu',
+                'Q Total (m³/dt)' => 'q_total',
+                'Q FC1 (m³/dt)' => 'q_fc1',
+                'Q FC2 (m³/dt)' => 'q_fc2',
+                'Q Saluran Induk (m³/dt)' => 'q_sal_induk',
+                'Q Limpas (m³/dt)' => 'q_limpas',
+                'Q Sungai (m³/dt)' => 'q_sungai',
+                'Q SPAM KPBU (m³/dt)' => 'q_spam_kpbu',
+                'Sluice Gate (m³/dt)' => 'sluice_gate',
+                'Bukaan Pintu (cm)' => 'bukaan_pintu',
+                'Keterangan' => 'keterangan',
+            ],
+            'bendungan' => [
+                'Tanggal Pengukuran' => 'tanggal_input',
+                'Nama Bendungan' => 'nama_pos',
+                'Sungai' => 'sungai',
+                'Wilayah Sungai' => 'wilayah_sungai',
+                'NWL (m)' => 'nwl',
+                'Volume NWL (jt.m³)' => 'nwl_volume',
+                'Luas NWL (km²)' => 'nwl_luas',
+                'Curah Hujan (mm)' => 'rain',
+                'Elevasi TMA (m)' => 'elevasi',
+                'Volume Tampungan (jt.m³)' => 'volume',
+                'Luas Genangan (km²)' => 'luas',
+                'Inflow (m³/s)' => 'inflow',
+                'PLTM (m³/s)' => 'pltm',
+                'Spillway (m³/s)' => 'spillway',
+                'Total Outflow (m³/s)' => 'total_outflow',
+                'Status PLTA' => 'plta_status',
+                'Status Irigasi' => 'irigasi_status',
+                'Tail Water' => 'tail_water',
+                'Rembesan V-Notch h (cm)' => 'rembesan_vnotch_h',
+                'Rembesan V-Notch Q (lt/s)' => 'rembesan_vnotch_q',
+                'Rembesan Pump Pit Kiri h (cm)' => 'rembesan_pump_pit_l_h',
+                'Rembesan Pump Pit Kiri Q (lt/s)' => 'rembesan_pump_pit_l_q',
+                'Rembesan Pump Pit Kanan h (cm)' => 'rembesan_pump_pit_r_h',
+                'Rembesan Pump Pit Kanan Q (lt/s)' => 'rembesan_pump_pit_r_q',
+                'Tahun Mulai Pembangunan' => 'tahun_mulai_pembangunan',
+                'Tipe Bendungan' => 'tipe_bendungan',
+                'Elevasi Mercu (m)' => 'elevasi_mercu',
+                'Luas DAS (km²)' => 'luas_das',
+                'Keterangan' => 'keterangan',
+            ],
+            'pos_manual_pch' => [
+            'Waktu (Jam)' => 'time',
+            'Tanggal' => 'date',
+            'Nilai (mm)' => 'value',
+            'Unit' => 'unit',
+        ],
+            'pos_manual_pda' => [
+            'Waktu (Jam)' => 'time',
+            'Tanggal' => 'date',
+            'Nilai (cm)' => 'value',
+            'Unit' => 'unit',
+        ],
+        ];
+        return $maps[$module] ?? [];
+    }
+
+    private function _get_export_data($module, $period, $date) {
+        $this->db->select('*');
+        
+        if ($module == 'embung') {
+            $this->db->from('master_pos');
+            $this->db->where('jenis_aset', 'embung');
+            $this->db->order_by('nama_pos', 'ASC');
+        } elseif ($module == 'pengaman_pantai') {
+            $this->db->from('data_pengaman_pantai');
+            $this->db->order_by('nama_aset', 'ASC');
+        } elseif ($module == 'pengendali_sedimen') {
+            $this->db->from('data_pengendali_sedimen');
+            $this->db->order_by('nama_aset', 'ASC');
+        } elseif ($module == 'irigasi') {
+            $this->db->from('data_irigasi');
+            $this->db->order_by('nama_aset', 'ASC');
+        } elseif ($module == 'bendung') {
+            $this->db->select('b.tanggal_input, p.nama_pos, p.sungai, p.wilayah_sungai, b.rain, b.elevasi_mercu, b.q_total, b.q_fc1, b.q_fc2, b.q_sal_induk, b.q_limpas, b.q_sungai, b.q_spam_kpbu, b.sluice_gate, b.bukaan_pintu, b.keterangan, b.created_at');
+            $this->db->from('data_bendung b');
+            $this->db->join('master_pos p', 'b.id_pos = p.id_pos', 'left');
+            $this->db->order_by('b.tanggal_input', 'DESC');
+            $this->db->order_by('b.created_at', 'DESC');
+        } elseif ($module == 'bendungan') {
+            $this->db->select('b.tanggal_input, p.nama_pos, p.sungai, p.wilayah_sungai, b.nwl, b.nwl_volume, b.nwl_luas, b.rain, b.elevasi, b.volume, b.luas, b.inflow, b.pltm, b.spillway, b.total_outflow, b.plta_status, b.irigasi_status, b.tail_water, b.rembesan_vnotch_h, b.rembesan_vnotch_q, b.rembesan_pump_pit_l_h, b.rembesan_pump_pit_l_q, b.rembesan_pump_pit_r_h, b.rembesan_pump_pit_r_q, b.tahun_mulai_pembangunan, b.tipe_bendungan, b.elevasi_mercu, b.luas_das, b.keterangan, b.created_at');
+            $this->db->from('data_bendungan b');
+            $this->db->join('master_pos p', 'b.id_pos = p.id_pos', 'left');
+            $this->db->order_by('b.tanggal_input', 'DESC');
+            $this->db->order_by('b.created_at', 'DESC');
+        } elseif ($module == 'pos_manual_pch') {
+            $this->db->select('m.tanggal_input, p.nama_pos, p.sungai, p.wilayah_sungai, m.rain, m.keterangan, m.created_at');
+            $this->db->from('data_manual m');
+            $this->db->join('master_pos p', 'm.id_pos = p.id_pos', 'left');
+            $this->db->where('p.tipe_pos', 'PCH');
+            $this->db->where('p.is_bendungan', 0);
+            $this->db->where('p.is_bendung', 0);
+            $this->db->order_by('m.tanggal_input', 'DESC');
+            $this->db->order_by('m.created_at', 'DESC');
+        } elseif ($module == 'pos_manual_pda') {
+            $this->db->select('m.tanggal_input, p.nama_pos, p.sungai, p.wilayah_sungai, m.wlevel * 100 as wlevel, m.keterangan, m.created_at');
+            $this->db->from('data_manual m');
+            $this->db->join('master_pos p', 'm.id_pos = p.id_pos', 'left');
+            $this->db->where('p.tipe_pos', 'PDA');
+            $this->db->where('p.is_bendungan', 0);
+            $this->db->where('p.is_bendung', 0);
+            $this->db->order_by('m.tanggal_input', 'DESC');
+            $this->db->order_by('m.created_at', 'DESC');
+        } else {
+            return [];
+        }
+        
+        if ($period != 'all') {
+            $field_date = 'created_at';
+            $this->_apply_period_filter($period, $date, $field_date);
+        }
+        
+        $query = $this->db->get();
+        return $query->result_array();
+    }
+
+    private function _apply_period_filter($period, $date, $field) {
+        $date_obj = new DateTime($date);
+        
+        switch ($period) {
+            case 'daily':
+                $this->db->where('DATE(' . $field . ')', $date);
+                break;
+            case 'monthly':
+                $this->db->where('MONTH(' . $field . ')', $date_obj->format('m'));
+                $this->db->where('YEAR(' . $field . ')', $date_obj->format('Y'));
+                break;
+            case 'yearly':
+                $this->db->where('YEAR(' . $field . ')', $date_obj->format('Y'));
+                break;
+        }
+    }
+
+    private function _import_data($module, $data) {
+        try {
+            foreach ($data as $key => $value) {
+                if ($value === '' || $value === null) {
+                    $data[$key] = null;
+                }
+            }
+            
+            if ($module == 'embung') {
+                $data['tipe_pos'] = 'PCH';
+                $data['jenis_aset'] = 'embung';
+                $data['is_bendungan'] = 0;
+                $data['is_bendung'] = 0;
+                $data['created_at'] = date('Y-m-d H:i:s');
+                $this->db->insert('master_pos', $data);
+            } elseif ($module == 'pengaman_pantai') {
+                $data['created_at'] = date('Y-m-d H:i:s');
+                $this->db->insert('data_pengaman_pantai', $data);
+            } elseif ($module == 'pengendali_sedimen') {
+                $data['created_at'] = date('Y-m-d H:i:s');
+                $this->db->insert('data_pengendali_sedimen', $data);
+            } elseif ($module == 'irigasi') {
+                $data['created_at'] = date('Y-m-d H:i:s');
+                $this->db->insert('data_irigasi', $data);
+            } elseif ($module == 'bendung') {
+                $pos = $this->db->select('id_pos')->where('nama_pos', $data['nama_pos'])->where('is_bendung', 1)->get('master_pos')->row();
+                if (!$pos) {
+                    $pos_data = [
+                        'nama_pos' => $data['nama_pos'],
+                        'tipe_pos' => 'PCH',
+                        'sungai' => $data['sungai'] ?? null,
+                        'wilayah_sungai' => $data['wilayah_sungai'] ?? null,
+                        'is_bendung' => 1,
+                        'is_bendungan' => 0,
+                        'jenis_aset' => 'bendung',
+                        'created_at' => date('Y-m-d H:i:s')
+                    ];
+                    $this->db->insert('master_pos', $pos_data);
+                    $id_pos = $this->db->insert_id();
+                } else {
+                    $id_pos = $pos->id_pos;
+                }
+                
+                $bendung_data = [
+                    'id_pos' => $id_pos,
+                    'tanggal_input' => $data['tanggal_input'] ?? date('Y-m-d'),
+                    'rain' => $data['rain'] ?? null,
+                    'elevasi_mercu' => $data['elevasi_mercu'] ?? null,
+                    'q_total' => $data['q_total'] ?? null,
+                    'q_fc1' => $data['q_fc1'] ?? null,
+                    'q_fc2' => $data['q_fc2'] ?? null,
+                    'q_sal_induk' => $data['q_sal_induk'] ?? null,
+                    'q_limpas' => $data['q_limpas'] ?? null,
+                    'q_sungai' => $data['q_sungai'] ?? null,
+                    'q_spam_kpbu' => $data['q_spam_kpbu'] ?? null,
+                    'sluice_gate' => $data['sluice_gate'] ?? null,
+                    'bukaan_pintu' => $data['bukaan_pintu'] ?? null,
+                    'keterangan' => $data['keterangan'] ?? null,
+                    'created_at' => date('Y-m-d H:i:s')
+                ];
+                $this->db->insert('data_bendung', $bendung_data);
+            } elseif ($module == 'bendungan') {
+                $pos = $this->db->select('id_pos')->where('nama_pos', $data['nama_pos'])->where('is_bendungan', 1)->get('master_pos')->row();
+                if (!$pos) {
+                    $pos_data = [
+                        'nama_pos' => $data['nama_pos'],
+                        'tipe_pos' => 'PCH',
+                        'sungai' => $data['sungai'] ?? null,
+                        'wilayah_sungai' => $data['wilayah_sungai'] ?? null,
+                        'is_bendungan' => 1,
+                        'is_bendung' => 0,
+                        'jenis_aset' => 'bendungan',
+                        'created_at' => date('Y-m-d H:i:s')
+                    ];
+                    $this->db->insert('master_pos', $pos_data);
+                    $id_pos = $this->db->insert_id();
+                } else {
+                    $id_pos = $pos->id_pos;
+                }
+                
+                $bendungan_data = [
+                    'id_pos' => $id_pos,
+                    'tanggal_input' => $data['tanggal_input'] ?? date('Y-m-d'),
+                    'nwl' => $data['nwl'] ?? null,
+                    'nwl_volume' => $data['nwl_volume'] ?? null,
+                    'nwl_luas' => $data['nwl_luas'] ?? null,
+                    'rain' => $data['rain'] ?? null,
+                    'elevasi' => $data['elevasi'] ?? null,
+                    'volume' => $data['volume'] ?? null,
+                    'luas' => $data['luas'] ?? null,
+                    'inflow' => $data['inflow'] ?? null,
+                    'pltm' => $data['pltm'] ?? null,
+                    'spillway' => $data['spillway'] ?? null,
+                    'total_outflow' => $data['total_outflow'] ?? null,
+                    'plta_status' => $data['plta_status'] ?? null,
+                    'irigasi_status' => $data['irigasi_status'] ?? null,
+                    'tail_water' => $data['tail_water'] ?? null,
+                    'rembesan_vnotch_h' => $data['rembesan_vnotch_h'] ?? null,
+                    'rembesan_vnotch_q' => $data['rembesan_vnotch_q'] ?? null,
+                    'rembesan_pump_pit_l_h' => $data['rembesan_pump_pit_l_h'] ?? null,
+                    'rembesan_pump_pit_l_q' => $data['rembesan_pump_pit_l_q'] ?? null,
+                    'rembesan_pump_pit_r_h' => $data['rembesan_pump_pit_r_h'] ?? null,
+                    'rembesan_pump_pit_r_q' => $data['rembesan_pump_pit_r_q'] ?? null,
+                    'tahun_mulai_pembangunan' => $data['tahun_mulai_pembangunan'] ?? null,
+                    'tipe_bendungan' => $data['tipe_bendungan'] ?? null,
+                    'elevasi_mercu' => $data['elevasi_mercu'] ?? null,
+                    'luas_das' => $data['luas_das'] ?? null,
+                    'keterangan' => $data['keterangan'] ?? null,
+                    'created_at' => date('Y-m-d H:i:s')
+                ];
+                $this->db->insert('data_bendungan', $bendungan_data);
+           } elseif ($module == 'pos_manual_pch') {
+            // Cari id_pos dari nama_pos
+            $pos = $this->db->select('id_pos')
+                           ->where('nama_pos', $data['nama_pos'])
+                           ->where('tipe_pos', 'PCH')
+                           ->where('is_bendungan', 0)
+                           ->where('is_bendung', 0)
+                           ->get('master_pos')
+                           ->row();
+            
+            if (!$pos) {
+                // Buat pos baru jika belum ada
+                $pos_data = [
+                    'nama_pos' => $data['nama_pos'],
+                    'tipe_pos' => 'PCH',
+                    'sungai' => $data['sungai'] ?? null,
+                    'wilayah_sungai' => $data['wilayah_sungai'] ?? null,
+                    'is_bendungan' => 0,
+                    'is_bendung' => 0,
+                    'jenis_aset' => 'pch',
+                    'created_at' => date('Y-m-d H:i:s')
+                ];
+                $this->db->insert('master_pos', $pos_data);
+                $id_pos = $this->db->insert_id();
+            } else {
+                $id_pos = $pos->id_pos;
+            }
+               // Format tanggal dan waktu
+            $tanggal = $data['date'] ?? date('Y-m-d');
+            $waktu = $data['time'] ?? '00:00:00';
+            $datetime = $tanggal . ' ' . $waktu;
+            
+            // Insert ke data_manual
+            $manual_data = [
+                'id_pos' => $id_pos,
+                'tanggal_input' => $tanggal,
+                'rain' => $data['value'] ?? null,
+                'wlevel' => null,
+                'keterangan' => 'Import dari template - Jam: ' . $waktu,
+                'created_at' => $datetime
+            ];
+            $this->db->insert('data_manual', $manual_data);
+            
+        // ==========================================
+        // MODUL BARU: POS MANUAL PDA
+        // ==========================================
+        } elseif ($module == 'pos_manual_pda') {
+            // Cari id_pos dari nama_pos
+            $pos = $this->db->select('id_pos')
+                           ->where('nama_pos', $data['nama_pos'])
+                           ->where('tipe_pos', 'PDA')
+                           ->where('is_bendungan', 0)
+                           ->where('is_bendung', 0)
+                           ->get('master_pos')
+                           ->row();
+            
+            if (!$pos) {
+                // Buat pos baru jika belum ada
+                $pos_data = [
+                    'nama_pos' => $data['nama_pos'],
+                    'tipe_pos' => 'PDA',
+                    'sungai' => $data['sungai'] ?? null,
+                    'wilayah_sungai' => $data['wilayah_sungai'] ?? null,
+                    'is_bendungan' => 0,
+                    'is_bendung' => 0,
+                    'jenis_aset' => 'pda',
+                    'created_at' => date('Y-m-d H:i:s')
+                ];
+                $this->db->insert('master_pos', $pos_data);
+                $id_pos = $this->db->insert_id();
+            } else {
+                $id_pos = $pos->id_pos;
+            }
+            
+            // Format tanggal dan waktu
+            $tanggal = $data['date'] ?? date('Y-m-d');
+            $waktu = $data['time'] ?? '00:00:00';
+            $datetime = $tanggal . ' ' . $waktu;
+            
+            // Konversi cm ke meter
+            $wlevel_meter = null;
+            if (!empty($data['value'])) {
+                $wlevel_meter = floatval($data['value']) / 100;
+            }
+            
+            // Insert ke data_manual
+            $manual_data = [
+                'id_pos' => $id_pos,
+                'tanggal_input' => $tanggal,
+                'rain' => null,
+                'wlevel' => $wlevel_meter,
+                'keterangan' => 'Import dari template - Jam: ' . $waktu,
+                'created_at' => $datetime
+            ];
+            $this->db->insert('data_manual', $manual_data);
+            
+        } else {
+            return ['status' => 'error', 'message' => 'Module tidak dikenal'];
+        }
+        
+        return $this->db->affected_rows() > 0 
+            ? ['status' => 'success', 'message' => 'Data berhasil diimport'] 
+            : ['status' => 'error', 'message' => 'Gagal import data'];
+    } catch (Exception $e) {
+        return ['status' => 'error', 'message' => $e->getMessage()];
+    }
+}
+
+public function get_chart_data() {
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+    
+    $id_pos = $this->input->get('id_pos');
+    $date = $this->input->get('date') ?? date('Y-m-d');
+    
+    if (empty($id_pos)) {
+        echo json_encode(['status' => 'error', 'message' => 'ID Pos tidak ditemukan']);
+        return;
+    }
+    
+    $pos = $this->db->where('id_pos', $id_pos)->get('master_pos')->row();
+    if (!$pos) {
+        echo json_encode(['status' => 'error', 'message' => 'Pos tidak ditemukan']);
+        return;
+    }
+    
+    $value_field = ($pos->tipe_pos == 'PCH') ? 'rain' : 'wlevel';
+    $unit = ($pos->tipe_pos == 'PCH') ? 'mm' : 'cm';
+    $label = ($pos->tipe_pos == 'PCH') ? 'Curah Hujan' : 'Tinggi Muka Air';
+    
+    // ==========================================
+    // BUAT SEMUA WAKTU 00:00 - 23:55 (interval 5 menit)
+    // ==========================================
+    $allTimes = [];
+    for ($i = 0; $i < 24; $i++) {
+        for ($j = 0; $j < 60; $j += 5) {
+            $allTimes[] = str_pad($i, 2, '0', STR_PAD_LEFT) . ':' . str_pad($j, 2, '0', STR_PAD_LEFT);
+        }
+    }
+    
+    // Inisialisasi array dengan nilai 0 untuk semua waktu
+    $manual_data_by_time = array_fill_keys($allTimes, 0);
+    $telemetri_data_by_time = array_fill_keys($allTimes, 0);
+    $manual_count_by_time = array_fill_keys($allTimes, 0);
+    $telemetri_count_by_time = array_fill_keys($allTimes, 0);
+    
+    // ==========================================
+    // AMBIL DATA MANUAL
+    // ==========================================
+    try {
+        $this->db->select("
+            DATE_FORMAT(created_at, '%H:%i') as waktu,
+            " . $value_field . " as value
+        ");
+        $this->db->from('data_manual');
+        $this->db->where('id_pos', $id_pos);
+        $this->db->where('DATE(tanggal_input)', $date);
+        $this->db->where($value_field . ' IS NOT NULL');
+        $manual_raw = $this->db->get()->result();
+        
+        foreach ($manual_raw as $m) {
+            $waktu = $this->_round_to_5_minutes($m->waktu);
+            if (isset($manual_data_by_time[$waktu])) {
+                $val = floatval($m->value);
+                if ($pos->tipe_pos == 'PDA') {
+                    $val = $val * 100;
+                }
+                $manual_data_by_time[$waktu] = $val; // Langsung assign, bukan +=
+                $manual_count_by_time[$waktu] = 1;
+            }
+        }
+    } catch (Exception $e) {
+        echo json_encode(['status' => 'error', 'message' => 'Error manual: ' . $e->getMessage()]);
+        return;
+    }
+    
+    // ==========================================
+    // AMBIL DATA TELEMETRI
+    // ==========================================
+    try {
+        $this->db->select("
+            DATE_FORMAT(received_at, '%H:%i') as waktu,
+            wlevel as value
+        ");
+        $this->db->from('data_telemetri');
+        $this->db->where('id_pos', $id_pos);
+        $this->db->where('DATE(received_at)', $date);
+        $this->db->where('wlevel IS NOT NULL');
+        $this->db->order_by('received_at', 'ASC');
+        $telemetri_raw = $this->db->get()->result();
+        
+        foreach ($telemetri_raw as $t) {
+            $waktu = $this->_round_to_5_minutes($t->waktu);
+            if (isset($telemetri_data_by_time[$waktu])) {
+                $val = floatval($t->value);
+                if ($pos->tipe_pos == 'PDA') {
+                    $val = $val * 100;
+                }
+                $telemetri_data_by_time[$waktu] = $val;
+                $telemetri_count_by_time[$waktu] = 1;
+            }
+        }
+    } catch (Exception $e) {
+        echo json_encode(['status' => 'error', 'message' => 'Error telemetri: ' . $e->getMessage()]);
+        return;
+    }
+    
+    // ==========================================
+    // BUAT LABEL DAN VALUES - SEMUA WAKTU MUNCUL
+    // ==========================================
+    $labels = [];
+    $manual_values = [];
+    $telemetri_values = [];
+    $colors = [];
+    
+    $all_valid = [];
+    foreach ($allTimes as $waktu) {
+        $labels[] = $waktu;
+        
+        $manual_val = $manual_data_by_time[$waktu] ?? 0;
+        $telemetri_val = $telemetri_data_by_time[$waktu] ?? 0;
+        
+        $manual_values[] = round($manual_val, 2);
+        $telemetri_values[] = round($telemetri_val, 2);
+        
+        if ($manual_val > 0) $all_valid[] = $manual_val;
+        if ($telemetri_val > 0) $all_valid[] = $telemetri_val;
+    }
+    
+    // ==========================================
+    // GENERATE WARNA
+    // ==========================================
+    if (empty($all_valid)) {
+        foreach ($manual_values as $val) {
+            $colors[] = 'rgba(203, 213, 225, 0.5)';
+        }
+    } else {
+        $max_val = max($all_valid);
+        $min_val = min($all_valid);
+        $range = $max_val - $min_val;
+        if ($range == 0) $range = 1;
+        
+        foreach ($manual_values as $val) {
+            if ($val == 0) {
+                $colors[] = 'rgba(203, 213, 225, 0.5)';
+            } else {
+                $ratio = ($val - $min_val) / $range;
+                $r = 254 - round($ratio * 200);
+                $g = 183 + round($ratio * 50);
+                $b = 0 + round($ratio * 150);
+                $colors[] = "rgba($r, $g, $b, 0.8)";
+            }
+        }
+    }
+    
+    $has_manual = count(array_filter($manual_values, function($v) { return $v > 0; })) > 0;
+    $has_telemetri = count(array_filter($telemetri_values, function($v) { return $v > 0; })) > 0;
+    
+    echo json_encode([
+        'status' => 'success',
+        'labels' => $labels,
+        'manual_values' => $manual_values,
+        'telemetri_values' => $telemetri_values,
+        'colors' => $colors,
+        'unit' => $unit,
+        'label' => $label,
+        'pos_name' => $pos->nama_pos,
+        'date' => $date,
+        'has_manual' => $has_manual,
+        'has_telemetri' => $has_telemetri,
+        'total_manual' => count(array_filter($manual_values, function($v) { return $v > 0; })),
+        'total_telemetri' => count(array_filter($telemetri_values, function($v) { return $v > 0; })),
+        'no_data' => false
+    ]);
+}
+
+/**
+ * Bulatkan waktu ke 5 menit terdekat
+ */
+private function _round_to_5_minutes($time) {
+    $parts = explode(':', $time);
+    $hour = intval($parts[0]);
+    $minute = intval($parts[1]);
+    $minute = round($minute / 5) * 5;
+    if ($minute == 60) {
+        $minute = 0;
+        $hour++;
+        if ($hour == 24) $hour = 0;
+    }
+    return str_pad($hour, 2, '0', STR_PAD_LEFT) . ':' . str_pad($minute, 2, '0', STR_PAD_LEFT);
+}
 }

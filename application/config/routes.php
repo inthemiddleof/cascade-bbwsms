@@ -58,3 +58,4 @@ $route['admin/export_csv'] = 'admin/export_csv';
 $route['admin/export_pdf'] = 'admin/export_pdf';
 $route['admin/download_template_csv'] = 'admin/download_template_csv';
 $route['admin/import_csv'] = 'admin/import_csv';
+$route['superadmin/get_chart_data'] = 'superadmin/get_chart_data';
