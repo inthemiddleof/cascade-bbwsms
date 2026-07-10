@@ -6,10 +6,12 @@ $embung_count = isset($embung_count) ? $embung_count : 0;
 $pengaman_count = isset($pengaman_count) ? $pengaman_count : 0;
 $sedimen_count = isset($sedimen_count) ? $sedimen_count : 0;
 $irigasi_count = isset($irigasi_count) ? $irigasi_count : 0;
+$mata_air_count = isset($mata_air_count) ? $mata_air_count : 0;
 $embung_db = isset($embung_db) ? $embung_db : [];
 $pengaman_db = isset($pengaman_db) ? $pengaman_db : [];
 $sedimen_db = isset($sedimen_db) ? $sedimen_db : [];
 $irigasi_db = isset($irigasi_db) ? $irigasi_db : [];
+$mata_air_db = isset($mata_air_db) ? $mata_air_db : [];
 ?>
 
 <!-- ============================================ -->
@@ -105,6 +107,10 @@ $irigasi_db = isset($irigasi_db) ? $irigasi_db : [];
             <div class="bg-blue-50/60 rounded-xl px-3 py-2 text-center"><p class="text-[9px] text-slate-500 font-medium">PCH</p><p class="text-sm font-black text-darkblue"><?= count($pch_db) ?></p></div>
             <div class="bg-purple-50/60 rounded-xl px-3 py-2 text-center"><p class="text-[9px] text-slate-500 font-medium">PDA</p><p class="text-sm font-black text-darkblue"><?= count($pda_db) ?></p></div>
             <div class="bg-green-50/60 rounded-xl px-3 py-2 text-center"><p class="text-[9px] text-slate-500 font-medium">Irigasi</p><p class="text-sm font-black text-darkblue"><?= $irigasi_count ?></p></div>
+            <div class="bg-teal-50/60 rounded-xl px-3 py-2 text-center">
+                <p class="text-[9px] text-slate-500 font-medium">Mata Air</p>
+                <p class="text-sm font-black text-darkblue"><?= $mata_air_count ?></p>
+            </div>   
         </div>
         <div class="border-t border-white/30 my-3"></div>
         <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-2">Keterangan</p>
@@ -117,6 +123,10 @@ $irigasi_db = isset($irigasi_db) ? $irigasi_db : [];
             <div class="flex items-center gap-2 px-2 py-1.5 rounded-lg"><span class="w-2 h-2 rounded-full bg-green-600 flex-shrink-0"></span><span class="text-[10px] text-slate-600">Daerah Irigasi</span></div>
             <div class="flex items-center gap-2 px-2 py-1.5 rounded-lg"><span class="w-2 h-2 rounded-full bg-blue-600 flex-shrink-0"></span><span class="text-[10px] text-slate-600">PCH (Hujan)</span></div>
             <div class="flex items-center gap-2 px-2 py-1.5 rounded-lg"><span class="w-2 h-2 rounded-full bg-purple-600 flex-shrink-0"></span><span class="text-[10px] text-slate-600">PDA (TMA)</span></div>
+            <div class="flex items-center gap-2 px-2 py-1.5 rounded-lg">
+                <span class="w-2 h-2 rounded-full bg-teal-500 flex-shrink-0"></span>
+                <span class="text-[10px] text-slate-600">Mata Air</span>
+            </div>
         </div>
     </div>
 
@@ -136,6 +146,7 @@ $irigasi_db = isset($irigasi_db) ? $irigasi_db : [];
             <label class="flex items-center gap-1.5 px-1.5 py-0.5 rounded cursor-pointer hover:bg-white/30 transition-all"><input type="checkbox" onchange="toggleLayer('irigasi_MTB',this)" class="w-3 h-3 rounded accent-green-500"><span class="text-[8px] text-slate-500">Daerah Irigasi</span></label>
             <label class="flex items-center gap-1.5 px-1.5 py-0.5 rounded cursor-pointer hover:bg-white/30 transition-all"><input type="checkbox" onchange="toggleLayer('pch_MTB',this)" class="w-3 h-3 rounded accent-blue-500"><span class="text-[8px] text-slate-500">PCH</span></label>
             <label class="flex items-center gap-1.5 px-1.5 py-0.5 rounded cursor-pointer hover:bg-white/30 transition-all"><input type="checkbox" onchange="toggleLayer('pda_MTB',this)" class="w-3 h-3 rounded accent-purple-500"><span class="text-[8px] text-slate-500">PDA</span></label>
+            <label class="flex items-center gap-1.5 px-1.5 py-0.5 rounded cursor-pointer hover:bg-white/30 transition-all"><input type="checkbox" onchange="toggleLayer('mata_air_MTB',this)" class="w-3 h-3 rounded accent-teal-500"><span class="text-[8px] text-slate-500">Mata Air</span></label>
         </div>
 
         <!-- WS SEPUTIH-SEKAMPUNG -->
@@ -150,6 +161,7 @@ $irigasi_db = isset($irigasi_db) ? $irigasi_db : [];
             <label class="flex items-center gap-1.5 px-1.5 py-0.5 rounded cursor-pointer hover:bg-white/30 transition-all"><input type="checkbox" onchange="toggleLayer('irigasi_SS',this)" class="w-3 h-3 rounded accent-green-500"><span class="text-[8px] text-slate-500">Daerah Irigasi</span></label>
             <label class="flex items-center gap-1.5 px-1.5 py-0.5 rounded cursor-pointer hover:bg-white/30 transition-all"><input type="checkbox" onchange="toggleLayer('pch_SS',this)" class="w-3 h-3 rounded accent-blue-500"><span class="text-[8px] text-slate-500">PCH</span></label>
             <label class="flex items-center gap-1.5 px-1.5 py-0.5 rounded cursor-pointer hover:bg-white/30 transition-all"><input type="checkbox" onchange="toggleLayer('pda_SS',this)" class="w-3 h-3 rounded accent-purple-500"><span class="text-[8px] text-slate-500">PDA</span></label>
+            <label class="flex items-center gap-1.5 px-1.5 py-0.5 rounded cursor-pointer hover:bg-white/30 transition-all"><input type="checkbox" onchange="toggleLayer('mata_air_SS',this)" class="w-3 h-3 rounded accent-teal-500"><span class="text-[8px] text-slate-500">Mata Air</span></label>
         </div>
 
         <!-- WS SEMANGKA -->
@@ -164,6 +176,7 @@ $irigasi_db = isset($irigasi_db) ? $irigasi_db : [];
             <label class="flex items-center gap-1.5 px-1.5 py-0.5 rounded cursor-pointer hover:bg-white/30 transition-all"><input type="checkbox" onchange="toggleLayer('irigasi_SM',this)" class="w-3 h-3 rounded accent-green-500"><span class="text-[8px] text-slate-500">Daerah Irigasi</span></label>
             <label class="flex items-center gap-1.5 px-1.5 py-0.5 rounded cursor-pointer hover:bg-white/30 transition-all"><input type="checkbox" onchange="toggleLayer('pch_SM',this)" class="w-3 h-3 rounded accent-blue-500"><span class="text-[8px] text-slate-500">PCH</span></label>
             <label class="flex items-center gap-1.5 px-1.5 py-0.5 rounded cursor-pointer hover:bg-white/30 transition-all"><input type="checkbox" onchange="toggleLayer('pda_SM',this)" class="w-3 h-3 rounded accent-purple-500"><span class="text-[8px] text-slate-500">PDA</span></label>
+            <label class="flex items-center gap-1.5 px-1.5 py-0.5 rounded cursor-pointer hover:bg-white/30 transition-all"><input type="checkbox" onchange="toggleLayer('mata_air_SM',this)" class="w-3 h-3 rounded accent-teal-500"><span class="text-[8px] text-slate-500">Mata Air</span></label>
         </div>
 
         <div class="my-2 border-t border-white/30"></div>
@@ -313,6 +326,7 @@ var layerSedimen_MTB = L.layerGroup();
 var layerIrigasi_MTB = L.layerGroup();
 var layerPCH_MTB = L.layerGroup();
 var layerPDA_MTB = L.layerGroup();
+var layerMataAir_MTB = L.layerGroup();
 
 var layerBendungan_SS = L.layerGroup().addTo(heroMap);
 var layerBendung_SS = L.layerGroup().addTo(heroMap);
@@ -322,6 +336,7 @@ var layerSedimen_SS = L.layerGroup();
 var layerIrigasi_SS = L.layerGroup();
 var layerPCH_SS = L.layerGroup();
 var layerPDA_SS = L.layerGroup();
+var layerMataAir_SS = L.layerGroup();
 
 var layerBendungan_SM = L.layerGroup().addTo(heroMap);
 var layerBendung_SM = L.layerGroup().addTo(heroMap);
@@ -331,6 +346,7 @@ var layerSedimen_SM = L.layerGroup();
 var layerIrigasi_SM = L.layerGroup();
 var layerPCH_SM = L.layerGroup();
 var layerPDA_SM = L.layerGroup();
+var layerMataAir_SM = L.layerGroup();
 
 window.addEventListener('resize', function() {
     var n = window.innerWidth < 1024;
@@ -399,6 +415,50 @@ function filterByWS(data, ws) {
 }
 
 // =============================================
+// FILTER MATA AIR - VERSI DENGAN MAPPING LENGKAP
+// =============================================
+function filterMataAirByWS(data, ws) {
+    if (!data || data.length === 0) return [];
+    
+    // Mapping lengkap berdasarkan kabupaten yang ada di database
+    var wsMapping = {
+        'MESUJI-TULANG BAWANG': [
+            'TULANG BAWANG', 'MESUJI', 'WAY KANAN',
+            'TULANG BAWANG BARAT', 'TULANG BAWANG TENGAH',
+            'LAMPUNG UTARA', 'WAY KANAN', 'MESUJI'
+        ],
+        'SEPUTIH-SEKAMPUNG': [
+            'SEKAMPUNG', 'SEPUTIH', 'LAMPUNG TENGAH',
+            'LAMPUNG TIMUR', 'LAMPUNG SELATAN',
+            'BANDAR LAMPUNG', 'METRO', 'PRINGSEWU',
+            'LAMPUNG', 'SEKAMPUNG UDIK'
+        ],
+        'SEMANGKA': [
+            'TANGGAMUS', 'PESISIR BARAT', 'LAMPUNG BARAT',
+            'LAMPUNG', 'KRUI', 'BENGKUNAT',
+            'PESISIR TENGAH'
+        ]
+    };
+    
+    var keywords = wsMapping[ws] || [];
+    if (keywords.length === 0) return data;
+    
+    var result = data.filter(function(item) {
+        if (!item.kabupaten) return false;
+        var kab = item.kabupaten.toUpperCase().trim();
+        
+        // Cek apakah kabupaten mengandung salah satu keyword
+        var matched = keywords.some(function(keyword) {
+            return kab.includes(keyword.toUpperCase());
+        });
+        
+        return matched;
+    });
+    
+    return result;
+}
+
+// =============================================
 // GEOJSON DAS & WS
 // =============================================
 var dasData = <?= $das_geojson ?>;
@@ -454,6 +514,7 @@ var sedimenDataDB = <?= json_encode($sedimen_db) ?>;
 var irigasiDataDB = <?= json_encode($irigasi_db) ?>;
 var pchDataDB = <?= isset($pch_db) ? json_encode($pch_db) : '[]' ?>;
 var pdaDataDB = <?= isset($pda_db) ? json_encode($pda_db) : '[]' ?>;
+var mataAirDataDB = <?= json_encode($mata_air_db) ?>;
 
 // Filter data berdasarkan WS
 var bendungan_MTB = filterByWS(bendunganDataDB, 'MESUJI-TULANG BAWANG');
@@ -481,6 +542,11 @@ var pda_MTB = filterByWS(pdaDataDB, 'MESUJI-TULANG BAWANG');
 var pda_SS = filterByWS(pdaDataDB, 'SEPUTIH-SEKAMPUNG');
 var pda_SM = filterByWS(pdaDataDB, 'SEMANGKA');
 
+// Filter data mata air
+var mataAir_MTB = filterMataAirByWS(mataAirDataDB, 'MESUJI-TULANG BAWANG');
+var mataAir_SS = filterMataAirByWS(mataAirDataDB, 'SEPUTIH-SEKAMPUNG');
+var mataAir_SM = filterMataAirByWS(mataAirDataDB, 'SEMANGKA');
+
 // =============================================
 // SEARCH INDEX
 // =============================================
@@ -505,6 +571,24 @@ function addToSearchIndex(data, type, color, bgColor, zoom, latField, lngField, 
     }
 }
 
+function addMataAirToSearchIndex(data) {
+    if (data) {
+        data.forEach(function(p) {
+            if (!p.latitude || !p.longitude) return;
+            searchIndex.push({
+                id: p.id_mata_air,
+                name: p.nama_mata_air,
+                type: 'Mata Air',
+                color: '#14B8A6',
+                bgColor: '#ecfdf5',
+                lat: parseFloat(p.latitude),
+                lng: parseFloat(p.longitude),
+                zoom: 15
+            });
+        });
+    }
+}
+
 addToSearchIndex(bendunganDataDB, 'Bendungan', '#EF4444', '#fef2f2', 16);
 addToSearchIndex(bendungDataDB, 'Bendung', '#06B6D4', '#ecfeff', 15);
 addToSearchIndex(embungDataDB, 'Embung', '#10B981', '#ecfdf5', 15);
@@ -512,6 +596,7 @@ addToSearchIndex(sedimenDataDB, 'Pengendali Sedimen', '#EAB308', '#fefce8', 16);
 addToSearchIndex(irigasiDataDB, 'Daerah Irigasi', '#22C55E', '#f0fdf4', 13, 'latitude', 'longitude', 'nama_aset');
 addToSearchIndex(pchDataDB, 'PCH (Hujan)', '#3B82F6', '#eff6ff', 15);
 addToSearchIndex(pdaDataDB, 'PDA (TMA)', '#8B5CF6', '#f5f3ff', 15);
+addMataAirToSearchIndex(mataAirDataDB);
 
 searchIndex.sort(function(a, b) {
     return a.name.localeCompare(b.name);
@@ -828,6 +913,127 @@ function renderPDA(data, layer) {
 }
 
 // =============================================
+// RENDER MATA AIR
+// =============================================
+function renderMataAir(data, layer) {
+    if (!data) return;
+    data.forEach(function(p) {
+        if (!p.latitude || !p.longitude) return;
+        
+        var hasData = (p.debit !== null && p.debit !== '') || 
+                      (p.jenis_mata_air && p.jenis_mata_air !== '');
+        var shouldPulse = hasData;
+        
+        var m = L.marker([parseFloat(p.latitude), parseFloat(p.longitude)], {
+            icon: createCustomIcon('#14B8A6', shouldPulse)
+        }).addTo(layer);
+        
+        m.on('click', function(e) {
+            heroMap.flyTo(e.latlng, 15, { animate: true, duration: 1.5 });
+        });
+        
+        var pw = getPopupWidth();
+        var fh = pw < 300 ? '15px' : '17px';
+        var fv = pw < 300 ? '20px' : '24px';
+        
+        var nama = p.nama_mata_air || '-';
+        var jenis = p.jenis_mata_air || 'Belum Ditentukan';
+        var tipeGeologi = p.tipe_geologi || '-';
+        var debit = p.debit !== null && p.debit !== '' ? parseFloat(p.debit).toFixed(2) : '-';
+        var kab = p.kabupaten || '-';
+        var kec = p.kecamatan || '-';
+        var desa = p.desa || '-';
+        var prov = p.provinsi || '-';
+        var warna = p.warna || '-';
+        var bau = p.bau || '-';
+        var kekeruhan = p.kekeruhan || '-';
+        var rasa = p.rasa || '-';
+        var pemanfaatan = p.pemanfaatan_air || '-';
+        var keterangan = p.keterangan || '';
+        
+        var pop = '<div style="width:' + pw + 'px;background:#fff;border-radius:16px;overflow:hidden;font-family:Inter,sans-serif;">'+
+            '<div style="background:#14B8A6;padding:12px 14px;color:#fff;">'+
+                '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">'+
+                    '<span style="width:7px;height:7px;border-radius:50%;background:#5EEAD4;flex-shrink:0;"></span>'+
+                    '<span style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#fff;">Mata Air</span>'+
+                '</div>'+
+                '<h4 style="font-size:' + fh + ';font-weight:800;margin:0;line-height:1.2;">' + nama + '</h4>'+
+                '<p style="font-size:9px;color:rgba(255,255,255,0.7);margin:3px 0 0 0;">' + desa + ', ' + kec + '</p>'+
+            '</div>'+
+            '<div style="padding:12px 14px;">'+
+                '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">'+
+                    '<div style="background:#ecfdf5;border-radius:10px;padding:10px 8px;text-align:center;border:1px solid #a7f3d0;">'+
+                        '<p style="font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#14B8A6;margin:0 0 2px 0;">Debit</p>'+
+                        '<p style="font-size:' + fv + ';font-weight:800;color:#1e293b;margin:0;line-height:1;">' + debit + '</p>'+
+                        '<p style="font-size:8px;color:#94a3b8;margin:1px 0 0 0;">l/dtk</p>'+
+                    '</div>'+
+                    '<div style="background:#ecfdf5;border-radius:10px;padding:10px 8px;text-align:center;border:1px solid #a7f3d0;">'+
+                        '<p style="font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#14B8A6;margin:0 0 2px 0;">Jenis</p>'+
+                        '<p style="font-size:' + fv + ';font-weight:800;color:#1e293b;margin:0;line-height:1;">' + jenis + '</p>'+
+                        '<p style="font-size:8px;color:#94a3b8;margin:1px 0 0 0;"></p>'+
+                    '</div>'+
+                '</div>'+
+                '<div style="border-top:1px solid #f1f5f9;padding-top:8px;">'+
+                    '<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;">'+
+                        '<span style="font-size:9px;color:#64748b;">Tipe Geologi</span>'+
+                        '<span style="font-size:9px;font-weight:700;color:#1e293b;">' + tipeGeologi + '</span>'+
+                    '</div>'+
+                    '<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;">'+
+                        '<span style="font-size:9px;color:#64748b;">Kab/Kota</span>'+
+                        '<span style="font-size:9px;font-weight:700;color:#1e293b;">' + kab + '</span>'+
+                    '</div>'+
+                    '<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;">'+
+                        '<span style="font-size:9px;color:#64748b;">Kecamatan</span>'+
+                        '<span style="font-size:9px;font-weight:700;color:#1e293b;">' + kec + '</span>'+
+                    '</div>'+
+                    '<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;">'+
+                        '<span style="font-size:9px;color:#64748b;">Desa</span>'+
+                        '<span style="font-size:9px;font-weight:700;color:#1e293b;">' + desa + '</span>'+
+                    '</div>'+
+                '</div>'+
+                (warna !== '-' || bau !== '-' || kekeruhan !== '-' || rasa !== '-' ? 
+                '<div style="border-top:1px solid #f1f5f9;margin-top:8px;padding-top:8px;">'+
+                    '<p style="font-size:8px;font-weight:700;text-transform:uppercase;color:#94a3b8;margin:0 0 4px 0;">Karakteristik Fisik</p>'+
+                    (warna !== '-' ? '<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;"><span style="font-size:8px;color:#64748b;">Warna</span><span style="font-size:8px;font-weight:600;color:#1e293b;">' + warna + '</span></div>' : '')+
+                    (bau !== '-' ? '<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;"><span style="font-size:8px;color:#64748b;">Bau</span><span style="font-size:8px;font-weight:600;color:#1e293b;">' + bau + '</span></div>' : '')+
+                    (kekeruhan !== '-' ? '<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;"><span style="font-size:8px;color:#64748b;">Kekeruhan</span><span style="font-size:8px;font-weight:600;color:#1e293b;">' + kekeruhan + '</span></div>' : '')+
+                    (rasa !== '-' ? '<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;"><span style="font-size:8px;color:#64748b;">Rasa</span><span style="font-size:8px;font-weight:600;color:#1e293b;">' + rasa + '</span></div>' : '')+
+                '</div>' : '')+
+                (pemanfaatan !== '-' ? 
+                '<div style="border-top:1px solid #f1f5f9;margin-top:8px;padding-top:8px;">'+
+                    '<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;">'+
+                        '<span style="font-size:9px;color:#64748b;">Pemanfaatan</span>'+
+                        '<span style="font-size:9px;font-weight:700;color:#14B8A6;">' + pemanfaatan + '</span>'+
+                    '</div>'+
+                '</div>' : '')+
+                (keterangan ? 
+                '<div style="border-top:1px solid #f1f5f9;margin-top:8px;padding-top:8px;">'+
+                    '<p style="font-size:8px;color:#64748b;margin:0;line-height:1.4;">' + keterangan.substring(0, 150) + (keterangan.length > 150 ? '...' : '') + '</p>'+
+                '</div>' : '')+
+                '<div style="border-top:1px solid #f1f5f9;margin-top:8px;padding-top:8px;">'+
+                    '<div style="display:flex;justify-content:space-between;align-items:center;">'+
+                        '<span style="font-size:8px;color:#94a3b8;">Update</span>'+
+                        '<span style="font-size:8px;font-weight:600;color:#475569;">' + fmtUpdate(p.created_at) + '</span>'+
+                    '</div>'+
+                '</div>'+
+            '</div>'+
+        '</div>';
+        
+        m.bindPopup(pop, {
+            maxWidth: pw,
+            minWidth: pw,
+            className: 'custom-leaflet-popup',
+            offset: [0, -6]
+        });
+        
+        m.bindTooltip(nama, {
+            direction: 'top',
+            offset: [0, -10]
+        });
+    });
+}
+
+// =============================================
 // RENDER ALL DATA
 // =============================================
 renderBendungan(bendungan_MTB, layerBendungan_MTB);
@@ -838,6 +1044,7 @@ renderSedimen(sedimen_MTB, layerSedimen_MTB);
 renderIrigasi(irigasi_MTB, layerIrigasi_MTB);
 renderPCH(pch_MTB, layerPCH_MTB);
 renderPDA(pda_MTB, layerPDA_MTB);
+renderMataAir(mataAir_MTB, layerMataAir_MTB);
 
 renderBendungan(bendungan_SS, layerBendungan_SS);
 renderBendung(bendung_SS, layerBendung_SS);
@@ -847,6 +1054,7 @@ renderSedimen(sedimen_SS, layerSedimen_SS);
 renderIrigasi(irigasi_SS, layerIrigasi_SS);
 renderPCH(pch_SS, layerPCH_SS);
 renderPDA(pda_SS, layerPDA_SS);
+renderMataAir(mataAir_SS, layerMataAir_SS);
 
 renderBendungan(bendungan_SM, layerBendungan_SM);
 renderBendung(bendung_SM, layerBendung_SM);
@@ -856,6 +1064,7 @@ renderSedimen(sedimen_SM, layerSedimen_SM);
 renderIrigasi(irigasi_SM, layerIrigasi_SM);
 renderPCH(pch_SM, layerPCH_SM);
 renderPDA(pda_SM, layerPDA_SM);
+renderMataAir(mataAir_SM, layerMataAir_SM);
 
 // =============================================
 // MOBILE SLIDE UP
@@ -867,10 +1076,10 @@ window.openSlideUp = function(t) {
         c = document.getElementById('slide-up-content');
     if (t === 'info') {
         ti.textContent = 'Informasi';
-        c.innerHTML = '<div class="space-y-4"><div class="grid grid-cols-3 gap-3"><div class="bg-red-50 rounded-2xl p-4 text-center border border-red-100"><p class="text-[11px] font-bold text-red-600 uppercase mb-1">Bendungan</p><p class="text-3xl font-black text-darkblue"><?= count($bendungan_db) ?></p></div><div class="bg-cyan-50 rounded-2xl p-4 text-center border border-cyan-100"><p class="text-[11px] font-bold text-cyan-600 uppercase mb-1">Bendung</p><p class="text-3xl font-black text-darkblue"><?= $bendung_count ?></p></div><div class="bg-emerald-50 rounded-2xl p-4 text-center border border-emerald-100"><p class="text-[11px] font-bold text-emerald-600 uppercase mb-1">Embung</p><p class="text-3xl font-black text-darkblue"><?= $embung_count ?></p></div><div class="bg-orange-50 rounded-2xl p-4 text-center border border-orange-100"><p class="text-[11px] font-bold text-orange-600 uppercase mb-1">Pengaman Pantai</p><p class="text-3xl font-black text-darkblue"><?= $pengaman_count ?></p></div><div class="bg-yellow-50 rounded-2xl p-4 text-center border border-yellow-100"><p class="text-[11px] font-bold text-yellow-600 uppercase mb-1">Pengendali Sedimen</p><p class="text-3xl font-black text-darkblue"><?= $sedimen_count ?></p></div><div class="bg-blue-50 rounded-2xl p-4 text-center border border-blue-100"><p class="text-[11px] font-bold text-blue-600 uppercase mb-1">PCH</p><p class="text-3xl font-black text-darkblue"><?= count($pch_db) ?></p></div><div class="bg-purple-50 rounded-2xl p-4 text-center border border-purple-100"><p class="text-[11px] font-bold text-purple-600 uppercase mb-1">PDA</p><p class="text-3xl font-black text-darkblue"><?= count($pda_db) ?></p></div><div class="bg-green-50 rounded-2xl p-4 text-center border border-green-100"><p class="text-[11px] font-bold text-green-600 uppercase mb-1">Irigasi</p><p class="text-3xl font-black text-darkblue"><?= $irigasi_count ?></p></div></div><div class="border-t border-slate-200 pt-4"><p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Keterangan Warna</p><div class="space-y-2"><div class="flex items-center gap-3 px-3 py-2 bg-red-50 rounded-xl"><span class="w-3 h-3 rounded-full bg-red-500"></span><span class="text-sm text-slate-700">Bendungan</span></div><div class="flex items-center gap-3 px-3 py-2 bg-cyan-50 rounded-xl"><span class="w-3 h-3 rounded-full bg-cyan-500"></span><span class="text-sm text-slate-700">Bendung</span></div><div class="flex items-center gap-3 px-3 py-2 bg-emerald-50 rounded-xl"><span class="w-3 h-3 rounded-full bg-emerald-500"></span><span class="text-sm text-slate-700">Embung</span></div><div class="flex items-center gap-3 px-3 py-2 bg-orange-50 rounded-xl"><span class="w-3 h-3 rounded-full bg-orange-500"></span><span class="text-sm text-slate-700">Pengaman Pantai</span></div><div class="flex items-center gap-3 px-3 py-2 bg-yellow-50 rounded-xl"><span class="w-3 h-3 rounded-full bg-yellow-500"></span><span class="text-sm text-slate-700">Pengendali Sedimen</span></div><div class="flex items-center gap-3 px-3 py-2 bg-green-50 rounded-xl"><span class="w-3 h-3 rounded-full bg-green-500"></span><span class="text-sm text-slate-700">Daerah Irigasi</span></div><div class="flex items-center gap-3 px-3 py-2 bg-blue-50 rounded-xl"><span class="w-3 h-3 rounded-full bg-blue-500"></span><span class="text-sm text-slate-700">PCH (Hujan)</span></div><div class="flex items-center gap-3 px-3 py-2 bg-purple-50 rounded-xl"><span class="w-3 h-3 rounded-full bg-purple-500"></span><span class="text-sm text-slate-700">PDA (TMA)</span></div></div></div></div>';
+        c.innerHTML = '<div class="space-y-4"><div class="grid grid-cols-3 gap-3"><div class="bg-red-50 rounded-2xl p-4 text-center border border-red-100"><p class="text-[11px] font-bold text-red-600 uppercase mb-1">Bendungan</p><p class="text-3xl font-black text-darkblue"><?= count($bendungan_db) ?></p></div><div class="bg-cyan-50 rounded-2xl p-4 text-center border border-cyan-100"><p class="text-[11px] font-bold text-cyan-600 uppercase mb-1">Bendung</p><p class="text-3xl font-black text-darkblue"><?= $bendung_count ?></p></div><div class="bg-emerald-50 rounded-2xl p-4 text-center border border-emerald-100"><p class="text-[11px] font-bold text-emerald-600 uppercase mb-1">Embung</p><p class="text-3xl font-black text-darkblue"><?= $embung_count ?></p></div><div class="bg-orange-50 rounded-2xl p-4 text-center border border-orange-100"><p class="text-[11px] font-bold text-orange-600 uppercase mb-1">Pengaman Pantai</p><p class="text-3xl font-black text-darkblue"><?= $pengaman_count ?></p></div><div class="bg-yellow-50 rounded-2xl p-4 text-center border border-yellow-100"><p class="text-[11px] font-bold text-yellow-600 uppercase mb-1">Pengendali Sedimen</p><p class="text-3xl font-black text-darkblue"><?= $sedimen_count ?></p></div><div class="bg-blue-50 rounded-2xl p-4 text-center border border-blue-100"><p class="text-[11px] font-bold text-blue-600 uppercase mb-1">PCH</p><p class="text-3xl font-black text-darkblue"><?= count($pch_db) ?></p></div><div class="bg-purple-50 rounded-2xl p-4 text-center border border-purple-100"><p class="text-[11px] font-bold text-purple-600 uppercase mb-1">PDA</p><p class="text-3xl font-black text-darkblue"><?= count($pda_db) ?></p></div><div class="bg-green-50 rounded-2xl p-4 text-center border border-green-100"><p class="text-[11px] font-bold text-green-600 uppercase mb-1">Irigasi</p><p class="text-3xl font-black text-darkblue"><?= $irigasi_count ?></p></div><div class="bg-teal-50 rounded-2xl p-4 text-center border border-teal-100"><p class="text-[11px] font-bold text-teal-600 uppercase mb-1">Mata Air</p><p class="text-3xl font-black text-darkblue"><?= $mata_air_count ?></p></div></div><div class="border-t border-slate-200 pt-4"><p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Keterangan Warna</p><div class="space-y-2"><div class="flex items-center gap-3 px-3 py-2 bg-red-50 rounded-xl"><span class="w-3 h-3 rounded-full bg-red-500"></span><span class="text-sm text-slate-700">Bendungan</span></div><div class="flex items-center gap-3 px-3 py-2 bg-cyan-50 rounded-xl"><span class="w-3 h-3 rounded-full bg-cyan-500"></span><span class="text-sm text-slate-700">Bendung</span></div><div class="flex items-center gap-3 px-3 py-2 bg-emerald-50 rounded-xl"><span class="w-3 h-3 rounded-full bg-emerald-500"></span><span class="text-sm text-slate-700">Embung</span></div><div class="flex items-center gap-3 px-3 py-2 bg-orange-50 rounded-xl"><span class="w-3 h-3 rounded-full bg-orange-500"></span><span class="text-sm text-slate-700">Pengaman Pantai</span></div><div class="flex items-center gap-3 px-3 py-2 bg-yellow-50 rounded-xl"><span class="w-3 h-3 rounded-full bg-yellow-500"></span><span class="text-sm text-slate-700">Pengendali Sedimen</span></div><div class="flex items-center gap-3 px-3 py-2 bg-green-50 rounded-xl"><span class="w-3 h-3 rounded-full bg-green-500"></span><span class="text-sm text-slate-700">Daerah Irigasi</span></div><div class="flex items-center gap-3 px-3 py-2 bg-blue-50 rounded-xl"><span class="w-3 h-3 rounded-full bg-blue-500"></span><span class="text-sm text-slate-700">PCH (Hujan)</span></div><div class="flex items-center gap-3 px-3 py-2 bg-purple-50 rounded-xl"><span class="w-3 h-3 rounded-full bg-purple-500"></span><span class="text-sm text-slate-700">PDA (TMA)</span></div><div class="flex items-center gap-3 px-3 py-2 bg-teal-50 rounded-xl"><span class="w-3 h-3 rounded-full bg-teal-500"></span><span class="text-sm text-slate-700">Mata Air</span></div></div></div></div>';
     } else if (t === 'layer') {
         ti.textContent = 'Layer Peta';
-        c.innerHTML = '<div class="space-y-4"><div class="bg-indigo-50 rounded-2xl p-3 border border-indigo-200"><p class="text-xs font-bold text-indigo-600 uppercase mb-2">Mesuji-Tulang Bawang</p><label class="flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer bg-white/70 hover:bg-white transition-all"><input type="checkbox" onchange="toggleWSMobile(\'MTB\',this)" class="w-5 h-5 rounded accent-indigo-500"><span class="text-sm font-medium text-slate-700">Semua</span></label><div class="grid grid-cols-2 gap-1 ml-4 mt-1"><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" checked onchange="toggleLayer(\'bendungan_MTB\',this)" class="w-4 h-4 rounded accent-red-500"><span class="text-xs text-slate-600">Bendungan</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" checked onchange="toggleLayer(\'bendung_MTB\',this)" class="w-4 h-4 rounded accent-cyan-500"><span class="text-xs text-slate-600">Bendung</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'embung_MTB\',this)" class="w-4 h-4 rounded accent-emerald-500"><span class="text-xs text-slate-600">Embung</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'pengaman_MTB\',this)" class="w-4 h-4 rounded accent-orange-500"><span class="text-xs text-slate-600">Pengaman</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'sedimen_MTB\',this)" class="w-4 h-4 rounded accent-yellow-500"><span class="text-xs text-slate-600">Sedimen</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'irigasi_MTB\',this)" class="w-4 h-4 rounded accent-green-500"><span class="text-xs text-slate-600">Irigasi</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'pch_MTB\',this)" class="w-4 h-4 rounded accent-blue-500"><span class="text-xs text-slate-600">PCH</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'pda_MTB\',this)" class="w-4 h-4 rounded accent-purple-500"><span class="text-xs text-slate-600">PDA</span></label></div></div><div class="bg-blue-50 rounded-2xl p-3 border border-blue-200"><p class="text-xs font-bold text-blue-600 uppercase mb-2">Seputih-Sekampung</p><label class="flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer bg-white/70 hover:bg-white transition-all"><input type="checkbox" onchange="toggleWSMobile(\'SS\',this)" class="w-5 h-5 rounded accent-blue-500"><span class="text-sm font-medium text-slate-700">Semua</span></label><div class="grid grid-cols-2 gap-1 ml-4 mt-1"><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" checked onchange="toggleLayer(\'bendungan_SS\',this)" class="w-4 h-4 rounded accent-red-500"><span class="text-xs text-slate-600">Bendungan</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" checked onchange="toggleLayer(\'bendung_SS\',this)" class="w-4 h-4 rounded accent-cyan-500"><span class="text-xs text-slate-600">Bendung</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'embung_SS\',this)" class="w-4 h-4 rounded accent-emerald-500"><span class="text-xs text-slate-600">Embung</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'pengaman_SS\',this)" class="w-4 h-4 rounded accent-orange-500"><span class="text-xs text-slate-600">Pengaman</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'sedimen_SS\',this)" class="w-4 h-4 rounded accent-yellow-500"><span class="text-xs text-slate-600">Sedimen</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'irigasi_SS\',this)" class="w-4 h-4 rounded accent-green-500"><span class="text-xs text-slate-600">Irigasi</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'pch_SS\',this)" class="w-4 h-4 rounded accent-blue-500"><span class="text-xs text-slate-600">PCH</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'pda_SS\',this)" class="w-4 h-4 rounded accent-purple-500"><span class="text-xs text-slate-600">PDA</span></label></div></div><div class="bg-green-50 rounded-2xl p-3 border border-green-200"><p class="text-xs font-bold text-green-600 uppercase mb-2">Semangka</p><label class="flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer bg-white/70 hover:bg-white transition-all"><input type="checkbox" onchange="toggleWSMobile(\'SM\',this)" class="w-5 h-5 rounded accent-green-500"><span class="text-sm font-medium text-slate-700">Semua</span></label><div class="grid grid-cols-2 gap-1 ml-4 mt-1"><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" checked onchange="toggleLayer(\'bendungan_SM\',this)" class="w-4 h-4 rounded accent-red-500"><span class="text-xs text-slate-600">Bendungan</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" checked onchange="toggleLayer(\'bendung_SM\',this)" class="w-4 h-4 rounded accent-cyan-500"><span class="text-xs text-slate-600">Bendung</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'embung_SM\',this)" class="w-4 h-4 rounded accent-emerald-500"><span class="text-xs text-slate-600">Embung</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'pengaman_SM\',this)" class="w-4 h-4 rounded accent-orange-500"><span class="text-xs text-slate-600">Pengaman</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'sedimen_SM\',this)" class="w-4 h-4 rounded accent-yellow-500"><span class="text-xs text-slate-600">Sedimen</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'irigasi_SM\',this)" class="w-4 h-4 rounded accent-green-500"><span class="text-xs text-slate-600">Irigasi</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'pch_SM\',this)" class="w-4 h-4 rounded accent-blue-500"><span class="text-xs text-slate-600">PCH</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'pda_SM\',this)" class="w-4 h-4 rounded accent-purple-500"><span class="text-xs text-slate-600">PDA</span></label></div></div><div class="border-t border-slate-200 my-3 pt-3"><p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Tampilan Peta</p><div class="flex gap-3"><button onclick="switchBaseMap(\'osm\');updateBaseMapButtons(\'osm\')" id="btn-osm-mobile" class="flex-1 py-3 text-sm font-semibold rounded-xl bg-slate-200 text-slate-700 transition-all">Peta</button><button onclick="switchBaseMap(\'satellite\');updateBaseMapButtons(\'satellite\')" id="btn-satellite-mobile" class="flex-1 py-3 text-sm font-semibold rounded-xl text-slate-500 bg-slate-50 transition-all">Satelit</button></div></div></div>';
+        c.innerHTML = '<div class="space-y-4"><div class="bg-indigo-50 rounded-2xl p-3 border border-indigo-200"><p class="text-xs font-bold text-indigo-600 uppercase mb-2">Mesuji-Tulang Bawang</p><label class="flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer bg-white/70 hover:bg-white transition-all"><input type="checkbox" onchange="toggleWSMobile(\'MTB\',this)" class="w-5 h-5 rounded accent-indigo-500"><span class="text-sm font-medium text-slate-700">Semua</span></label><div class="grid grid-cols-2 gap-1 ml-4 mt-1"><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" checked onchange="toggleLayer(\'bendungan_MTB\',this)" class="w-4 h-4 rounded accent-red-500"><span class="text-xs text-slate-600">Bendungan</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" checked onchange="toggleLayer(\'bendung_MTB\',this)" class="w-4 h-4 rounded accent-cyan-500"><span class="text-xs text-slate-600">Bendung</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'embung_MTB\',this)" class="w-4 h-4 rounded accent-emerald-500"><span class="text-xs text-slate-600">Embung</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'pengaman_MTB\',this)" class="w-4 h-4 rounded accent-orange-500"><span class="text-xs text-slate-600">Pengaman</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'sedimen_MTB\',this)" class="w-4 h-4 rounded accent-yellow-500"><span class="text-xs text-slate-600">Sedimen</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'irigasi_MTB\',this)" class="w-4 h-4 rounded accent-green-500"><span class="text-xs text-slate-600">Irigasi</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'pch_MTB\',this)" class="w-4 h-4 rounded accent-blue-500"><span class="text-xs text-slate-600">PCH</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'pda_MTB\',this)" class="w-4 h-4 rounded accent-purple-500"><span class="text-xs text-slate-600">PDA</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'mata_air_MTB\',this)" class="w-4 h-4 rounded accent-teal-500"><span class="text-xs text-slate-600">Mata Air</span></label></div></div><div class="bg-blue-50 rounded-2xl p-3 border border-blue-200"><p class="text-xs font-bold text-blue-600 uppercase mb-2">Seputih-Sekampung</p><label class="flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer bg-white/70 hover:bg-white transition-all"><input type="checkbox" onchange="toggleWSMobile(\'SS\',this)" class="w-5 h-5 rounded accent-blue-500"><span class="text-sm font-medium text-slate-700">Semua</span></label><div class="grid grid-cols-2 gap-1 ml-4 mt-1"><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" checked onchange="toggleLayer(\'bendungan_SS\',this)" class="w-4 h-4 rounded accent-red-500"><span class="text-xs text-slate-600">Bendungan</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" checked onchange="toggleLayer(\'bendung_SS\',this)" class="w-4 h-4 rounded accent-cyan-500"><span class="text-xs text-slate-600">Bendung</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'embung_SS\',this)" class="w-4 h-4 rounded accent-emerald-500"><span class="text-xs text-slate-600">Embung</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'pengaman_SS\',this)" class="w-4 h-4 rounded accent-orange-500"><span class="text-xs text-slate-600">Pengaman</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'sedimen_SS\',this)" class="w-4 h-4 rounded accent-yellow-500"><span class="text-xs text-slate-600">Sedimen</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'irigasi_SS\',this)" class="w-4 h-4 rounded accent-green-500"><span class="text-xs text-slate-600">Irigasi</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'pch_SS\',this)" class="w-4 h-4 rounded accent-blue-500"><span class="text-xs text-slate-600">PCH</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'pda_SS\',this)" class="w-4 h-4 rounded accent-purple-500"><span class="text-xs text-slate-600">PDA</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'mata_air_SS\',this)" class="w-4 h-4 rounded accent-teal-500"><span class="text-xs text-slate-600">Mata Air</span></label></div></div><div class="bg-green-50 rounded-2xl p-3 border border-green-200"><p class="text-xs font-bold text-green-600 uppercase mb-2">Semangka</p><label class="flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer bg-white/70 hover:bg-white transition-all"><input type="checkbox" onchange="toggleWSMobile(\'SM\',this)" class="w-5 h-5 rounded accent-green-500"><span class="text-sm font-medium text-slate-700">Semua</span></label><div class="grid grid-cols-2 gap-1 ml-4 mt-1"><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" checked onchange="toggleLayer(\'bendungan_SM\',this)" class="w-4 h-4 rounded accent-red-500"><span class="text-xs text-slate-600">Bendungan</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" checked onchange="toggleLayer(\'bendung_SM\',this)" class="w-4 h-4 rounded accent-cyan-500"><span class="text-xs text-slate-600">Bendung</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'embung_SM\',this)" class="w-4 h-4 rounded accent-emerald-500"><span class="text-xs text-slate-600">Embung</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'pengaman_SM\',this)" class="w-4 h-4 rounded accent-orange-500"><span class="text-xs text-slate-600">Pengaman</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'sedimen_SM\',this)" class="w-4 h-4 rounded accent-yellow-500"><span class="text-xs text-slate-600">Sedimen</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'irigasi_SM\',this)" class="w-4 h-4 rounded accent-green-500"><span class="text-xs text-slate-600">Irigasi</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'pch_SM\',this)" class="w-4 h-4 rounded accent-blue-500"><span class="text-xs text-slate-600">PCH</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'pda_SM\',this)" class="w-4 h-4 rounded accent-purple-500"><span class="text-xs text-slate-600">PDA</span></label><label class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/50"><input type="checkbox" onchange="toggleLayer(\'mata_air_SM\',this)" class="w-4 h-4 rounded accent-teal-500"><span class="text-xs text-slate-600">Mata Air</span></label></div></div><div class="border-t border-slate-200 my-3 pt-3"><p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Tampilan Peta</p><div class="flex gap-3"><button onclick="switchBaseMap(\'osm\');updateBaseMapButtons(\'osm\')" id="btn-osm-mobile" class="flex-1 py-3 text-sm font-semibold rounded-xl bg-slate-200 text-slate-700 transition-all">Peta</button><button onclick="switchBaseMap(\'satellite\');updateBaseMapButtons(\'satellite\')" id="btn-satellite-mobile" class="flex-1 py-3 text-sm font-semibold rounded-xl text-slate-500 bg-slate-50 transition-all">Satelit</button></div></div></div>';
     } else if (t === 'search') {
         ti.textContent = 'Cari & Filter';
         c.innerHTML = '<div class="space-y-4"><div class="bg-slate-50 rounded-2xl p-4 border border-slate-200"><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Filter Tanggal</label><div class="flex gap-2"><input type="date" id="history-date-mobile" value="<?= $selected_date ?>" class="flex-1 px-4 py-3 rounded-xl bg-white border border-slate-200 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-brandyellow font-medium"><button onclick="applyHistoryDateMobile()" class="px-4 py-3 bg-brandyellow hover:bg-yellow-400 text-darkblue font-bold rounded-xl text-sm transition-all">Cari</button></div><p class="text-xs text-slate-400 text-center mt-2"><?= ($selected_date == date('Y-m-d')) ? 'Data hari ini' : 'Data ' . date('d M Y', strtotime($selected_date)) ?></p><?php if ($selected_date != date('Y-m-d')): ?><a href="<?= base_url('Beranda') ?>" class="block text-center text-sm text-slate-500 hover:text-darkblue mt-2 font-medium">→ Kembali ke Hari Ini</a><?php endif; ?></div><div class="relative"><input type="text" id="search-input-mobile" placeholder="Ketik nama pos..." class="w-full pl-12 pr-4 py-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brandyellow focus:bg-white transition-all font-medium" onkeyup="handleSearch(this.value,\'mobile\')" autocomplete="off"><svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></div><div id="search-results-mobile" class="max-h-96 overflow-y-auto"><div id="search-results-list-mobile" class="space-y-1"></div><div id="search-no-results-mobile" class="px-4 py-8 text-center text-sm text-slate-400 hidden"><p class="font-medium">Tidak ditemukan</p></div></div></div>';
@@ -957,6 +1166,7 @@ window.toggleLayer = function(t, cb) {
     if (t === 'irigasi_MTB') cb.checked ? layerIrigasi_MTB.addTo(heroMap) : heroMap.removeLayer(layerIrigasi_MTB);
     if (t === 'pch_MTB') cb.checked ? layerPCH_MTB.addTo(heroMap) : heroMap.removeLayer(layerPCH_MTB);
     if (t === 'pda_MTB') cb.checked ? layerPDA_MTB.addTo(heroMap) : heroMap.removeLayer(layerPDA_MTB);
+    if (t === 'mata_air_MTB') cb.checked ? layerMataAir_MTB.addTo(heroMap) : heroMap.removeLayer(layerMataAir_MTB);
     if (t === 'bendungan_SS') cb.checked ? layerBendungan_SS.addTo(heroMap) : heroMap.removeLayer(layerBendungan_SS);
     if (t === 'bendung_SS') cb.checked ? layerBendung_SS.addTo(heroMap) : heroMap.removeLayer(layerBendung_SS);
     if (t === 'embung_SS') cb.checked ? layerEmbung_SS.addTo(heroMap) : heroMap.removeLayer(layerEmbung_SS);
@@ -965,6 +1175,7 @@ window.toggleLayer = function(t, cb) {
     if (t === 'irigasi_SS') cb.checked ? layerIrigasi_SS.addTo(heroMap) : heroMap.removeLayer(layerIrigasi_SS);
     if (t === 'pch_SS') cb.checked ? layerPCH_SS.addTo(heroMap) : heroMap.removeLayer(layerPCH_SS);
     if (t === 'pda_SS') cb.checked ? layerPDA_SS.addTo(heroMap) : heroMap.removeLayer(layerPDA_SS);
+    if (t === 'mata_air_SS') cb.checked ? layerMataAir_SS.addTo(heroMap) : heroMap.removeLayer(layerMataAir_SS);
     if (t === 'bendungan_SM') cb.checked ? layerBendungan_SM.addTo(heroMap) : heroMap.removeLayer(layerBendungan_SM);
     if (t === 'bendung_SM') cb.checked ? layerBendung_SM.addTo(heroMap) : heroMap.removeLayer(layerBendung_SM);
     if (t === 'embung_SM') cb.checked ? layerEmbung_SM.addTo(heroMap) : heroMap.removeLayer(layerEmbung_SM);
@@ -973,16 +1184,17 @@ window.toggleLayer = function(t, cb) {
     if (t === 'irigasi_SM') cb.checked ? layerIrigasi_SM.addTo(heroMap) : heroMap.removeLayer(layerIrigasi_SM);
     if (t === 'pch_SM') cb.checked ? layerPCH_SM.addTo(heroMap) : heroMap.removeLayer(layerPCH_SM);
     if (t === 'pda_SM') cb.checked ? layerPDA_SM.addTo(heroMap) : heroMap.removeLayer(layerPDA_SM);
+    if (t === 'mata_air_SM') cb.checked ? layerMataAir_SM.addTo(heroMap) : heroMap.removeLayer(layerMataAir_SM);
 };
 
 window.toggleWS = function(ws, cb) {
     var layers = [];
     if (ws === 'MTB') {
-        layers = ['bendungan_MTB', 'bendung_MTB', 'embung_MTB', 'pengaman_MTB', 'sedimen_MTB', 'irigasi_MTB', 'pch_MTB', 'pda_MTB'];
+        layers = ['bendungan_MTB', 'bendung_MTB', 'embung_MTB', 'pengaman_MTB', 'sedimen_MTB', 'irigasi_MTB', 'pch_MTB', 'pda_MTB', 'mata_air_MTB'];
     } else if (ws === 'SS') {
-        layers = ['bendungan_SS', 'bendung_SS', 'embung_SS', 'pengaman_SS', 'sedimen_SS', 'irigasi_SS', 'pch_SS', 'pda_SS'];
+        layers = ['bendungan_SS', 'bendung_SS', 'embung_SS', 'pengaman_SS', 'sedimen_SS', 'irigasi_SS', 'pch_SS', 'pda_SS', 'mata_air_SS'];
     } else if (ws === 'SM') {
-        layers = ['bendungan_SM', 'bendung_SM', 'embung_SM', 'pengaman_SM', 'sedimen_SM', 'irigasi_SM', 'pch_SM', 'pda_SM'];
+        layers = ['bendungan_SM', 'bendung_SM', 'embung_SM', 'pengaman_SM', 'sedimen_SM', 'irigasi_SM', 'pch_SM', 'pda_SM', 'mata_air_SM'];
     }
     layers.forEach(function(id) {
         var el = document.querySelector('input[onchange*="toggleLayer(\'' + id + '\',this)"]');
@@ -998,7 +1210,7 @@ window.toggleWSMobile = function(ws, cb) {
     if (ws === 'MTB') prefix = '_MTB';
     else if (ws === 'SS') prefix = '_SS';
     else if (ws === 'SM') prefix = '_SM';
-    var layerIds = ['bendungan' + prefix, 'bendung' + prefix, 'embung' + prefix, 'pengaman' + prefix, 'sedimen' + prefix, 'irigasi' + prefix, 'pch' + prefix, 'pda' + prefix];
+    var layerIds = ['bendungan' + prefix, 'bendung' + prefix, 'embung' + prefix, 'pengaman' + prefix, 'sedimen' + prefix, 'irigasi' + prefix, 'pch' + prefix, 'pda' + prefix, 'mata_air' + prefix];
     layerIds.forEach(function(id) {
         var el = document.querySelector('input[onchange*="toggleLayer(\'' + id + '\',this)"]');
         if (el) {

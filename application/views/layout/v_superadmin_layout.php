@@ -389,6 +389,12 @@
                 <svg class="sidebar-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                 <span>Kelola Daerah Irigasi</span>
             </a>
+
+            <!-- Kelola Mata Air -->
+            <a href="<?= base_url('superadmin/kelola_mata_air') ?>" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium <?= (strpos($current_url, 'superadmin/kelola_mata_air') !== false) ? 'active' : 'text-slate-600' ?>">
+                <svg class="sidebar-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+                <span>Kelola Mata Air</span>
+            </a>
             <?php endif; ?>
 
         </nav>

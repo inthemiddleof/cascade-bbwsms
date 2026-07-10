@@ -1528,4 +1528,146 @@ class M_superadmin extends CI_Model {
         }
         return $result;
     }
+
+
+        // ==========================================
+    // KELOLA MATA AIR
+    // ==========================================
+
+    /**
+     * Get all mata air data
+     */
+    public function get_mata_air_data() {
+        $mata_air_list = $this->db->select('
+                id_mata_air,
+                nama_mata_air,
+                latitude,
+                longitude,
+                jenis_mata_air,
+                tipe_geologi,
+                debit,
+                provinsi,
+                kabupaten,
+                kecamatan,
+                desa,
+                warna,
+                bau,
+                kekeruhan,
+                rasa,
+                pemanfaatan_air,
+                keterangan,
+                created_at,
+                updated_at
+            ')
+            ->order_by('nama_mata_air', 'ASC')
+            ->get('data_mata_air')
+            ->result();
+        
+        return [
+            'app_name'     => 'HydroSmart',
+            'title'        => 'Kelola Mata Air',
+            'mata_air_list' => $mata_air_list
+        ];
+    }
+
+    /**
+     * Insert mata air data
+     */
+    public function insert_mata_air($post) {
+        $this->load->library('form_validation');
+        
+        $this->form_validation->set_rules('nama_mata_air', 'Nama Mata Air', 'required|trim');
+        $this->form_validation->set_rules('latitude', 'Latitude', 'required|numeric');
+        $this->form_validation->set_rules('longitude', 'Longitude', 'required|numeric');
+        $this->form_validation->set_rules('provinsi', 'Provinsi', 'required|trim');
+        $this->form_validation->set_rules('kabupaten', 'Kabupaten', 'required|trim');
+        $this->form_validation->set_rules('kecamatan', 'Kecamatan', 'required|trim');
+        $this->form_validation->set_rules('desa', 'Desa', 'required|trim');
+        
+        if ($this->form_validation->run() == FALSE) {
+            return $this->_error(validation_errors());
+        }
+        
+        $data = [
+            'nama_mata_air'     => $post['nama_mata_air'],
+            'latitude'          => $this->_parse_float($post['latitude']),
+            'longitude'         => $this->_parse_float($post['longitude']),
+            'jenis_mata_air'    => $post['jenis_mata_air'] ?? null,
+            'tipe_geologi'      => $post['tipe_geologi'] ?? null,
+            'debit'             => $this->_parse_float($post['debit'] ?? null),
+            'provinsi'          => $post['provinsi'],
+            'kabupaten'         => $post['kabupaten'],
+            'kecamatan'         => $post['kecamatan'],
+            'desa'              => $post['desa'],
+            'warna'             => $post['warna'] ?? null,
+            'bau'               => $post['bau'] ?? null,
+            'kekeruhan'         => $post['kekeruhan'] ?? null,
+            'rasa'              => $post['rasa'] ?? null,
+            'pemanfaatan_air'   => $post['pemanfaatan_air'] ?? null,
+            'keterangan'        => $post['keterangan'] ?? null,
+            'created_at'        => date('Y-m-d H:i:s')
+        ];
+        
+        return $this->db->insert('data_mata_air', $data) 
+            ? $this->_success('Mata Air berhasil ditambahkan!') 
+            : $this->_error('Gagal menambahkan data.');
+    }
+
+    /**
+     * Update mata air data
+     */
+    public function update_mata_air($post) {
+        $this->load->library('form_validation');
+        
+        $this->form_validation->set_rules('nama_mata_air', 'Nama Mata Air', 'required|trim');
+        $this->form_validation->set_rules('latitude', 'Latitude', 'required|numeric');
+        $this->form_validation->set_rules('longitude', 'Longitude', 'required|numeric');
+        $this->form_validation->set_rules('provinsi', 'Provinsi', 'required|trim');
+        $this->form_validation->set_rules('kabupaten', 'Kabupaten', 'required|trim');
+        $this->form_validation->set_rules('kecamatan', 'Kecamatan', 'required|trim');
+        $this->form_validation->set_rules('desa', 'Desa', 'required|trim');
+        
+        if ($this->form_validation->run() == FALSE) {
+            return $this->_error(validation_errors());
+        }
+        
+        $data = [
+            'nama_mata_air'     => $post['nama_mata_air'],
+            'latitude'          => $this->_parse_float($post['latitude']),
+            'longitude'         => $this->_parse_float($post['longitude']),
+            'jenis_mata_air'    => $post['jenis_mata_air'] ?? null,
+            'tipe_geologi'      => $post['tipe_geologi'] ?? null,
+            'debit'             => $this->_parse_float($post['debit'] ?? null),
+            'provinsi'          => $post['provinsi'],
+            'kabupaten'         => $post['kabupaten'],
+            'kecamatan'         => $post['kecamatan'],
+            'desa'              => $post['desa'],
+            'warna'             => $post['warna'] ?? null,
+            'bau'               => $post['bau'] ?? null,
+            'kekeruhan'         => $post['kekeruhan'] ?? null,
+            'rasa'              => $post['rasa'] ?? null,
+            'pemanfaatan_air'   => $post['pemanfaatan_air'] ?? null,
+            'keterangan'        => $post['keterangan'] ?? null
+        ];
+        
+        return $this->db->where('id_mata_air', $post['id_mata_air'])->update('data_mata_air', $data) 
+            ? $this->_success('Mata Air berhasil diperbarui!') 
+            : $this->_error('Gagal memperbarui data.');
+    }
+
+    /**
+     * Delete mata air data
+     */
+    public function delete_mata_air($id) {
+        return $this->db->where('id_mata_air', $id)->delete('data_mata_air') 
+            ? $this->_success('Mata Air berhasil dihapus!') 
+            : $this->_error('Gagal menghapus data.');
+    }
+
+    /**
+     * Get mata air by ID
+     */
+    public function get_mata_air_by_id($id_mata_air) {
+        return $this->db->where('id_mata_air', $id_mata_air)->get('data_mata_air')->row();
+    }
 }

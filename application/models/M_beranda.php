@@ -346,8 +346,37 @@ class M_beranda extends CI_Model {
         return $this->db->get()->result_array();
     }
 
+   // ==========================================
+    // GET MATA AIR DATA
     // ==========================================
-    // MAIN: GET DASHBOARD SUMMARY
+    public function get_mata_air_data() {
+        $this->db->select('
+            id_mata_air,
+            nama_mata_air,
+            latitude,
+            longitude,
+            jenis_mata_air,
+            tipe_geologi,
+            debit,
+            provinsi,
+            kabupaten,
+            kecamatan,
+            desa,
+            warna,
+            bau,
+            kekeruhan,
+            rasa,
+            pemanfaatan_air,
+            keterangan,
+            created_at
+        ');
+        $this->db->from('data_mata_air');
+        $this->db->order_by('nama_mata_air', 'ASC');
+        return $this->db->get()->result_array();
+    }
+
+    // ==========================================
+    // MAIN: GET DASHBOARD SUMMARY (DENGAN MATA AIR)
     // ==========================================
     public function get_dashboard_summary($selected_date) {
         $bendungan_db = $this->get_bendungan_data();
@@ -356,6 +385,7 @@ class M_beranda extends CI_Model {
         $pengaman_db  = $this->get_pengaman_pantai_data();
         $sedimen_db   = $this->get_pengendali_sedimen_data();
         $irigasi_db   = $this->get_irigasi_data();
+        $mata_air_db  = $this->get_mata_air_data(); // BARU
         $pch_db       = $this->get_pch_data($selected_date);
         $pda_db       = $this->get_pda_data($selected_date);
         $geojson      = $this->get_geojson_data();
@@ -365,15 +395,16 @@ class M_beranda extends CI_Model {
         $pengaman_count = count($pengaman_db);
         $sedimen_count = count($sedimen_db); 
         $irigasi_count = count($irigasi_db);
+        $mata_air_count = count($mata_air_db); // BARU
         
         // Latest TMA
         $latest_tma = $this->db->select('t.wlevel, t.status, m.nama_pos')
-                               ->from('data_telemetri t')
-                               ->join('master_pos m', 't.id_pos = m.id_pos')
-                               ->where('m.jenis_aset', 'pda')
-                               ->order_by('t.received_at', 'DESC')
-                               ->limit(1)
-                               ->get()->row_array();
+                            ->from('data_telemetri t')
+                            ->join('master_pos m', 't.id_pos = m.id_pos')
+                            ->where('m.jenis_aset', 'pda')
+                            ->order_by('t.received_at', 'DESC')
+                            ->limit(1)
+                            ->get()->row_array();
         
         // Latest Rain
         $latest_rain = $this->db->select('t.rain, t.received_at')
@@ -391,6 +422,7 @@ class M_beranda extends CI_Model {
             'pengaman_db'       => $pengaman_db,
             'sedimen_db'        => $sedimen_db,
             'irigasi_db'        => $irigasi_db,
+            'mata_air_db'       => $mata_air_db, // BARU
             'pch_db'            => $pch_db,
             'pda_db'            => $pda_db,
             'bendung_count'     => $bendung_count,
@@ -398,6 +430,7 @@ class M_beranda extends CI_Model {
             'pengaman_count'    => $pengaman_count,
             'sedimen_count'     => $sedimen_count,
             'irigasi_count'     => $irigasi_count,
+            'mata_air_count'    => $mata_air_count, // BARU
             'ws_geojson'        => $geojson['ws_geojson'],
             'bendung_geojson'   => json_encode([
                 'type'     => 'FeatureCollection',
@@ -434,4 +467,5 @@ class M_beranda extends CI_Model {
             ]
         ];
     }
+
 }

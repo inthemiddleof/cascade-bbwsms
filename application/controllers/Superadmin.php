@@ -1886,4 +1886,57 @@ private function _round_to_5_minutes($time) {
     }
     return str_pad($hour, 2, '0', STR_PAD_LEFT) . ':' . str_pad($minute, 2, '0', STR_PAD_LEFT);
 }
+
+// ==========================================
+// KELOLA MATA AIR
+// ==========================================
+
+/**
+ * Halaman Kelola Mata Air
+ */
+public function kelola_mata_air() {
+    $data = $this->M_superadmin->get_mata_air_data();
+    $data['admin_name'] = $this->session->userdata('nama_lengkap');
+    $this->_render('superadmin/v_kelola_mata_air', $data);
+}
+
+/**
+ * Tambah Mata Air
+ */
+public function tambah_mata_air() {
+    $result = $this->M_superadmin->insert_mata_air($this->input->post());
+    $this->session->set_flashdata($result['status'], $result['message']);
+    redirect('superadmin/kelola_mata_air');
+}
+
+/**
+ * Edit Mata Air
+ */
+public function edit_mata_air() {
+    $result = $this->M_superadmin->update_mata_air($this->input->post());
+    $this->session->set_flashdata($result['status'], $result['message']);
+    redirect('superadmin/kelola_mata_air');
+}
+
+/**
+ * Hapus Mata Air
+ */
+public function hapus_mata_air($id) {
+    $result = $this->M_superadmin->delete_mata_air($id);
+    $this->session->set_flashdata($result['status'], $result['message']);
+    redirect('superadmin/kelola_mata_air');
+}
+
+/**
+ * Get Mata Air by ID (AJAX)
+ */
+public function get_mata_air_json($id_mata_air) {
+    $data = $this->M_superadmin->get_mata_air_by_id($id_mata_air);
+    if ($data) {
+        header('Content-Type: application/json');
+        echo json_encode($data);
+    } else {
+        echo json_encode(['error' => 'Data tidak ditemukan']);
+    }
+}
 }

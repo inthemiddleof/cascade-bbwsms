@@ -26,7 +26,8 @@ class Beranda extends CI_Controller {
             'embung_db'             => $summary['embung_db'], 
             'pengaman_db'           => $summary['pengaman_db'],
             'sedimen_db'            => $summary['sedimen_db'],
-            'irigasi_db'            => $summary['irigasi_db'],   
+            'irigasi_db'            => $summary['irigasi_db'],
+            'mata_air_db'           => $summary['mata_air_db'], // BARU
             'pch_db'                => $summary['pch_db'],
             'pda_db'                => $summary['pda_db'],
             'bendung_count'         => $summary['bendung_count'],
@@ -34,6 +35,7 @@ class Beranda extends CI_Controller {
             'pengaman_count'        => $summary['pengaman_count'],
             'sedimen_count'         => $summary['sedimen_count'],
             'irigasi_count'         => $summary['irigasi_count'],
+            'mata_air_count'        => $summary['mata_air_count'], // BARU
             'ws_geojson'            => $summary['ws_geojson'],
             'bendung_geojson'       => $summary['bendung_geojson'],
             'das_geojson'           => $summary['das_geojson'],
