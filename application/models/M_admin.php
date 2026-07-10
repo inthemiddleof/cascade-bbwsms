@@ -20,6 +20,18 @@ class M_admin extends CI_Model {
         return ['status' => 'error', 'message' => $msg]; 
     }
 
+    private function _empty_manual_data($admin_type = 'hidrologi') {
+        return [
+            'app_name' => 'HydroSmart',
+            'title' => 'Kelola Laporan Manual',
+            'pos_list' => [],
+            'pos' => null,
+            'bulan' => null,
+            'data_list' => [],
+            'admin_type' => $admin_type
+        ];
+    }
+
     // ==========================================
     // DASHBOARD
     // ==========================================
@@ -71,7 +83,6 @@ class M_admin extends CI_Model {
         $pos_list = $this->db->get('master_pos')->result();
         
         foreach ($pos_list as $row) {
-            // Hitung total data dari semua sumber
             $tel_count = $this->db->where('id_pos', $row->id_pos)->count_all_results('data_telemetri');
             $man_count = $this->db->where('id_pos', $row->id_pos)->count_all_results('data_manual');
             $bdg_count = $this->db->where('id_pos', $row->id_pos)->count_all_results('data_bendung');
@@ -80,19 +91,15 @@ class M_admin extends CI_Model {
             $row->total_data = $tel_count + $man_count + $bdg_count + $bendungan_count;
             $row->total_data_bendung = $bdg_count;
             
-            // Last data dari telemetri
             $tel_last = $this->db->select('MAX(received_at) as last_data')
                                 ->where('id_pos', $row->id_pos)
                                 ->get('data_telemetri')->row();
-            // Last data dari manual
             $man_last = $this->db->select('MAX(created_at) as last_data')
                                 ->where('id_pos', $row->id_pos)
                                 ->get('data_manual')->row();
-            // Last data dari bendung
             $bdg_last = $this->db->select('MAX(created_at) as last_data')
                                 ->where('id_pos', $row->id_pos)
                                 ->get('data_bendung')->row();
-            // Last data dari bendungan
             $bendungan_last = $this->db->select('MAX(created_at) as last_data')
                                     ->where('id_pos', $row->id_pos)
                                     ->get('data_bendungan')->row();
@@ -102,7 +109,6 @@ class M_admin extends CI_Model {
             $bdg_time = !empty($bdg_last->last_data) ? strtotime($bdg_last->last_data) : 0;
             $bendungan_time = !empty($bendungan_last->last_data) ? strtotime($bendungan_last->last_data) : 0;
             
-            // Last data overall (paling baru)
             $max_time = max($tel_time, $man_time, $bdg_time, $bendungan_time);
             if ($max_time == $tel_time && $tel_time > 0) {
                 $row->last_data = $tel_last->last_data;
@@ -116,7 +122,6 @@ class M_admin extends CI_Model {
                 $row->last_data = null;
             }
             
-            // Last data bendung (khusus)
             $row->last_data_bendung = (!empty($bdg_last->last_data)) ? $bdg_last->last_data : null;
         }
         return $pos_list;
@@ -341,84 +346,283 @@ class M_admin extends CI_Model {
         return $this->_success('Status diubah.');
     }
 
+        // ==========================================
+    // KELOLA MANUAL - MAIN FUNCTION
     // ==========================================
-    // KELOLA MANUAL DATA (DENGAN BENDUNG)
-    // ==========================================
-    public function get_manual_data($pos_filter, $bulan, $allowed_pos) {
-        // Ambil daftar pos
-        $this->db->select('id_pos, nama_pos, tipe_pos, is_bendungan, is_bendung');
-        if ($allowed_pos !== null) {
-            $this->db->where_in('id_pos', $allowed_pos);
-        }
-        $pos_list = $this->db->order_by('nama_pos', 'ASC')->get('master_pos')->result();
-
-        // Tentukan pos yang dipilih
-        $selected_id = (!empty($pos_filter) && ($allowed_pos === null || in_array($pos_filter, $allowed_pos))) 
-            ? $pos_filter 
-            : ($pos_list[0]->id_pos ?? null);
+    public function get_manual_data($pos_filter, $bulan, $allowed_pos, $admin_type = 'hidrologi') {
+        
+        // ==========================================
+        // 1. ADMIN IRIGASI - Ambil dari tabel data_irigasi
+        // ==========================================
+        if ($admin_type == 'irigasi') {
+            $data_list = $this->get_irigasi_manual_data($bulan);
             
-        $pos = null;
-        if ($selected_id) {
-            $pos = $this->db->where('id_pos', $selected_id)->get('master_pos')->row();
+            return [
+                'app_name' => 'HydroSmart',
+                'title' => 'Kelola Laporan Manual - Irigasi',
+                'pos_list' => [],
+                'pos' => null,
+                'bulan' => $bulan,
+                'data_list' => $data_list,
+                'admin_type' => $admin_type
+            ];
         }
         
-        $data_list = [];
-
-        if ($pos) {
-            // CEK TIPE POS: Bendung > Bendungan > Pos Biasa
-            if ($pos->is_bendung == 1) {
-                // QUERY BENDUNG
-                $data_list = $this->get_bendung_data_by_pos($selected_id, $bulan);
-            } elseif ($pos->is_bendungan == 1) {
-                // QUERY BENDUNGAN
-                $data_list = $this->get_bendungan_data_by_pos($selected_id, $bulan);
-            } else {
-                // QUERY POS BIASA
-                $data_list = $this->get_manual_data_by_pos($selected_id, $bulan);
-            }
+        // ==========================================
+        // 2. ADMIN PANTAI - Ambil dari tabel data_pengaman_pantai
+        // ==========================================
+        if ($admin_type == 'pantai') {
+            $data_list = $this->get_pantai_manual_data($bulan);
+            
+            return [
+                'app_name' => 'HydroSmart',
+                'title' => 'Kelola Laporan Manual - Pengaman Pantai',
+                'pos_list' => [],
+                'pos' => null,
+                'bulan' => $bulan,
+                'data_list' => $data_list,
+                'admin_type' => $admin_type
+            ];
         }
-
+        
+        // ==========================================
+        // 3. ADMIN SEDIMEN - Ambil dari tabel data_pengendali_sedimen
+        // ==========================================
+        if ($admin_type == 'sedimen') {
+            $data_list = $this->get_sedimen_manual_data($bulan);
+            
+            return [
+                'app_name' => 'HydroSmart',
+                'title' => 'Kelola Laporan Manual - Pengendali Sedimen',
+                'pos_list' => [],
+                'pos' => null,
+                'bulan' => $bulan,
+                'data_list' => $data_list,
+                'admin_type' => $admin_type
+            ];
+        }
+        
+        // ==========================================
+        // 4. ADMIN EMBUNG
+        // ==========================================
+        if ($admin_type == 'embung') {
+            if (empty($allowed_pos) || $allowed_pos[0] == 0) {
+                return $this->_empty_manual_data($admin_type);
+            }
+            
+            $this->db->select('id_pos, nama_pos, tipe_pos, jenis_aset');
+            $this->db->where_in('id_pos', $allowed_pos);
+            $this->db->where('jenis_aset', 'embung');
+            $pos_list = $this->db->order_by('nama_pos', 'ASC')->get('master_pos')->result();
+            
+            if (empty($pos_list)) {
+                return $this->_empty_manual_data($admin_type);
+            }
+            
+            $selected_id = (!empty($pos_filter) && in_array($pos_filter, array_column($pos_list, 'id_pos'))) 
+                ? $pos_filter 
+                : $pos_list[0]->id_pos;
+            
+            $pos = $this->db->where('id_pos', $selected_id)->get('master_pos')->row();
+            
+            $data_list = $this->get_embung_manual_data_by_pos($selected_id, $bulan);
+            
+            return [
+                'app_name' => 'HydroSmart',
+                'title' => 'Kelola Laporan Manual - Embung',
+                'pos_list' => $pos_list,
+                'pos' => $pos,
+                'bulan' => $bulan,
+                'data_list' => $data_list,
+                'admin_type' => $admin_type
+            ];
+        }
+        
+        // ==========================================
+        // 5. ADMIN HIDROLOGI (Bendungan & Bendung)
+        // ==========================================
+        if (empty($allowed_pos) || $allowed_pos[0] == 0) {
+            return $this->_empty_manual_data($admin_type);
+        }
+        
+        $this->db->select('id_pos, nama_pos, tipe_pos, is_bendungan, is_bendung');
+        $this->db->where_in('id_pos', $allowed_pos);
+        $pos_list = $this->db->order_by('nama_pos', 'ASC')->get('master_pos')->result();
+        
+        if (empty($pos_list)) {
+            return $this->_empty_manual_data($admin_type);
+        }
+        
+        $selected_id = (!empty($pos_filter) && in_array($pos_filter, array_column($pos_list, 'id_pos'))) 
+            ? $pos_filter 
+            : $pos_list[0]->id_pos;
+        
+        $pos = $this->db->where('id_pos', $selected_id)->get('master_pos')->row();
+        
+        if ($pos->is_bendung == 1) {
+            $data_list = $this->get_bendung_data_by_pos($selected_id, $bulan);
+            $title = 'Kelola Laporan Manual - Bendung';
+        } elseif ($pos->is_bendungan == 1) {
+            $data_list = $this->get_bendungan_data_by_pos($selected_id, $bulan);
+            $title = 'Kelola Laporan Manual - Bendungan';
+        } else {
+            $data_list = $this->get_manual_data_by_pos($selected_id, $bulan);
+            $title = 'Kelola Laporan Manual - Pos';
+        }
+        
         return [
-            'app_name'  => 'HydroSmart', 
-            'title'     => 'Kelola Laporan Manual', 
-            'pos_list'  => $pos_list, 
-            'pos'       => $pos, 
-            'bulan'     => $bulan, 
-            'data_list' => $data_list
+            'app_name' => 'HydroSmart',
+            'title' => $title,
+            'pos_list' => $pos_list,
+            'pos' => $pos,
+            'bulan' => $bulan,
+            'data_list' => $data_list,
+            'admin_type' => $admin_type
         ];
     }
 
-    /**
-     * Get data manual pos biasa (PCH/PDA) berdasarkan pos dan bulan
-     */
-    /**
- * Get data manual pos biasa (PCH/PDA) berdasarkan pos dan bulan
- */
-public function get_manual_data_by_pos($id_pos, $bulan) {
-    $this->db->select('
-        m.id_manual, 
-        m.id_pos, 
-        m.id_user, 
-        m.tanggal_input, 
-        m.rain, 
-        m.wlevel, 
-        m.keterangan, 
-        m.created_at,
-        u.nama_lengkap as nama_petugas
-    ');
-    $this->db->from('data_manual m');
-    $this->db->join('users u', 'm.id_user = u.id_user', 'left');
-    $this->db->where('m.id_pos', $id_pos);
-    // PERBAIKAN: tambahkan operator =
-    $this->db->where("DATE_FORMAT(m.tanggal_input, '%Y-%m') =", $bulan);
-    $this->db->order_by('m.tanggal_input', 'DESC');
-    $this->db->order_by('m.created_at', 'DESC');
-    return $this->db->get()->result();
-}
+    // ==========================================
+    // DATA POS MANUAL (ADMIN HIDROLOGI)
+    // ==========================================
+    public function get_manual_data_by_pos($id_pos, $bulan) {
+        $this->db->select('
+            m.id_manual,
+            m.id_pos,
+            m.id_user,
+            m.tanggal_input,
+            m.rain,
+            m.wlevel,
+            m.keterangan,
+            m.created_at,
+            u.nama_lengkap as nama_user,
+            p.nama_pos,
+            p.tipe_pos
+        ');
+        $this->db->from('data_manual m');
+        $this->db->join('users u', 'm.id_user = u.id_user', 'left');
+        $this->db->join('master_pos p', 'm.id_pos = p.id_pos', 'left');
+        $this->db->where('m.id_pos', $id_pos);
+        if ($bulan) {
+            $this->db->where("DATE_FORMAT(m.tanggal_input, '%Y-%m') =", $bulan);
+        }
+        $this->db->order_by('m.tanggal_input', 'DESC');
+        $this->db->order_by('m.created_at', 'DESC');
+        return $this->db->get()->result();
+    }
 
-    /**
-     * Get data bendungan berdasarkan pos dan bulan (DENGAN KOLOM BARU)
-     */
+    // ==========================================
+    // DATA IRIGASI UNTUK MANUAL (ADMIN IRIGASI)
+    // ==========================================
+    public function get_irigasi_manual_data($bulan) {
+        $this->db->select("
+            i.id_irigasi as id_manual,
+            i.nama_aset as nama_pos,
+            'IRIGASI' as tipe_pos,
+            i.created_at as tanggal_input,
+            i.created_at,
+            NULL as rain,
+            NULL as wlevel,
+            i.keterangan_tambahan as keterangan,
+            i.luas_fungsional as nilai_1,
+            i.luas_potensial as nilai_2,
+            i.status_pemeliharaan as status,
+            i.kabupaten_kota,
+            i.kecamatan,
+            'irigasi' as sumber_data
+        ", false);
+        $this->db->from('data_irigasi i');
+        if ($bulan) {
+            $this->db->where("DATE_FORMAT(i.created_at, '%Y-%m') =", $bulan);
+        }
+        $this->db->order_by('i.created_at', 'DESC');
+        return $this->db->get()->result();
+    }
+
+    // ==========================================
+    // DATA PANTAI UNTUK MANUAL (ADMIN PANTAI)
+    // ==========================================
+    public function get_pantai_manual_data($bulan) {
+        $this->db->select("
+            p.id_pengaman as id_manual,
+            p.nama_aset as nama_pos,
+            'PANTAI' as tipe_pos,
+            p.created_at as tanggal_input,
+            p.created_at,
+            NULL as rain,
+            NULL as wlevel,
+            p.jenis_bangunan as nilai_1,
+            p.panjang as nilai_2,
+            p.kabupaten_kota as nilai_3,
+            p.kecamatan as nilai_4,
+            p.keterangan,
+            'pantai' as sumber_data
+        ", false);
+        $this->db->from('data_pengaman_pantai p');
+        if ($bulan) {
+            $this->db->where("DATE_FORMAT(p.created_at, '%Y-%m') =", $bulan);
+        }
+        $this->db->order_by('p.created_at', 'DESC');
+        return $this->db->get()->result();
+    }
+
+    // ==========================================
+    // DATA SEDIMEN UNTUK MANUAL (ADMIN SEDIMEN)
+    // ==========================================
+    public function get_sedimen_manual_data($bulan) {
+        $this->db->select("
+            s.id_sedimen as id_manual,
+            s.nama_aset as nama_pos,
+            'SEDIMEN' as tipe_pos,
+            s.created_at as tanggal_input,
+            s.created_at,
+            NULL as rain,
+            NULL as wlevel,
+            s.jenis_bangunan as nilai_1,
+            s.daya_tampung as nilai_2,
+            s.panjang as nilai_3,
+            s.tinggi as nilai_4,
+            s.keterangan,
+            'sedimen' as sumber_data
+        ", false);
+        $this->db->from('data_pengendali_sedimen s');
+        if ($bulan) {
+            $this->db->where("DATE_FORMAT(s.created_at, '%Y-%m') =", $bulan);
+        }
+        $this->db->order_by('s.created_at', 'DESC');
+        return $this->db->get()->result();
+    }
+
+    // ==========================================
+    // DATA EMBUNG PER POS (ADMIN EMBUNG)
+    // ==========================================
+    public function get_embung_manual_data_by_pos($id_pos, $bulan) {
+        $this->db->select("
+            e.id_embung as id_manual,
+            p.nama_pos,
+            'EMBUNG' as tipe_pos,
+            e.created_at as tanggal_input,
+            e.created_at,
+            NULL as rain,
+            NULL as wlevel,
+            e.kapasitas_volume as nilai_1,
+            e.elevasi_puncak as nilai_2,
+            e.tinggi_embung as nilai_3,
+            e.panjang_tubuh as nilai_4,
+            'embung' as sumber_data
+        ", false);
+        $this->db->from('data_embung e');
+        $this->db->join('master_pos p', 'e.id_pos = p.id_pos', 'left');
+        $this->db->where('e.id_pos', $id_pos);
+        if ($bulan) {
+            $this->db->where("DATE_FORMAT(e.created_at, '%Y-%m') =", $bulan);
+        }
+        $this->db->order_by('e.created_at', 'DESC');
+        return $this->db->get()->result();
+    }
+
+    // ==========================================
+    // DATA BENDUNGAN
+    // ==========================================
     public function get_bendungan_data_by_pos($id_pos, $bulan) {
         $this->db->select('
             d.id_bendungan,
@@ -462,10 +666,9 @@ public function get_manual_data_by_pos($id_pos, $bulan) {
         return $this->db->get()->result();
     }
 
-    /**
-     * Get data bendung berdasarkan pos dan bulan (SESUAI STRUKTUR TERBARU)
-     * PERBAIKAN: menggunakan b.tanggal_input (bukan m.tanggal_input)
-     */
+    // ==========================================
+    // DATA BENDUNG
+    // ==========================================
     public function get_bendung_data_by_pos($id_pos, $bulan) {
         $this->db->select('
             b.id_bendung,
@@ -490,7 +693,6 @@ public function get_manual_data_by_pos($id_pos, $bulan) {
         $this->db->from('data_bendung b');
         $this->db->join('users u', 'b.id_user = u.id_user', 'left');
         $this->db->where('b.id_pos', $id_pos);
-        // PERBAIKAN: gunakan b.tanggal_input (bukan m.tanggal_input)
         $this->db->where("DATE_FORMAT(b.tanggal_input, '%Y-%m')", $bulan);
         $this->db->order_by('b.tanggal_input', 'DESC');
         $this->db->order_by('b.created_at', 'DESC');
@@ -550,7 +752,6 @@ public function get_manual_data_by_pos($id_pos, $bulan) {
             'rembesan_pump_pit_r_h'   => $this->_parse_float($post['rembesan_pump_pit_r_h'] ?? null), 
             'rembesan_pump_pit_r_q'   => $this->_parse_float($post['rembesan_pump_pit_r_q'] ?? null),
             'keterangan'              => $post['keterangan'] ?: null,
-            // KOLOM BARU
             'tahun_mulai_pembangunan' => !empty($post['tahun_mulai_pembangunan']) ? $post['tahun_mulai_pembangunan'] : null,
             'tipe_bendungan'          => $post['tipe_bendungan'] ?? null,
             'elevasi_mercu'           => $this->_parse_float($post['elevasi_mercu'] ?? null),
@@ -563,9 +764,6 @@ public function get_manual_data_by_pos($id_pos, $bulan) {
             : $this->_error('Gagal menyimpan.');
     }
 
-    /**
-     * Insert data bendung (SESUAI STRUKTUR TERBARU)
-     */
     public function insert_manual_bendung($post, $user_id, $allowed) {
         if ($allowed !== null && !in_array($post['id_pos'], $allowed)) {
             show_error('Akses Terblokir!', 403);
@@ -593,6 +791,95 @@ public function get_manual_data_by_pos($id_pos, $bulan) {
         return $this->db->insert('data_bendung', $data) 
             ? $this->_success('Data bendung berhasil disimpan!') 
             : $this->_error('Gagal menyimpan.');
+    }
+
+    // ==========================================
+    // INSERT DATA IRIGASI (ADMIN IRIGASI)
+    // ==========================================
+    public function insert_manual_irigasi($post) {
+        $data = [
+            'nama_aset' => $post['nama_aset'],
+            'jenis_daerah_irigasi' => $post['jenis_daerah_irigasi'] ?? null,
+            'kode_identifikasi' => $post['kode_identifikasi'] ?? null,
+            'wilayah_sungai' => $post['wilayah_sungai'] ?? null,
+            'daerah_aliran_sungai' => $post['daerah_aliran_sungai'] ?? null,
+            'kewenangan' => $post['kewenangan'] ?? null,
+            'status_pemeliharaan' => $post['status_pemeliharaan'] ?? null,
+            'kabupaten_kota' => $post['kabupaten_kota'] ?? null,
+            'kecamatan' => $post['kecamatan'] ?? null,
+            'luas_potensial' => $this->_parse_float($post['luas_potensial'] ?? null),
+            'luas_fungsional' => $this->_parse_float($post['luas_fungsional'] ?? null),
+            'keterangan_tambahan' => $post['keterangan_tambahan'] ?? null,
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+        
+        return $this->db->insert('data_irigasi', $data) 
+            ? $this->_success('Data irigasi berhasil ditambahkan!') 
+            : $this->_error('Gagal menambahkan data.');
+    }
+
+    // ==========================================
+    // INSERT DATA PANTAI (ADMIN PANTAI)
+    // ==========================================
+    public function insert_manual_pantai($post) {
+        $data = [
+            'nama_aset' => $post['nama_aset'],
+            'jenis_bangunan' => $post['jenis_bangunan'] ?? null,
+            'sungai' => $post['sungai'] ?? null,
+            'wilayah_sungai' => $post['wilayah_sungai'] ?? null,
+            'panjang' => $this->_parse_float($post['panjang'] ?? null),
+            'kabupaten_kota' => $post['kabupaten_kota'] ?? null,
+            'kecamatan' => $post['kecamatan'] ?? null,
+            'keterangan' => $post['keterangan'] ?? null,
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+        
+        return $this->db->insert('data_pengaman_pantai', $data) 
+            ? $this->_success('Data pengaman pantai berhasil ditambahkan!') 
+            : $this->_error('Gagal menambahkan data.');
+    }
+
+    // ==========================================
+    // INSERT DATA SEDIMEN (ADMIN SEDIMEN)
+    // ==========================================
+    public function insert_manual_sedimen($post) {
+        $data = [
+            'nama_aset' => $post['nama_aset'],
+            'jenis_bangunan' => $post['jenis_bangunan'] ?? null,
+            'sungai' => $post['sungai'] ?? null,
+            'daerah_aliran_sungai' => $post['daerah_aliran_sungai'] ?? null,
+            'wilayah_sungai' => $post['wilayah_sungai'] ?? null,
+            'daya_tampung' => $this->_parse_float($post['daya_tampung'] ?? null),
+            'panjang' => $this->_parse_float($post['panjang'] ?? null),
+            'tinggi' => $this->_parse_float($post['tinggi'] ?? null),
+            'kabupaten_kota' => $post['kabupaten_kota'] ?? null,
+            'kecamatan' => $post['kecamatan'] ?? null,
+            'keterangan' => $post['keterangan'] ?? null,
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+        
+        return $this->db->insert('data_pengendali_sedimen', $data) 
+            ? $this->_success('Data pengendali sedimen berhasil ditambahkan!') 
+            : $this->_error('Gagal menambahkan data.');
+    }
+
+    // ==========================================
+    // INSERT DATA EMBUNG (ADMIN EMBUNG)
+    // ==========================================
+    public function insert_manual_embung($post) {
+        $data = [
+            'id_pos' => $post['id_pos'],
+            'kapasitas_volume' => $this->_parse_float($post['kapasitas_volume'] ?? null),
+            'elevasi_puncak' => $this->_parse_float($post['elevasi_puncak'] ?? null),
+            'tinggi_embung' => $this->_parse_float($post['tinggi_embung'] ?? null),
+            'panjang_tubuh' => $this->_parse_float($post['panjang_tubuh'] ?? null),
+            'tahun_mulai_pembangunan' => $post['tahun_mulai_pembangunan'] ?? null,
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+        
+        return $this->db->insert('data_embung', $data) 
+            ? $this->_success('Data embung berhasil ditambahkan!') 
+            : $this->_error('Gagal menambahkan data.');
     }
 
     // ==========================================
@@ -635,7 +922,6 @@ public function get_manual_data_by_pos($id_pos, $bulan) {
             'rembesan_pump_pit_r_h'   => $this->_parse_float($post['rembesan_pump_pit_r_h'] ?? null), 
             'rembesan_pump_pit_r_q'   => $this->_parse_float($post['rembesan_pump_pit_r_q'] ?? null),
             'keterangan'              => $post['keterangan'] ?? null,
-            // KOLOM BARU
             'tahun_mulai_pembangunan' => !empty($post['tahun_mulai_pembangunan']) ? $post['tahun_mulai_pembangunan'] : null,
             'tipe_bendungan'          => $post['tipe_bendungan'] ?? null,
             'elevasi_mercu'           => $this->_parse_float($post['elevasi_mercu'] ?? null),
@@ -647,9 +933,6 @@ public function get_manual_data_by_pos($id_pos, $bulan) {
             : $this->_error('Gagal memperbarui.');
     }
 
-    /**
-     * Update data bendung (SESUAI STRUKTUR TERBARU)
-     */
     public function update_manual_bendung($post) {
         $data = [
             'tanggal_input'  => $post['tanggal'],
@@ -669,6 +952,90 @@ public function get_manual_data_by_pos($id_pos, $bulan) {
         
         return $this->db->where('id_bendung', $post['id_bendung'])->update('data_bendung', $data) 
             ? $this->_success('Data bendung diperbarui!') 
+            : $this->_error('Gagal memperbarui.');
+    }
+
+    // ==========================================
+    // UPDATE DATA IRIGASI (ADMIN IRIGASI)
+    // ==========================================
+    public function update_manual_irigasi($post) {
+        $data = [
+            'nama_aset' => $post['nama_aset'],
+            'jenis_daerah_irigasi' => $post['jenis_daerah_irigasi'] ?? null,
+            'kode_identifikasi' => $post['kode_identifikasi'] ?? null,
+            'wilayah_sungai' => $post['wilayah_sungai'] ?? null,
+            'daerah_aliran_sungai' => $post['daerah_aliran_sungai'] ?? null,
+            'kewenangan' => $post['kewenangan'] ?? null,
+            'status_pemeliharaan' => $post['status_pemeliharaan'] ?? null,
+            'kabupaten_kota' => $post['kabupaten_kota'] ?? null,
+            'kecamatan' => $post['kecamatan'] ?? null,
+            'luas_potensial' => $this->_parse_float($post['luas_potensial'] ?? null),
+            'luas_fungsional' => $this->_parse_float($post['luas_fungsional'] ?? null),
+            'keterangan_tambahan' => $post['keterangan_tambahan'] ?? null
+        ];
+        
+        return $this->db->where('id_irigasi', $post['id_manual'])->update('data_irigasi', $data) 
+            ? $this->_success('Data irigasi diperbarui!') 
+            : $this->_error('Gagal memperbarui.');
+    }
+
+    // ==========================================
+    // UPDATE DATA PANTAI (ADMIN PANTAI)
+    // ==========================================
+    public function update_manual_pantai($post) {
+        $data = [
+            'nama_aset' => $post['nama_aset'],
+            'jenis_bangunan' => $post['jenis_bangunan'] ?? null,
+            'sungai' => $post['sungai'] ?? null,
+            'wilayah_sungai' => $post['wilayah_sungai'] ?? null,
+            'panjang' => $this->_parse_float($post['panjang'] ?? null),
+            'kabupaten_kota' => $post['kabupaten_kota'] ?? null,
+            'kecamatan' => $post['kecamatan'] ?? null,
+            'keterangan' => $post['keterangan'] ?? null
+        ];
+        
+        return $this->db->where('id_pengaman', $post['id_manual'])->update('data_pengaman_pantai', $data) 
+            ? $this->_success('Data pengaman pantai diperbarui!') 
+            : $this->_error('Gagal memperbarui.');
+    }
+
+    // ==========================================
+    // UPDATE DATA SEDIMEN (ADMIN SEDIMEN)
+    // ==========================================
+    public function update_manual_sedimen($post) {
+        $data = [
+            'nama_aset' => $post['nama_aset'],
+            'jenis_bangunan' => $post['jenis_bangunan'] ?? null,
+            'sungai' => $post['sungai'] ?? null,
+            'daerah_aliran_sungai' => $post['daerah_aliran_sungai'] ?? null,
+            'wilayah_sungai' => $post['wilayah_sungai'] ?? null,
+            'daya_tampung' => $this->_parse_float($post['daya_tampung'] ?? null),
+            'panjang' => $this->_parse_float($post['panjang'] ?? null),
+            'tinggi' => $this->_parse_float($post['tinggi'] ?? null),
+            'kabupaten_kota' => $post['kabupaten_kota'] ?? null,
+            'kecamatan' => $post['kecamatan'] ?? null,
+            'keterangan' => $post['keterangan'] ?? null
+        ];
+        
+        return $this->db->where('id_sedimen', $post['id_manual'])->update('data_pengendali_sedimen', $data) 
+            ? $this->_success('Data pengendali sedimen diperbarui!') 
+            : $this->_error('Gagal memperbarui.');
+    }
+
+    // ==========================================
+    // UPDATE DATA EMBUNG (ADMIN EMBUNG)
+    // ==========================================
+    public function update_manual_embung($post) {
+        $data = [
+            'kapasitas_volume' => $this->_parse_float($post['kapasitas_volume'] ?? null),
+            'elevasi_puncak' => $this->_parse_float($post['elevasi_puncak'] ?? null),
+            'tinggi_embung' => $this->_parse_float($post['tinggi_embung'] ?? null),
+            'panjang_tubuh' => $this->_parse_float($post['panjang_tubuh'] ?? null),
+            'tahun_mulai_pembangunan' => $post['tahun_mulai_pembangunan'] ?? null
+        ];
+        
+        return $this->db->where('id_embung', $post['id_manual'])->update('data_embung', $data) 
+            ? $this->_success('Data embung diperbarui!') 
             : $this->_error('Gagal memperbarui.');
     }
 
@@ -695,58 +1062,39 @@ public function get_manual_data_by_pos($id_pos, $bulan) {
             : $this->_error('Gagal menghapus.');
     }
 
-    /**
-     * Delete data bendung (SESUAI STRUKTUR TERBARU)
-     */
     public function delete_manual_bendung($id) {
         return $this->db->where('id_bendung', $id)->delete('data_bendung') 
             ? $this->_success('Data bendung dihapus.') 
             : $this->_error('Gagal menghapus.');
     }
 
-    // ==========================================
-    // GET SINGLE DATA BY ID (UNTUK EDIT)
-    // ==========================================
-    
-    /**
-     * Get single bendung data by ID (SESUAI STRUKTUR TERBARU)
-     */
-    public function get_bendung_by_id($id_bendung) {
-        $this->db->select('
-            b.*,
-            u.nama_lengkap as nama_user,
-            p.nama_pos,
-            p.tipe_pos
-        ');
-        $this->db->from('data_bendung b');
-        $this->db->join('users u', 'b.id_user = u.id_user', 'left');
-        $this->db->join('master_pos p', 'b.id_pos = p.id_pos', 'left');
-        $this->db->where('b.id_bendung', $id_bendung);
-        $query = $this->db->get();
-        return $query->row();
+    public function delete_manual_irigasi($id) {
+        return $this->db->where('id_irigasi', $id)->delete('data_irigasi') 
+            ? $this->_success('Data irigasi dihapus.') 
+            : $this->_error('Gagal menghapus.');
     }
 
-    /**
-     * Get single bendungan data by ID (DENGAN KOLOM BARU)
-     */
-    public function get_bendungan_by_id($id_bendungan) {
-        $this->db->select('
-            d.*,
-            u.nama_lengkap as nama_user,
-            p.nama_pos,
-            p.tipe_pos
-        ');
-        $this->db->from('data_bendungan d');
-        $this->db->join('users u', 'd.id_user = u.id_user', 'left');
-        $this->db->join('master_pos p', 'd.id_pos = p.id_pos', 'left');
-        $this->db->where('d.id_bendungan', $id_bendungan);
-        $query = $this->db->get();
-        return $query->row();
+    public function delete_manual_pantai($id) {
+        return $this->db->where('id_pengaman', $id)->delete('data_pengaman_pantai') 
+            ? $this->_success('Data pengaman pantai dihapus.') 
+            : $this->_error('Gagal menghapus.');
     }
 
-    /**
-     * Get single pos manual data by ID
-     */
+    public function delete_manual_sedimen($id) {
+        return $this->db->where('id_sedimen', $id)->delete('data_pengendali_sedimen') 
+            ? $this->_success('Data pengendali sedimen dihapus.') 
+            : $this->_error('Gagal menghapus.');
+    }
+
+    public function delete_manual_embung($id) {
+        return $this->db->where('id_embung', $id)->delete('data_embung') 
+            ? $this->_success('Data embung dihapus.') 
+            : $this->_error('Gagal menghapus.');
+    }
+
+    // ==========================================
+    // GET SINGLE DATA BY ID
+    // ==========================================
     public function get_manual_by_id($id_manual) {
         $this->db->select('
             m.*,
@@ -762,13 +1110,59 @@ public function get_manual_data_by_pos($id_pos, $bulan) {
         return $query->row();
     }
 
+    public function get_bendungan_by_id($id_bendungan) {
+        $this->db->select('
+            d.*,
+            u.nama_lengkap as nama_user,
+            p.nama_pos,
+            p.tipe_pos
+        ');
+        $this->db->from('data_bendungan d');
+        $this->db->join('users u', 'd.id_user = u.id_user', 'left');
+        $this->db->join('master_pos p', 'd.id_pos = p.id_pos', 'left');
+        $this->db->where('d.id_bendungan', $id_bendungan);
+        $query = $this->db->get();
+        return $query->row();
+    }
+
+    public function get_bendung_by_id($id_bendung) {
+        $this->db->select('
+            b.*,
+            u.nama_lengkap as nama_user,
+            p.nama_pos,
+            p.tipe_pos
+        ');
+        $this->db->from('data_bendung b');
+        $this->db->join('users u', 'b.id_user = u.id_user', 'left');
+        $this->db->join('master_pos p', 'b.id_pos = p.id_pos', 'left');
+        $this->db->where('b.id_bendung', $id_bendung);
+        $query = $this->db->get();
+        return $query->row();
+    }
+
+    public function get_irigasi_by_id($id_irigasi) {
+        return $this->db->get_where('data_irigasi', ['id_irigasi' => $id_irigasi])->row();
+    }
+
+    public function get_pantai_by_id($id_pengaman) {
+        return $this->db->get_where('data_pengaman_pantai', ['id_pengaman' => $id_pengaman])->row();
+    }
+
+    public function get_sedimen_by_id($id_sedimen) {
+        return $this->db->get_where('data_pengendali_sedimen', ['id_sedimen' => $id_sedimen])->row();
+    }
+
+    public function get_embung_by_id($id_embung) {
+        $this->db->select('e.*, p.nama_pos');
+        $this->db->from('data_embung e');
+        $this->db->join('master_pos p', 'e.id_pos = p.id_pos', 'left');
+        $this->db->where('e.id_embung', $id_embung);
+        return $this->db->get()->row();
+    }
+
     // ==========================================
-    // GET BENDUNGAN DATA BY POS (UNTUK PETUGAS)
+    // GET BENDUNGAN DATA BY DATE (UNTUK PETUGAS)
     // ==========================================
-    
-    /**
-     * Get data bendungan by date (untuk petugas)
-     */
     public function get_bendungan_by_date($id_pos, $tanggal) {
         $this->db->select('
             d.id_bendungan,
@@ -814,12 +1208,7 @@ public function get_manual_data_by_pos($id_pos, $bulan) {
     // ==========================================
     // EXPORT & IMPORT DATA
     // ==========================================
-
-    /**
-     * Get data untuk export berdasarkan module dan filter
-     */
     public function get_export_data($module, $allowed_pos, $id_pos = null, $period = 'all', $date = null) {
-        // Filter pos
         if (!empty($id_pos)) {
             $this->db->where('id_pos', $id_pos);
         } else if (!empty($allowed_pos)) {
@@ -828,14 +1217,12 @@ public function get_manual_data_by_pos($id_pos, $bulan) {
             return [];
         }
         
-        // Filter periode
         if ($period == 'daily' && !empty($date)) {
             $this->db->where('DATE(tanggal_input)', $date);
         } else if ($period == 'month' && !empty($date)) {
             $this->db->where("DATE_FORMAT(tanggal_input, '%Y-%m')", substr($date, 0, 7));
         }
         
-        // Ambil data sesuai module
         switch ($module) {
             case 'telemetri':
                 return $this->db->get('data_telemetri')->result_array();
@@ -850,9 +1237,6 @@ public function get_manual_data_by_pos($id_pos, $bulan) {
         }
     }
 
-    /**
-     * Get semua data untuk export all modules
-     */
     public function get_all_export_data($allowed_pos, $id_pos = null, $period = 'all', $date = null) {
         $result = [];
         $modules = ['telemetri', 'manual', 'bendung', 'bendungan'];
@@ -867,9 +1251,6 @@ public function get_manual_data_by_pos($id_pos, $bulan) {
         return $result;
     }
 
-    /**
-     * Get template headers berdasarkan module
-     */
     public function get_template_headers($module) {
         switch ($module) {
             case 'telemetri':
@@ -885,22 +1266,16 @@ public function get_manual_data_by_pos($id_pos, $bulan) {
         }
     }
 
-    /**
-     * Import data CSV ke database
-     */
     public function import_csv_data($module, $data, $user_id) {
-        // Bersihkan data
         foreach ($data as &$val) {
             if ($val === '' || $val === 'NULL' || $val === 'null') {
                 $val = null;
             }
-            // Parse float untuk angka
             if (is_numeric($val)) {
                 $val = (float)$val;
             }
         }
         
-        // Tambahkan timestamp dan user
         $data['id_user'] = $user_id;
         $data['created_at'] = date('Y-m-d H:i:s');
         
@@ -918,26 +1293,20 @@ public function get_manual_data_by_pos($id_pos, $bulan) {
         }
     }
 
-    /**
-     * Bulk import data CSV
-     */
     public function bulk_import_csv($module, $rows, $user_id, $id_pos) {
         $imported = 0;
         $failed = 0;
         $errors = [];
         
         foreach ($rows as $row) {
-            // Pastikan id_pos sesuai
             $row['id_pos'] = $id_pos;
             
-            // Validasi minimal data
             if (empty($row['tanggal_input'])) {
                 $failed++;
                 $errors[] = 'Missing tanggal_input';
                 continue;
             }
             
-            // Coba import
             $result = $this->import_csv_data($module, $row, $user_id);
             if ($result) {
                 $imported++;
@@ -954,9 +1323,6 @@ public function get_manual_data_by_pos($id_pos, $bulan) {
         ];
     }
 
-    /**
-     * Get pos list untuk admin (hanya pos yang ditangani)
-     */
     public function get_admin_pos_list($allowed_pos) {
         if (empty($allowed_pos)) {
             return [];
@@ -968,9 +1334,6 @@ public function get_manual_data_by_pos($id_pos, $bulan) {
         return $this->db->get('master_pos')->result();
     }
 
-    /**
-     * Get modules untuk dropdown export/import
-     */
     public function get_export_modules() {
         return [
             'telemetri'   => 'Data Telemetri',
@@ -981,14 +1344,325 @@ public function get_manual_data_by_pos($id_pos, $bulan) {
         ];
     }
 
-    /**
-     * Get periods untuk dropdown
-     */
     public function get_export_periods() {
         return [
             'all'   => 'Semua',
             'daily' => 'Harian',
             'month' => 'Bulanan'
         ];
+    }
+
+    // ==========================================
+    // DATA IRIGASI (CRUD LENGKAP UNTUK MENU TERPISAH)
+    // ==========================================
+    public function get_irigasi_data() {
+        $data_list = $this->db->order_by('nama_aset', 'ASC')->get('data_irigasi')->result();
+        
+        return [
+            'app_name' => 'HydroSmart',
+            'title' => 'Kelola Data Irigasi',
+            'data_list' => $data_list
+        ];
+    }
+
+    public function insert_irigasi($post) {
+        $data = [
+            'kode_integrasi' => $post['kode_integrasi'] ?? null,
+            'nama_aset' => $post['nama_aset'],
+            'jenis_daerah_irigasi' => $post['jenis_daerah_irigasi'] ?? null,
+            'kode_identifikasi' => $post['kode_identifikasi'] ?? null,
+            'status_sumber_data' => $post['status_sumber_data'] ?? null,
+            'unit_kerja' => $post['unit_kerja'] ?? null,
+            'wilayah_sungai' => $post['wilayah_sungai'] ?? null,
+            'daerah_aliran_sungai' => $post['daerah_aliran_sungai'] ?? null,
+            'kewenangan' => $post['kewenangan'] ?? null,
+            'lintas_kewenangan' => $post['lintas_kewenangan'] ?? null,
+            'tahun_data' => $post['tahun_data'] ?? null,
+            'bangunan_pengambilan' => $post['bangunan_pengambilan'] ?? null,
+            'status_pemeliharaan' => $post['status_pemeliharaan'] ?? null,
+            'di_op_kan_oleh' => $post['di_op_kan_oleh'] ?? null,
+            'deskripsi_aset' => $post['deskripsi_aset'] ?? null,
+            'keterangan_tambahan' => $post['keterangan_tambahan'] ?? null,
+            'status_data' => $post['status_data'] ?? null,
+            'status_verifikasi' => $post['status_verifikasi'] ?? null,
+            'provinsi' => $post['provinsi'] ?? null,
+            'kabupaten_kota' => $post['kabupaten_kota'] ?? null,
+            'kecamatan' => $post['kecamatan'] ?? null,
+            'kelurahan' => $post['kelurahan'] ?? null,
+            'latitude' => $this->_parse_float($post['latitude'] ?? null),
+            'longitude' => $this->_parse_float($post['longitude'] ?? null),
+            'keterangan_lokasi' => $post['keterangan_lokasi'] ?? null,
+            'luas_permen' => $this->_parse_float($post['luas_permen'] ?? null),
+            'luas_baku' => $this->_parse_float($post['luas_baku'] ?? null),
+            'luas_potensial' => $this->_parse_float($post['luas_potensial'] ?? null),
+            'luas_fungsional' => $this->_parse_float($post['luas_fungsional'] ?? null),
+            'jenis_bangunan_utama' => $post['jenis_bangunan_utama'] ?? null,
+            'nama_bangunan_utama_bendungan' => $post['nama_bangunan_utama_bendungan'] ?? null,
+            'nama_bangunan_utama_bendung' => $post['nama_bangunan_utama_bendung'] ?? null,
+            'nama_bangunan_utama_free_intake' => $post['nama_bangunan_utama_free_intake'] ?? null,
+            'sumber_air' => $post['sumber_air'] ?? null,
+            'luas_tangkapan_hujan' => $this->_parse_float($post['luas_tangkapan_hujan'] ?? null),
+            'jenis_rawa' => $post['jenis_rawa'] ?? null,
+            'fungsi_jaringan_irigasi' => $post['fungsi_jaringan_irigasi'] ?? null,
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+        
+        return $this->db->insert('data_irigasi', $data) 
+            ? $this->_success('Data irigasi berhasil ditambahkan!') 
+            : $this->_error('Gagal menambahkan data.');
+    }
+
+    public function update_irigasi($post) {
+        $data = [
+            'kode_integrasi' => $post['kode_integrasi'] ?? null,
+            'nama_aset' => $post['nama_aset'],
+            'jenis_daerah_irigasi' => $post['jenis_daerah_irigasi'] ?? null,
+            'kode_identifikasi' => $post['kode_identifikasi'] ?? null,
+            'status_sumber_data' => $post['status_sumber_data'] ?? null,
+            'unit_kerja' => $post['unit_kerja'] ?? null,
+            'wilayah_sungai' => $post['wilayah_sungai'] ?? null,
+            'daerah_aliran_sungai' => $post['daerah_aliran_sungai'] ?? null,
+            'kewenangan' => $post['kewenangan'] ?? null,
+            'lintas_kewenangan' => $post['lintas_kewenangan'] ?? null,
+            'tahun_data' => $post['tahun_data'] ?? null,
+            'bangunan_pengambilan' => $post['bangunan_pengambilan'] ?? null,
+            'status_pemeliharaan' => $post['status_pemeliharaan'] ?? null,
+            'di_op_kan_oleh' => $post['di_op_kan_oleh'] ?? null,
+            'deskripsi_aset' => $post['deskripsi_aset'] ?? null,
+            'keterangan_tambahan' => $post['keterangan_tambahan'] ?? null,
+            'status_data' => $post['status_data'] ?? null,
+            'status_verifikasi' => $post['status_verifikasi'] ?? null,
+            'provinsi' => $post['provinsi'] ?? null,
+            'kabupaten_kota' => $post['kabupaten_kota'] ?? null,
+            'kecamatan' => $post['kecamatan'] ?? null,
+            'kelurahan' => $post['kelurahan'] ?? null,
+            'latitude' => $this->_parse_float($post['latitude'] ?? null),
+            'longitude' => $this->_parse_float($post['longitude'] ?? null),
+            'keterangan_lokasi' => $post['keterangan_lokasi'] ?? null,
+            'luas_permen' => $this->_parse_float($post['luas_permen'] ?? null),
+            'luas_baku' => $this->_parse_float($post['luas_baku'] ?? null),
+            'luas_potensial' => $this->_parse_float($post['luas_potensial'] ?? null),
+            'luas_fungsional' => $this->_parse_float($post['luas_fungsional'] ?? null),
+            'jenis_bangunan_utama' => $post['jenis_bangunan_utama'] ?? null,
+            'nama_bangunan_utama_bendungan' => $post['nama_bangunan_utama_bendungan'] ?? null,
+            'nama_bangunan_utama_bendung' => $post['nama_bangunan_utama_bendung'] ?? null,
+            'nama_bangunan_utama_free_intake' => $post['nama_bangunan_utama_free_intake'] ?? null,
+            'sumber_air' => $post['sumber_air'] ?? null,
+            'luas_tangkapan_hujan' => $this->_parse_float($post['luas_tangkapan_hujan'] ?? null),
+            'jenis_rawa' => $post['jenis_rawa'] ?? null,
+            'fungsi_jaringan_irigasi' => $post['fungsi_jaringan_irigasi'] ?? null
+        ];
+        
+        return $this->db->where('id_irigasi', $post['id_irigasi'])->update('data_irigasi', $data) 
+            ? $this->_success('Data irigasi berhasil diperbarui!') 
+            : $this->_error('Gagal memperbarui data.');
+    }
+
+    public function delete_irigasi($id) {
+        return $this->db->where('id_irigasi', $id)->delete('data_irigasi') 
+            ? $this->_success('Data irigasi berhasil dihapus!') 
+            : $this->_error('Gagal menghapus data.');
+    }
+
+    // ==========================================
+    // DATA PENGENDALI SEDIMEN
+    // ==========================================
+    public function get_sedimen_data() {
+        $data_list = $this->db->order_by('nama_aset', 'ASC')->get('data_pengendali_sedimen')->result();
+        
+        return [
+            'app_name' => 'HydroSmart',
+            'title' => 'Kelola Data Pengendali Sedimen',
+            'data_list' => $data_list
+        ];
+    }
+
+    public function insert_sedimen($post) {
+        $data = [
+            'kode_integrasi' => $post['kode_integrasi'] ?? null,
+            'nama_aset' => $post['nama_aset'],
+            'jenis_bangunan' => $post['jenis_bangunan'] ?? null,
+            'sungai' => $post['sungai'] ?? null,
+            'daerah_aliran_sungai' => $post['daerah_aliran_sungai'] ?? null,
+            'wilayah_sungai' => $post['wilayah_sungai'] ?? null,
+            'lat' => $this->_parse_float($post['lat'] ?? null),
+            'lng' => $this->_parse_float($post['lng'] ?? null),
+            'daya_tampung' => $this->_parse_float($post['daya_tampung'] ?? null),
+            'panjang' => $this->_parse_float($post['panjang'] ?? null),
+            'lebar' => $this->_parse_float($post['lebar'] ?? null),
+            'tinggi' => $this->_parse_float($post['tinggi'] ?? null),
+            'tahun_dibangun' => $post['tahun_dibangun'] ?? null,
+            'kabupaten_kota' => $post['kabupaten_kota'] ?? null,
+            'kecamatan' => $post['kecamatan'] ?? null,
+            'kelurahan' => $post['kelurahan'] ?? null,
+            'jenis_material' => $post['jenis_material'] ?? null,
+            'keterangan' => $post['keterangan'] ?? null,
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+        
+        return $this->db->insert('data_pengendali_sedimen', $data) 
+            ? $this->_success('Data pengendali sedimen berhasil ditambahkan!') 
+            : $this->_error('Gagal menambahkan data.');
+    }
+
+    public function update_sedimen($post) {
+        $data = [
+            'kode_integrasi' => $post['kode_integrasi'] ?? null,
+            'nama_aset' => $post['nama_aset'],
+            'jenis_bangunan' => $post['jenis_bangunan'] ?? null,
+            'sungai' => $post['sungai'] ?? null,
+            'daerah_aliran_sungai' => $post['daerah_aliran_sungai'] ?? null,
+            'wilayah_sungai' => $post['wilayah_sungai'] ?? null,
+            'lat' => $this->_parse_float($post['lat'] ?? null),
+            'lng' => $this->_parse_float($post['lng'] ?? null),
+            'daya_tampung' => $this->_parse_float($post['daya_tampung'] ?? null),
+            'panjang' => $this->_parse_float($post['panjang'] ?? null),
+            'lebar' => $this->_parse_float($post['lebar'] ?? null),
+            'tinggi' => $this->_parse_float($post['tinggi'] ?? null),
+            'tahun_dibangun' => $post['tahun_dibangun'] ?? null,
+            'kabupaten_kota' => $post['kabupaten_kota'] ?? null,
+            'kecamatan' => $post['kecamatan'] ?? null,
+            'kelurahan' => $post['kelurahan'] ?? null,
+            'jenis_material' => $post['jenis_material'] ?? null,
+            'keterangan' => $post['keterangan'] ?? null
+        ];
+        
+        return $this->db->where('id_sedimen', $post['id_sedimen'])->update('data_pengendali_sedimen', $data) 
+            ? $this->_success('Data pengendali sedimen berhasil diperbarui!') 
+            : $this->_error('Gagal memperbarui data.');
+    }
+
+    public function delete_sedimen($id) {
+        return $this->db->where('id_sedimen', $id)->delete('data_pengendali_sedimen') 
+            ? $this->_success('Data pengendali sedimen berhasil dihapus!') 
+            : $this->_error('Gagal menghapus data.');
+    }
+
+    // ==========================================
+    // DATA PENGAMAN PANTAI
+    // ==========================================
+    public function get_pantai_data() {
+        $data_list = $this->db->order_by('nama_aset', 'ASC')->get('data_pengaman_pantai')->result();
+        
+        return [
+            'app_name' => 'HydroSmart',
+            'title' => 'Kelola Data Pengaman Pantai',
+            'data_list' => $data_list
+        ];
+    }
+
+    public function insert_pantai($post) {
+        $data = [
+            'kode_integrasi' => $post['kode_integrasi'] ?? null,
+            'nama_aset' => $post['nama_aset'],
+            'jenis_bangunan' => $post['jenis_bangunan'] ?? null,
+            'sungai' => $post['sungai'] ?? null,
+            'wilayah_sungai' => $post['wilayah_sungai'] ?? null,
+            'lat_awal' => $this->_parse_float($post['lat_awal'] ?? null),
+            'lng_awal' => $this->_parse_float($post['lng_awal'] ?? null),
+            'lat_akhir' => $this->_parse_float($post['lat_akhir'] ?? null),
+            'lng_akhir' => $this->_parse_float($post['lng_akhir'] ?? null),
+            'panjang' => $this->_parse_float($post['panjang'] ?? null),
+            'elevasi_puncak' => $this->_parse_float($post['elevasi_puncak'] ?? null),
+            'lebar_puncak' => $this->_parse_float($post['lebar_puncak'] ?? null),
+            'tahun_dibangun' => $post['tahun_dibangun'] ?? null,
+            'kabupaten_kota' => $post['kabupaten_kota'] ?? null,
+            'kecamatan' => $post['kecamatan'] ?? null,
+            'kelurahan' => $post['kelurahan'] ?? null,
+            'manfaat' => $post['manfaat'] ?? null,
+            'keterangan' => $post['keterangan'] ?? null,
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+        
+        return $this->db->insert('data_pengaman_pantai', $data) 
+            ? $this->_success('Data pengaman pantai berhasil ditambahkan!') 
+            : $this->_error('Gagal menambahkan data.');
+    }
+
+    public function update_pantai($post) {
+        $data = [
+            'kode_integrasi' => $post['kode_integrasi'] ?? null,
+            'nama_aset' => $post['nama_aset'],
+            'jenis_bangunan' => $post['jenis_bangunan'] ?? null,
+            'sungai' => $post['sungai'] ?? null,
+            'wilayah_sungai' => $post['wilayah_sungai'] ?? null,
+            'lat_awal' => $this->_parse_float($post['lat_awal'] ?? null),
+            'lng_awal' => $this->_parse_float($post['lng_awal'] ?? null),
+            'lat_akhir' => $this->_parse_float($post['lat_akhir'] ?? null),
+            'lng_akhir' => $this->_parse_float($post['lng_akhir'] ?? null),
+            'panjang' => $this->_parse_float($post['panjang'] ?? null),
+            'elevasi_puncak' => $this->_parse_float($post['elevasi_puncak'] ?? null),
+            'lebar_puncak' => $this->_parse_float($post['lebar_puncak'] ?? null),
+            'tahun_dibangun' => $post['tahun_dibangun'] ?? null,
+            'kabupaten_kota' => $post['kabupaten_kota'] ?? null,
+            'kecamatan' => $post['kecamatan'] ?? null,
+            'kelurahan' => $post['kelurahan'] ?? null,
+            'manfaat' => $post['manfaat'] ?? null,
+            'keterangan' => $post['keterangan'] ?? null
+        ];
+        
+        return $this->db->where('id_pengaman', $post['id_pengaman'])->update('data_pengaman_pantai', $data) 
+            ? $this->_success('Data pengaman pantai berhasil diperbarui!') 
+            : $this->_error('Gagal memperbarui data.');
+    }
+
+    public function delete_pantai($id) {
+        return $this->db->where('id_pengaman', $id)->delete('data_pengaman_pantai') 
+            ? $this->_success('Data pengaman pantai berhasil dihapus!') 
+            : $this->_error('Gagal menghapus data.');
+    }
+
+    // ==========================================
+    // DATA EMBUNG
+    // ==========================================
+    public function get_embung_data() {
+        $this->db->select('e.*, p.nama_pos, p.tipe_pos, p.wilayah_sungai');
+        $this->db->from('data_embung e');
+        $this->db->join('master_pos p', 'e.id_pos = p.id_pos', 'left');
+        $this->db->order_by('e.created_at', 'DESC');
+        $data_list = $this->db->get()->result();
+        
+        return [
+            'app_name' => 'HydroSmart',
+            'title' => 'Kelola Data Embung',
+            'data_list' => $data_list
+        ];
+    }
+
+    public function insert_embung($post) {
+        $data = [
+            'id_pos' => $post['id_pos'],
+            'kapasitas_volume' => $this->_parse_float($post['kapasitas_volume'] ?? null),
+            'elevasi_puncak' => $this->_parse_float($post['elevasi_puncak'] ?? null),
+            'tinggi_embung' => $this->_parse_float($post['tinggi_embung'] ?? null),
+            'panjang_tubuh' => $this->_parse_float($post['panjang_tubuh'] ?? null),
+            'tahun_mulai_pembangunan' => $post['tahun_mulai_pembangunan'] ?? null,
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+        
+        return $this->db->insert('data_embung', $data) 
+            ? $this->_success('Data embung berhasil ditambahkan!') 
+            : $this->_error('Gagal menambahkan data.');
+    }
+
+    public function update_embung($post) {
+        $data = [
+            'id_pos' => $post['id_pos'],
+            'kapasitas_volume' => $this->_parse_float($post['kapasitas_volume'] ?? null),
+            'elevasi_puncak' => $this->_parse_float($post['elevasi_puncak'] ?? null),
+            'tinggi_embung' => $this->_parse_float($post['tinggi_embung'] ?? null),
+            'panjang_tubuh' => $this->_parse_float($post['panjang_tubuh'] ?? null),
+            'tahun_mulai_pembangunan' => $post['tahun_mulai_pembangunan'] ?? null
+        ];
+        
+        return $this->db->where('id_embung', $post['id_embung'])->update('data_embung', $data) 
+            ? $this->_success('Data embung berhasil diperbarui!') 
+            : $this->_error('Gagal memperbarui data.');
+    }
+
+    public function delete_embung($id) {
+        return $this->db->where('id_embung', $id)->delete('data_embung') 
+            ? $this->_success('Data embung berhasil dihapus!') 
+            : $this->_error('Gagal menghapus data.');
     }
 }
